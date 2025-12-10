@@ -1,0 +1,2261 @@
+@prefix gtfs: <http://vocab.gtfs.org/terms#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+
+<http://vocab.gtfs.org/terms#> a owl:Ontology ;
+    dct:title "GTFS Ontology" ;
+    dct:description "An ontology for the General Transit Feed Specification (GTFS)." .
+
+#################################################################
+#    Classes
+#################################################################
+
+gtfs:Agency a rdfs:Class .
+gtfs:Stop a rdfs:Class .
+gtfs:Route a rdfs:Class .
+gtfs:Trip a rdfs:Class .
+gtfs:StopTime a rdfs:Class .
+gtfs:Calendar a rdfs:Class .
+gtfs:CalendarDate a rdfs:Class .
+gtfs:FareAttribute a rdfs:Class .
+gtfs:FareRule a rdfs:Class .
+gtfs:Timeframe a rdfs:Class .
+gtfs:RiderCategory a rdfs:Class .
+gtfs:FareMedia a rdfs:Class .
+gtfs:FareProduct a rdfs:Class .
+gtfs:FareLegRule a rdfs:Class .
+gtfs:FareLegJoinRule a rdfs:Class .
+gtfs:FareTransferRule a rdfs:Class .
+gtfs:Area a rdfs:Class .
+gtfs:StopArea a rdfs:Class .
+gtfs:Network a rdfs:Class .
+gtfs:RouteNetwork a rdfs:Class .
+gtfs:Shape a rdfs:Class .
+gtfs:Frequency a rdfs:Class .
+gtfs:Transfer a rdfs:Class .
+gtfs:Pathway a rdfs:Class .
+gtfs:Level a rdfs:Class .
+gtfs:LocationGroup a rdfs:Class .
+gtfs:GeoJsonLocation a rdfs:Class .
+gtfs:BookingRule a rdfs:Class .
+gtfs:FeedInfo a rdfs:Class .
+gtfs:Attribution a rdfs:Class .
+gtfs:Translation a rdfs:Class .
+
+#################################################################
+#    Properties
+#################################################################
+
+gtfs:agency_id a rdf:Property ;
+    rdfs:range xsd:string .
+
+gtfs:agency_name a rdf:Property ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range xsd:string .
+
+gtfs:agency_url a rdf:Property ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range xsd:anyURI .
+
+gtfs:agency_timezone a rdf:Property ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range xsd:string .
+
+gtfs:agency_lang a rdf:Property ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range xsd:string .
+
+gtfs:agency_phone a rdf:Property ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range xsd:string .
+
+gtfs:agency_fare_url a rdf:Property ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range xsd:anyURI .
+
+gtfs:agency_email a rdf:Property ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range xsd:string .
+
+gtfs:cemv_support a rdf:Property ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range xsd:integer .
+
+gtfs:stop_id a rdf:Property ;
+    rdfs:range xsd:string .
+
+gtfs:stop_code a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:string .
+
+gtfs:stop_name a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:string .
+
+gtfs:tts_stop_name a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:string .
+
+gtfs:stop_desc a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:string .
+
+gtfs:stop_lat a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:decimal .
+
+gtfs:stop_lon a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:decimal .
+
+gtfs:zone_id a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:string .
+
+gtfs:stop_url a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:anyURI .
+
+gtfs:location_type a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:integer .
+
+gtfs:parent_station a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:string .
+
+gtfs:stop_timezone a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:string .
+
+gtfs:wheelchair_boarding a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:integer .
+
+gtfs:level_id a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:string .
+
+gtfs:platform_code a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:string .
+
+gtfs:stop_access a rdf:Property ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range xsd:integer .
+
+gtfs:route_id a rdf:Property ;
+    rdfs:range xsd:string .
+
+gtfs:route_short_name a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range xsd:string .
+
+gtfs:route_long_name a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range xsd:string .
+
+gtfs:route_desc a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range xsd:string .
+
+gtfs:route_type a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range xsd:integer .
+
+gtfs:route_url a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range xsd:anyURI .
+
+gtfs:route_color a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range xsd:string .
+
+gtfs:route_text_color a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range xsd:string .
+
+gtfs:route_sort_order a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range xsd:integer .
+
+gtfs:continuous_pickup a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range xsd:integer .
+
+gtfs:continuous_drop_off a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range xsd:integer .
+
+gtfs:network_id a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range xsd:string .
+
+gtfs:service_id a rdf:Property ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range xsd:string .
+
+gtfs:trip_id a rdf:Property ;
+    rdfs:range xsd:string .
+
+gtfs:trip_headsign a rdf:Property ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range xsd:string .
+
+gtfs:trip_short_name a rdf:Property ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range xsd:string .
+
+gtfs:direction_id a rdf:Property ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range xsd:integer .
+
+gtfs:block_id a rdf:Property ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range xsd:string .
+
+gtfs:shape_id a rdf:Property ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range xsd:string .
+
+gtfs:wheelchair_accessible a rdf:Property ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range xsd:integer .
+
+gtfs:bikes_allowed a rdf:Property ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range xsd:integer .
+
+gtfs:cars_allowed a rdf:Property ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range xsd:integer .
+
+gtfs:arrival_time a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range xsd:string . # xsd:time doesn't support > 24:00 hours which GTFS allows
+
+gtfs:departure_time a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range xsd:string .
+
+gtfs:stop_sequence a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range xsd:nonNegativeInteger .
+
+gtfs:stop_headsign a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range xsd:string .
+
+gtfs:pickup_type a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range xsd:integer .
+
+gtfs:drop_off_type a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range xsd:integer .
+
+gtfs:shape_dist_traveled a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range xsd:decimal .
+
+gtfs:timepoint a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range xsd:integer .
+
+gtfs:pickup_booking_rule_id a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range xsd:string .
+
+gtfs:drop_off_booking_rule_id a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range xsd:string .
+
+gtfs:monday a rdf:Property ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range xsd:integer .
+
+gtfs:tuesday a rdf:Property ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range xsd:integer .
+
+gtfs:wednesday a rdf:Property ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range xsd:integer .
+
+gtfs:thursday a rdf:Property ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range xsd:integer .
+
+gtfs:friday a rdf:Property ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range xsd:integer .
+
+gtfs:saturday a rdf:Property ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range xsd:integer .
+
+gtfs:sunday a rdf:Property ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range xsd:integer .
+
+gtfs:start_date a rdf:Property ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range xsd:string .
+
+gtfs:end_date a rdf:Property ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range xsd:string .
+
+# Object Properties for Linking
+
+gtfs:agency a rdf:Property ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:Agency .
+
+gtfs:route a rdf:Property ;
+    rdfs:range gtfs:Route . # Domain removed/relaxed to allow use in Trip and FareRule
+
+gtfs:service a rdf:Property ;
+    rdfs:domain gtfs:Trip ;
+    # Range could be Calendar or CalendarDate (Union), leaving open for now or generic Resource
+    rdfs:range rdfs:Resource .
+
+gtfs:trip a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range gtfs:Trip .
+
+gtfs:stop a rdf:Property ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range gtfs:Stop .
+
+gtfs:date a rdf:Property ;
+    rdfs:domain gtfs:CalendarDate ;
+    rdfs:range xsd:string .
+
+gtfs:exception_type a rdf:Property ;
+    rdfs:domain gtfs:CalendarDate ;
+    rdfs:range xsd:integer .
+
+gtfs:fare_id a rdf:Property ;
+    # rdfs:domain gtfs:FareAttribute ; # Used in FareRule too, so removed domain or set Union
+    rdfs:range xsd:string .
+
+gtfs:price a rdf:Property ;
+    rdfs:domain gtfs:FareAttribute ;
+    rdfs:range xsd:decimal .
+
+gtfs:currency_type a rdf:Property ;
+    rdfs:domain gtfs:FareAttribute ;
+    rdfs:range xsd:string .
+
+gtfs:payment_method a rdf:Property ;
+    rdfs:domain gtfs:FareAttribute ;
+    rdfs:range xsd:integer .
+
+gtfs:transfers a rdf:Property ;
+    rdfs:domain gtfs:FareAttribute ;
+    rdfs:range xsd:integer .
+
+gtfs:agency_id rdfs:domain gtfs:FareAttribute . # Re-use property
+
+gtfs:transfer_duration a rdf:Property ;
+    rdfs:domain gtfs:FareAttribute ;
+    rdfs:range xsd:integer .
+
+gtfs:origin_id a rdf:Property ;
+    rdfs:domain gtfs:FareRule ;
+    rdfs:range xsd:string .
+
+gtfs:destination_id a rdf:Property ;
+    rdfs:domain gtfs:FareRule ;
+    rdfs:range xsd:string .
+
+gtfs:contains_id a rdf:Property ;
+    rdfs:domain gtfs:FareRule ;
+    rdfs:range xsd:string .
+
+gtfs:timeframe_group_id a rdf:Property ;
+    rdfs:domain gtfs:Timeframe ;
+    rdfs:range xsd:string .
+
+gtfs:shape_dist_traveled a rdf:Property ;
+    # rdfs:domain gtfs:Shape ; # Also used in StopTime, so relax or multi-domain
+    rdfs:range xsd:decimal .
+
+gtfs:start_time a rdf:Property ;
+    # Reused from Timeframe. Domain relaxed or verified?
+    # gtfs:Timeframe uses it. gtfs:Frequency uses it. 
+    # Relax domain to Resource or Union if strictness matters.
+    # Currently defined as domain gtfs:Timeframe. I will remove domain below.
+    rdfs:range xsd:string .
+
+gtfs:end_time a rdf:Property ;
+    # Reused from Timeframe
+    rdfs:range xsd:string .
+
+gtfs:headway_secs a rdf:Property ;
+    rdfs:domain gtfs:Frequency ;
+    rdfs:range xsd:integer .
+
+gtfs:exact_times a rdf:Property ;
+    rdfs:domain gtfs:Frequency ;
+    rdfs:range xsd:integer .
+
+gtfs:from_stop_id a rdf:Property ;
+    rdfs:domain gtfs:Transfer ; # And Pathway
+    rdfs:range xsd:string .
+
+gtfs:to_stop_id a rdf:Property ;
+    rdfs:domain gtfs:Transfer ; # And Pathway
+    rdfs:range xsd:string .
+
+# gtfs:transfer_type (Enum)
+gtfs:transfer_type a rdf:Property ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range xsd:integer .
+
+gtfs:min_transfer_time a rdf:Property ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range xsd:integer .
+
+gtfs:from_route_id a rdf:Property ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range xsd:string .
+
+gtfs:to_route_id a rdf:Property ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range xsd:string .
+
+gtfs:from_trip_id a rdf:Property ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range xsd:string .
+
+gtfs:to_trip_id a rdf:Property ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range xsd:string .
+
+gtfs:pathway_id a rdf:Property ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range xsd:string .
+
+gtfs:pathway_mode a rdf:Property ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range xsd:integer .
+
+gtfs:is_bidirectional a rdf:Property ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range xsd:integer .
+
+gtfs:length a rdf:Property ;
+    rdfs:domain gtfs:Pathway ; # And potentially others
+    rdfs:range xsd:decimal .
+
+gtfs:traversal_time a rdf:Property ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range xsd:integer .
+
+gtfs:stair_count a rdf:Property ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range xsd:integer .
+
+gtfs:max_slope a rdf:Property ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range xsd:decimal .
+
+gtfs:min_width a rdf:Property ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range xsd:decimal .
+
+gtfs:signposted_as a rdf:Property ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range xsd:string .
+
+gtfs:reversed_signposted_as a rdf:Property ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range xsd:string .
+
+gtfs:level_id a rdf:Property ;
+    # rdfs:domain gtfs:Level ; # Also used in Stop? No, Stop has level_id. 
+    rdfs:range xsd:string .
+
+gtfs:level_index a rdf:Property ;
+    rdfs:domain gtfs:Level ;
+    rdfs:range xsd:decimal .
+
+gtfs:level_name a rdf:Property ;
+    rdfs:domain gtfs:Level ;
+    rdfs:range xsd:string .
+
+# Object Properties (Batch 3)
+gtfs:rider_category a rdf:Property ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range gtfs:RiderCategory .
+
+gtfs:fare_media a rdf:Property ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range gtfs:FareMedia .
+
+gtfs:fare_product a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ; # And others
+    rdfs:range gtfs:FareProduct .
+
+gtfs:from_area a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Area . # Validated against Area class now
+
+gtfs:to_area a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Area .
+
+gtfs:from_timeframe a rdf:Property ;
+    # rdfs:domain gtfs:FareLegRule ; # Relax because start_time is used in Frequency
+    rdfs:range gtfs:Timeframe .
+
+gtfs:to_timeframe a rdf:Property ;
+    rdfs:range gtfs:Timeframe .
+
+# Object Properties (Batch 6)
+
+gtfs:from_stop a rdf:Property ;
+    rdfs:domain gtfs:Transfer ; # And Pathway
+    rdfs:range gtfs:Stop .
+
+gtfs:to_stop a rdf:Property ;
+    rdfs:domain gtfs:Transfer ; # And Pathway
+    rdfs:range gtfs:Stop .
+
+gtfs:from_route a rdf:Property ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range gtfs:Route .
+
+gtfs:to_route a rdf:Property ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range gtfs:Route .
+
+gtfs:from_trip a rdf:Property ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range gtfs:Trip .
+
+gtfs:to_trip a rdf:Property ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range gtfs:Trip .
+
+gtfs:level a rdf:Property ;
+    rdfs:domain gtfs:Stop ; # Also Pathway? No pathway links to level via definition? No.
+    # Actually Stop has level_id, so this links Stop -> Level
+    rdfs:range gtfs:Level .
+
+gtfs:location_group_id a rdf:Property ;
+    rdfs:domain gtfs:LocationGroup ;
+    rdfs:range xsd:string .
+
+gtfs:location_group_name a rdf:Property ;
+    rdfs:domain gtfs:LocationGroup ;
+    rdfs:range xsd:string .
+
+gtfs:stop_name a rdf:Property ; 
+    # Defined in Stop, reused in GeoJsonLocation
+    rdfs:range xsd:string .
+
+gtfs:stop_desc a rdf:Property ;
+    # Defined in Stop, reused in GeoJsonLocation
+    rdfs:range xsd:string .
+
+gtfs:booking_rule_id a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:string .
+
+gtfs:booking_type a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:integer .
+
+gtfs:prior_notice_duration_min a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:integer .
+
+gtfs:prior_notice_duration_max a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:integer .
+
+gtfs:prior_notice_last_day a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:integer .
+
+gtfs:prior_notice_last_time a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:string .
+
+gtfs:prior_notice_start_day a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:integer .
+
+gtfs:prior_notice_start_time a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:string .
+
+gtfs:message a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:string .
+
+gtfs:pickup_message a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:string .
+
+gtfs:drop_off_message a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:string .
+
+gtfs:phone_number a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ; # And Attribution
+    rdfs:range xsd:string .
+
+gtfs:info_url a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:string .
+
+gtfs:booking_url a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:string .
+
+gtfs:feed_publisher_name a rdf:Property ;
+    rdfs:domain gtfs:FeedInfo ;
+    rdfs:range xsd:string .
+
+gtfs:feed_publisher_url a rdf:Property ;
+    rdfs:domain gtfs:FeedInfo ;
+    rdfs:range xsd:string .
+
+gtfs:feed_lang a rdf:Property ;
+    rdfs:domain gtfs:FeedInfo ;
+    rdfs:range xsd:string .
+
+gtfs:default_lang a rdf:Property ;
+    rdfs:domain gtfs:FeedInfo ;
+    rdfs:range xsd:string .
+
+gtfs:feed_start_date a rdf:Property ;
+    rdfs:domain gtfs:FeedInfo ;
+    rdfs:range xsd:string .
+
+gtfs:feed_end_date a rdf:Property ;
+    rdfs:domain gtfs:FeedInfo ;
+    rdfs:range xsd:string .
+
+gtfs:feed_version a rdf:Property ;
+    rdfs:domain gtfs:FeedInfo ;
+    rdfs:range xsd:string .
+
+gtfs:feed_contact_email a rdf:Property ;
+    rdfs:domain gtfs:FeedInfo ;
+    rdfs:range xsd:string .
+
+gtfs:feed_contact_url a rdf:Property ;
+    rdfs:domain gtfs:FeedInfo ;
+    rdfs:range xsd:string .
+
+gtfs:attribution_id a rdf:Property ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range xsd:string .
+
+gtfs:organization_name a rdf:Property ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range xsd:string .
+
+gtfs:is_producer a rdf:Property ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range xsd:integer .
+
+gtfs:is_operator a rdf:Property ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range xsd:integer .
+
+gtfs:is_authority a rdf:Property ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range xsd:integer .
+
+gtfs:attribution_url a rdf:Property ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range xsd:string .
+
+gtfs:attribution_email a rdf:Property ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range xsd:string .
+
+gtfs:attribution_phone a rdf:Property ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range xsd:string .
+
+# Translations
+gtfs:table_name a rdf:Property ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range xsd:string .
+
+gtfs:field_name a rdf:Property ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range xsd:string .
+
+gtfs:language a rdf:Property ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range xsd:string .
+
+gtfs:translation a rdf:Property ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range xsd:string .
+
+gtfs:record_id a rdf:Property ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range xsd:string .
+
+gtfs:record_sub_id a rdf:Property ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range xsd:string .
+
+gtfs:field_value a rdf:Property ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range xsd:string .
+
+# Object Properties (Batch 7)
+gtfs:pickup_booking_rule a rdf:Property ;
+    # rdfs:domain gtfs:StopTime ;
+    rdfs:range gtfs:BookingRule .
+
+gtfs:drop_off_booking_rule a rdf:Property ;
+    # rdfs:domain gtfs:StopTime ;
+    rdfs:range gtfs:BookingRule .
+
+gtfs:prior_notice_service a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:string . # Links to Service ID (Calendar/CalendarDate) via string or object property?
+    # Usually service_id is handled as a string that joins to Calendar/CalendarDate. I defined gtfs:service object property earlier for Trip.
+    # I can reuse gtfs:service or define specific one.
+    # gtfs:service is domain Trip.
+    # Let's use gtfs:prior_notice_service (data property) or make a new object property.
+    # Since it references a service_id, let's keep it as data property `prior_notice_service_id` and maybe an object property `prior_notice_service_ref`?
+    # I'll stick to defining `prior_notice_service_id` as data property first.
+
+gtfs:prior_notice_service_id a rdf:Property ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range xsd:string .
+
+# Links
+gtfs:booking_rule a rdf:Property ;
+    # General link if needed based on booking_rule_id
+    rdfs:range gtfs:BookingRule .
+
+gtfs:stop a rdf:Property ;
+    rdfs:domain gtfs:LocationGroup ; # LocationGroup contains Stops
+    rdfs:range gtfs:Stop .
+
+# Note: location_group_stops.txt effectively adds 'stop' property to 'LocationGroup' class.
+
+gtfs:location_group a rdf:Property ;
+    # rdfs:domain gtfs:StopTime ; # StopTimes can ref location_group_id
+    rdfs:range gtfs:LocationGroup .
+
+gtfs:location a rdf:Property ;
+    # rdfs:domain gtfs:StopTime ; # StopTimes can ref location_id (GeoJSON)
+    rdfs:range gtfs:GeoJsonLocation .
+
+gtfs:rider_category_id a rdf:Property ;
+    # rdfs:domain gtfs:RiderCategory ; # Used elsewhere? Fare Products logic later.
+    rdfs:range xsd:string .
+
+gtfs:rider_category_name a rdf:Property ;
+    rdfs:domain gtfs:RiderCategory ;
+    rdfs:range xsd:string .
+
+gtfs:is_child a rdf:Property ;
+    rdfs:domain gtfs:RiderCategory ;
+    rdfs:range xsd:integer .
+
+gtfs:is_elderly a rdf:Property ;
+    rdfs:domain gtfs:RiderCategory ;
+    rdfs:range xsd:integer .
+
+gtfs:is_student a rdf:Property ;
+    rdfs:domain gtfs:RiderCategory ;
+    rdfs:range xsd:integer .
+
+gtfs:min_age a rdf:Property ;
+    rdfs:domain gtfs:RiderCategory ;
+    rdfs:range xsd:integer .
+
+gtfs:max_age a rdf:Property ;
+    rdfs:domain gtfs:RiderCategory ;
+    rdfs:range xsd:integer .
+
+gtfs:fare_media_id a rdf:Property ;
+    # rdfs:domain gtfs:FareMedia ; # Used elsewhere
+    rdfs:range xsd:string .
+
+gtfs:fare_media_name a rdf:Property ;
+    rdfs:domain gtfs:FareMedia ;
+    rdfs:range xsd:string .
+
+gtfs:fare_media_type a rdf:Property ;
+    rdfs:domain gtfs:FareMedia ;
+    rdfs:range xsd:integer .
+
+gtfs:fare_product_id a rdf:Property ;
+    # rdfs:domain gtfs:FareProduct ; # Reference
+    rdfs:range xsd:string .
+
+gtfs:fare_product_name a rdf:Property ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range xsd:string .
+
+gtfs:amount a rdf:Property ;
+    rdfs:domain gtfs:FareProduct ; # And potentially others?
+    rdfs:range xsd:decimal .
+
+gtfs:currency a rdf:Property ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range xsd:string .
+
+gtfs:leg_group_id a rdf:Property ;
+    # rdfs:domain gtfs:FareLegRule ; # Domain logic complex for rules
+    rdfs:range xsd:string .
+
+gtfs:network_id rdfs:range xsd:string . # Relax domain from Route to allow use in FareLegRule
+
+gtfs:from_area_id a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range xsd:string .
+
+gtfs:to_area_id a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range xsd:string .
+
+gtfs:from_timeframe_group_id a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range xsd:string .
+
+gtfs:to_timeframe_group_id a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range xsd:string .
+
+gtfs:from_leg_group_id a rdf:Property ;
+    rdfs:domain gtfs:FareLegJoinRule ; # And Transfer Rule
+    rdfs:range xsd:string .
+
+gtfs:to_leg_group_id a rdf:Property ;
+    rdfs:domain gtfs:FareLegJoinRule ; # And Transfer Rule
+    rdfs:range xsd:string .
+
+gtfs:transfer_count a rdf:Property ;
+    rdfs:domain gtfs:FareTransferRule ;
+    rdfs:range xsd:integer .
+
+gtfs:duration_limit a rdf:Property ;
+    rdfs:domain gtfs:FareTransferRule ;
+    rdfs:range xsd:integer .
+
+gtfs:duration_limit_type a rdf:Property ;
+    rdfs:domain gtfs:FareTransferRule ;
+    rdfs:range xsd:integer .
+
+gtfs:fare_transfer_type a rdf:Property ;
+    rdfs:domain gtfs:FareTransferRule ;
+    rdfs:range xsd:integer .
+
+gtfs:area_id a rdf:Property ;
+    rdfs:domain gtfs:Area ;
+    rdfs:range xsd:string .
+
+gtfs:area_name a rdf:Property ;
+    rdfs:domain gtfs:Area ;
+    rdfs:range xsd:string .
+
+# gtfs:stop_id defined previously, used in StopArea
+# gtfs:area_id defined above, used in StopArea
+
+# gtfs:network_id defined previously, used in Network and RouteNetwork
+
+gtfs:network_name a rdf:Property ;
+    rdfs:domain gtfs:Network ;
+    rdfs:range xsd:string .
+
+# gtfs:route_id defined previously, used in RouteNetwork
+
+gtfs:shape_pt_lat a rdf:Property ;
+    rdfs:domain gtfs:Shape ;
+    rdfs:range xsd:decimal .
+
+gtfs:shape_pt_lon a rdf:Property ;
+    rdfs:domain gtfs:Shape ;
+    rdfs:range xsd:decimal .
+
+gtfs:shape_pt_sequence a rdf:Property ;
+    rdfs:domain gtfs:Shape ;
+    rdfs:range xsd:nonNegativeInteger .
+
+gtfs:shape_dist_traveled a rdf:Property ;
+    # rdfs:domain gtfs:Shape ; # Also used in StopTime, so relax or multi-domain
+    rdfs:range xsd:decimal .
+
+# Object Properties (Batch 3)
+gtfs:rider_category a rdf:Property ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range gtfs:RiderCategory .
+
+gtfs:fare_media a rdf:Property ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range gtfs:FareMedia .
+
+gtfs:fare_product a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ; # And others
+    rdfs:range gtfs:FareProduct .
+
+gtfs:from_area a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Area . # Validated against Area class now
+
+gtfs:to_area a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Area .
+
+gtfs:from_timeframe a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Timeframe .
+
+gtfs:to_timeframe a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Timeframe .
+
+# Object Properties (Batch 5)
+
+gtfs:area a rdf:Property ;
+    rdfs:domain gtfs:StopArea ;
+    rdfs:range gtfs:Area .
+
+gtfs:network a rdf:Property ;
+    rdfs:domain gtfs:RouteNetwork ;
+    rdfs:range gtfs:Network .
+
+# gtfs:route already defined, reuse for RouteNetwork
+# gtfs:stop already defined, reuse for StopArea
+
+# Object Properties (Batch 3)
+gtfs:rider_category a rdf:Property ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range gtfs:RiderCategory .
+
+gtfs:fare_media a rdf:Property ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range gtfs:FareMedia .
+
+gtfs:fare_product a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ; # And others
+    rdfs:range gtfs:FareProduct .
+
+gtfs:from_area a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Area . # Validated against Area class now
+
+gtfs:to_area a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range rdfs:Resource .
+
+gtfs:from_timeframe a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Timeframe .
+
+gtfs:to_timeframe a rdf:Property ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Timeframe .
+
+# Object Properties (Batch 3) none explicitly linking *FROM* these tables to others yet, mostly they are lookup tables referred to by future tables (Fare Products).
+
+# Object Properties (Batch 2)
+
+gtfs:fare a rdf:Property ;
+    rdfs:domain gtfs:FareRule ;
+    rdfs:range gtfs:FareAttribute .
+
+# Note: FareRule also links to Route (gtfs:route) which we already defined generally.
+# We just need to make sure gtfs:route isn't strictly bound to Trip domain-only if we want to reuse it, 
+# or we define domains as Union. 
+# Previously: gtfs:route rdfs:domain gtfs:Trip . 
+# Checking logic: A FareRule "has a route". A Trip "has a route". The property "route" is valid for both.
+# I will relax domain of gtfs:route below or add FareRule to it.
+
+#################################################################
+#    SHACL Shapes
+#################################################################
+
+gtfs:AgencyShape a sh:NodeShape ;
+    sh:targetClass gtfs:Agency ;
+    
+    # agency_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:agency_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # agency_name (Required)
+    sh:property [
+        sh:path gtfs:agency_name ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # agency_url (Required)
+    sh:property [
+        sh:path gtfs:agency_url ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ; 
+    ] ;
+
+    # agency_timezone (Required)
+    sh:property [
+        sh:path gtfs:agency_timezone ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # agency_lang (Optional)
+    sh:property [
+        sh:path gtfs:agency_lang ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*$" ;
+    ] ;
+
+    # agency_phone (Optional)
+    sh:property [
+        sh:path gtfs:agency_phone ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # agency_fare_url (Optional)
+    sh:property [
+        sh:path gtfs:agency_fare_url ;
+        sh:nodeKind sh:IRI ;
+    ] ;
+
+    # agency_email (Optional)
+    sh:property [
+        sh:path gtfs:agency_email ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" ; 
+    ] ;
+
+    # cemv_support (Optional, Enum)
+    sh:property [
+        sh:path gtfs:cemv_support ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2) ;
+    ] .
+
+gtfs:StopShape a sh:NodeShape ;
+    sh:targetClass gtfs:Stop ;
+
+    # stop_id (Required)
+    sh:property [
+        sh:path gtfs:stop_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # stop_code (Optional)
+    sh:property [
+        sh:path gtfs:stop_code ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # stop_name (Conditionally Required)
+    # Note: Complex conditions (required if location_type=0,1,2) are hard in pure SHACL core without sh:or/sh:xone combinations that get verbose.
+    # We will enforce datatype.
+    sh:property [
+        sh:path gtfs:stop_name ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # tts_stop_name (Optional)
+    sh:property [
+        sh:path gtfs:tts_stop_name ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # stop_desc (Optional)
+    sh:property [
+        sh:path gtfs:stop_desc ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # stop_lat (Conditionally Required)
+    sh:property [
+        sh:path gtfs:stop_lat ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive -90.0 ;
+        sh:maxInclusive 90.0 ;
+    ] ;
+
+    # stop_lon (Conditionally Required)
+    sh:property [
+        sh:path gtfs:stop_lon ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive -180.0 ;
+        sh:maxInclusive 180.0 ;
+    ] ;
+
+    # zone_id (Optional)
+    sh:property [
+        sh:path gtfs:zone_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # stop_url (Optional)
+    sh:property [
+        sh:path gtfs:stop_url ;
+        sh:nodeKind sh:IRI ;
+    ] ;
+
+    # location_type (Optional, Enum)
+    sh:property [
+        sh:path gtfs:location_type ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2 3 4) ;
+    ] ;
+
+    # parent_station (Conditionally Required)
+    sh:property [
+        sh:path gtfs:parent_station ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # stop_timezone (Optional)
+    sh:property [
+        sh:path gtfs:stop_timezone ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # wheelchair_boarding (Optional, Enum)
+    sh:property [
+        sh:path gtfs:wheelchair_boarding ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2) ;
+    ] ;
+
+    # level_id (Optional)
+    sh:property [
+        sh:path gtfs:level_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # platform_code (Optional)
+    sh:property [
+        sh:path gtfs:platform_code ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # stop_access (Optional, Enum)
+    sh:property [
+        sh:path gtfs:stop_access ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] .
+
+gtfs:RouteShape a sh:NodeShape ;
+    sh:targetClass gtfs:Route ;
+    
+    # route_id (Required)
+    sh:property [
+        sh:path gtfs:route_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # agency_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:agency_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # route_short_name (Conditionally Required)
+    sh:property [
+        sh:path gtfs:route_short_name ;
+        sh:datatype xsd:string ;
+    ] ;
+    
+    # route_long_name (Conditionally Required)
+    sh:property [
+        sh:path gtfs:route_long_name ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # route_desc (Optional)
+    sh:property [
+        sh:path gtfs:route_desc ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # route_type (Required, Enum)
+    sh:property [
+        sh:path gtfs:route_type ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2 3 4 5 6 7 11 12) ;
+    ] ;
+
+    # route_url (Optional)
+    sh:property [
+        sh:path gtfs:route_url ;
+        sh:nodeKind sh:IRI ;
+    ] ;
+
+    # route_color (Optional, Hex Color)
+    sh:property [
+        sh:path gtfs:route_color ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[0-9A-Fa-f]{6}$" ;
+    ] ;
+
+    # route_text_color (Optional, Hex Color)
+    sh:property [
+        sh:path gtfs:route_text_color ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[0-9A-Fa-f]{6}$" ;
+    ] ;
+    
+    # route_sort_order (Optional, Non-negative integer)
+    sh:property [
+        sh:path gtfs:route_sort_order ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+    ] ;
+
+    # continuous_pickup (Optional, Enum)
+    sh:property [
+        sh:path gtfs:continuous_pickup ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2 3) ;
+    ] ;
+
+    # continuous_drop_off (Optional, Enum)
+    sh:property [
+        sh:path gtfs:continuous_drop_off ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2 3) ;
+    ] ;
+
+    # network_id (Optional)
+    sh:property [
+        sh:path gtfs:network_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # cemv_support (Optional, Enum - reused from Agency if property is same, which it is in name)
+    sh:property [
+        sh:path gtfs:cemv_support ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2) ;
+    ] .
+
+gtfs:TripShape a sh:NodeShape ;
+    sh:targetClass gtfs:Trip ;
+
+    # route_id (Required)
+    sh:property [
+        sh:path gtfs:route_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # service_id (Required)
+    sh:property [
+        sh:path gtfs:service_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # trip_id (Required)
+    sh:property [
+        sh:path gtfs:trip_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # trip_headsign (Optional)
+    sh:property [
+        sh:path gtfs:trip_headsign ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # trip_short_name (Optional)
+    sh:property [
+        sh:path gtfs:trip_short_name ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # direction_id (Optional, Enum)
+    sh:property [
+        sh:path gtfs:direction_id ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+
+    # block_id (Optional)
+    sh:property [
+        sh:path gtfs:block_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # shape_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:shape_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # wheelchair_accessible (Optional, Enum)
+    sh:property [
+        sh:path gtfs:wheelchair_accessible ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2) ;
+    ] ;
+
+    # bikes_allowed (Optional, Enum)
+    sh:property [
+        sh:path gtfs:bikes_allowed ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2) ;
+    ] ;
+
+    # cars_allowed (Optional, Enum)
+    sh:property [
+        sh:path gtfs:cars_allowed ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2) ;
+    ] .
+
+gtfs:StopTimeShape a sh:NodeShape ;
+    sh:targetClass gtfs:StopTime ;
+
+    # trip_id (Required)
+    sh:property [
+        sh:path gtfs:trip_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # arrival_time (Conditionally Required)
+    sh:property [
+        sh:path gtfs:arrival_time ;
+        sh:datatype xsd:string ;
+        # Regex for H:MM:SS or HH:MM:SS, including hours > 24
+        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
+    ] ;
+
+    # departure_time (Conditionally Required)
+    sh:property [
+        sh:path gtfs:departure_time ;
+        sh:datatype xsd:string ;
+        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
+    ] ;
+
+    # stop_id (Required)
+    sh:property [
+        sh:path gtfs:stop_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # stop_sequence (Required, Non-negative integer)
+    sh:property [
+        sh:path gtfs:stop_sequence ;
+        sh:minCount 1 ;
+        sh:datatype xsd:nonNegativeInteger ;
+    ] ;
+
+    # stop_headsign (Optional)
+    sh:property [
+        sh:path gtfs:stop_headsign ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # pickup_type (Optional, Enum)
+    sh:property [
+        sh:path gtfs:pickup_type ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2 3) ;
+    ] ;
+
+    # drop_off_type (Optional, Enum)
+    sh:property [
+        sh:path gtfs:drop_off_type ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2 3) ;
+    ] ;
+
+    # continuous_pickup (Optional, Enum - reused)
+    sh:property [
+        sh:path gtfs:continuous_pickup ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2 3) ;
+    ] ;
+
+    # continuous_drop_off (Optional, Enum - reused)
+    sh:property [
+        sh:path gtfs:continuous_drop_off ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2 3) ;
+    ] ;
+
+    # shape_dist_traveled (Optional, Non-negative float)
+    sh:property [
+        sh:path gtfs:shape_dist_traveled ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+    ] ;
+
+    # timepoint (Optional, Enum)
+    sh:property [
+        sh:path gtfs:timepoint ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+
+    # pickup_booking_rule_id (Optional)
+    sh:property [
+        sh:path gtfs:pickup_booking_rule_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # drop_off_booking_rule_id (Optional)
+    sh:property [
+        sh:path gtfs:drop_off_booking_rule_id ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:CalendarShape a sh:NodeShape ;
+    sh:targetClass gtfs:Calendar ;
+
+    # service_id (Required)
+    sh:property [
+        sh:path gtfs:service_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # days (Required, Enum)
+    sh:property [
+        sh:path gtfs:monday ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+    sh:property [
+        sh:path gtfs:tuesday ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+    sh:property [
+        sh:path gtfs:wednesday ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+    sh:property [
+        sh:path gtfs:thursday ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+    sh:property [
+        sh:path gtfs:friday ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+    sh:property [
+        sh:path gtfs:saturday ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+    sh:property [
+        sh:path gtfs:sunday ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+
+    # start_date (Required, YYYYMMDD)
+    sh:property [
+        sh:path gtfs:start_date ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[0-9]{8}$" ;
+    ] ;
+
+    # end_date (Required, YYYYMMDD)
+    sh:property [
+        sh:path gtfs:end_date ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[0-9]{8}$" ;
+    ] .
+
+gtfs:CalendarDateShape a sh:NodeShape ;
+    sh:targetClass gtfs:CalendarDate ;
+
+    # service_id (Required)
+    sh:property [
+        sh:path gtfs:service_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # date (Required, YYYYMMDD)
+    sh:property [
+        sh:path gtfs:date ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[0-9]{8}$" ;
+    ] ;
+
+    # exception_type (Required, Enum)
+    sh:property [
+        sh:path gtfs:exception_type ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (1 2) ;
+    ] .
+
+gtfs:FareAttributeShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareAttribute ;
+
+    # fare_id (Required)
+    sh:property [
+        sh:path gtfs:fare_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # price (Required)
+    sh:property [
+        sh:path gtfs:price ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+    ] ;
+
+    # currency_type (Required, ISO 4217)
+    sh:property [
+        sh:path gtfs:currency_type ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[A-Z]{3}$" ;
+    ] ;
+
+    # payment_method (Required, Enum)
+    sh:property [
+        sh:path gtfs:payment_method ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+
+    # transfers (Required, Enum + empty/null handling if mapped? Spec says Required. values 0,1,2 or empty for unlimited)
+    # The spec say "Required". 0 - No transfers, 1 - 1 transfer, 2 - 2 transfers, (empty) - unlimited.
+    # In RDF if empty, we might skip the triple. But if we must validate existence:
+    # We'll assume integer or missing. If the field is present, must be 0, 1, 2. If missing, unlimited.
+    # Spec: "Required". If unlimited, leave empty.
+    # So sh:minCount 0.
+    sh:property [
+        sh:path gtfs:transfers ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2) ;
+    ] ;
+
+    # agency_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:agency_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # transfer_duration (Optional)
+    sh:property [
+        sh:path gtfs:transfer_duration ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+    ] .
+
+gtfs:FareRuleShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareRule ;
+
+    # fare_id (Required)
+    sh:property [
+        sh:path gtfs:fare_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # route_id (Optional)
+    sh:property [
+        sh:path gtfs:route_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # origin_id (Optional)
+    sh:property [
+        sh:path gtfs:origin_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # destination_id (Optional)
+    sh:property [
+        sh:path gtfs:destination_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # contains_id (Optional)
+    sh:property [
+        sh:path gtfs:contains_id ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:TimeframeShape a sh:NodeShape ;
+    sh:targetClass gtfs:Timeframe ;
+
+    # timeframe_group_id (Required)
+    sh:property [
+        sh:path gtfs:timeframe_group_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # start_time (Conditionally Required)
+    sh:property [
+        sh:path gtfs:start_time ;
+        sh:datatype xsd:string ;
+        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
+    ] ;
+
+    # end_time (Conditionally Required)
+    sh:property [
+        sh:path gtfs:end_time ;
+        sh:datatype xsd:string ;
+        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
+    ] ;
+
+    # service_id (Required) - Reused property
+    sh:property [
+        sh:path gtfs:service_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:RiderCategoryShape a sh:NodeShape ;
+    sh:targetClass gtfs:RiderCategory ;
+
+    # rider_category_id (Required)
+    sh:property [
+        sh:path gtfs:rider_category_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # rider_category_name (Required)
+    sh:property [
+        sh:path gtfs:rider_category_name ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # is_child (Optional, boolean)
+    sh:property [
+        sh:path gtfs:is_child ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+
+    # is_elderly (Optional, boolean)
+    sh:property [
+        sh:path gtfs:is_elderly ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+
+    # is_student (Optional, boolean)
+    sh:property [
+        sh:path gtfs:is_student ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+
+    # min_age (Optional)
+    sh:property [
+        sh:path gtfs:min_age ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+    ] ;
+
+    # max_age (Optional)
+    sh:property [
+        sh:path gtfs:max_age ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+    ] .
+
+gtfs:FareMediaShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareMedia ;
+
+    # fare_media_id (Required)
+    sh:property [
+        sh:path gtfs:fare_media_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # fare_media_name (Required)
+    sh:property [
+        sh:path gtfs:fare_media_name ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # fare_media_type (Required, Enum)
+    sh:property [
+        sh:path gtfs:fare_media_type ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2) ;
+    ] .
+
+gtfs:FareProductShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareProduct ;
+
+    # fare_product_id (Required)
+    sh:property [
+        sh:path gtfs:fare_product_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # fare_product_name (Optional)
+    sh:property [
+        sh:path gtfs:fare_product_name ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # amount (Required)
+    sh:property [
+        sh:path gtfs:amount ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+    ] ;
+
+    # currency (Required, ISO 4217)
+    sh:property [
+        sh:path gtfs:currency ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[A-Z]{3}$" ;
+    ] ;
+
+    # rider_category_id (Optional)
+    sh:property [
+        sh:path gtfs:rider_category_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # fare_media_id (Optional)
+    sh:property [
+        sh:path gtfs:fare_media_id ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:FareLegRuleShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareLegRule ;
+
+    # leg_group_id (Optional)
+    sh:property [
+        sh:path gtfs:leg_group_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # network_id (Optional)
+    sh:property [
+        sh:path gtfs:network_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # from_area_id (Optional)
+    sh:property [
+        sh:path gtfs:from_area_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # to_area_id (Optional)
+    sh:property [
+        sh:path gtfs:to_area_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # from_timeframe_group_id (Optional)
+    sh:property [
+        sh:path gtfs:from_timeframe_group_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # to_timeframe_group_id (Optional)
+    sh:property [
+        sh:path gtfs:to_timeframe_group_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+     # fare_product_id (Required)
+    sh:property [
+        sh:path gtfs:fare_product_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:FareLegJoinRuleShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareLegJoinRule ;
+
+    # from_leg_group_id (Required)
+    sh:property [
+        sh:path gtfs:from_leg_group_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # to_leg_group_id (Required)
+    sh:property [
+        sh:path gtfs:to_leg_group_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:FareTransferRuleShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareTransferRule ;
+
+    # from_leg_group_id (Optional)
+    sh:property [
+        sh:path gtfs:from_leg_group_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # to_leg_group_id (Optional)
+    sh:property [
+        sh:path gtfs:to_leg_group_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # transfer_count (Optional)
+    sh:property [
+        sh:path gtfs:transfer_count ;
+        sh:datatype xsd:integer ;
+        # -1 represents unlimited in some parsers, but spec usually implies default unlimited if missing. 
+        # If integer, usually non-negative.
+        sh:minInclusive -1 ; 
+    ] ;
+
+    # duration_limit (Optional)
+    sh:property [
+        sh:path gtfs:duration_limit ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+    ] ;
+
+    # duration_limit_type (Optional, Enum)
+    sh:property [
+        sh:path gtfs:duration_limit_type ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2 3) ;
+    ] ;
+
+    # fare_transfer_type (Required, Enum)
+    sh:property [
+        sh:path gtfs:fare_transfer_type ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2) ;
+    ] ;
+
+     # fare_product_id (Optional)
+    sh:property [
+        sh:path gtfs:fare_product_id ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:AreaShape a sh:NodeShape ;
+    sh:targetClass gtfs:Area ;
+
+    # area_id (Required)
+    sh:property [
+        sh:path gtfs:area_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # area_name (Optional)
+    sh:property [
+        sh:path gtfs:area_name ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:StopAreaShape a sh:NodeShape ;
+    sh:targetClass gtfs:StopArea ;
+
+    # area_id (Required)
+    sh:property [
+        sh:path gtfs:area_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # stop_id (Required)
+    sh:property [
+        sh:path gtfs:stop_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:NetworkShape a sh:NodeShape ;
+    sh:targetClass gtfs:Network ;
+
+    # network_id (Required)
+    sh:property [
+        sh:path gtfs:network_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # network_name (Optional)
+    sh:property [
+        sh:path gtfs:network_name ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:RouteNetworkShape a sh:NodeShape ;
+    sh:targetClass gtfs:RouteNetwork ;
+
+    # route_id (Required)
+    sh:property [
+        sh:path gtfs:route_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # network_id (Required)
+    sh:property [
+        sh:path gtfs:network_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:ShapeShape a sh:NodeShape ;
+    sh:targetClass gtfs:Shape ;
+
+    # shape_id (Required)
+    sh:property [
+        sh:path gtfs:shape_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # shape_pt_lat (Required, -90 to 90)
+    sh:property [
+        sh:path gtfs:shape_pt_lat ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive -90.0 ;
+        sh:maxInclusive 90.0 ;
+    ] ;
+
+    # shape_pt_lon (Required, -180 to 180)
+    sh:property [
+        sh:path gtfs:shape_pt_lon ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive -180.0 ;
+        sh:maxInclusive 180.0 ;
+    ] ;
+
+    # shape_pt_sequence (Required, non-negative)
+    sh:property [
+        sh:path gtfs:shape_pt_sequence ;
+        sh:minCount 1 ;
+        sh:datatype xsd:nonNegativeInteger ;
+    ] ;
+
+    # shape_dist_traveled (Optional, non-negative)
+    sh:property [
+        sh:path gtfs:shape_dist_traveled ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+    ] .
+
+gtfs:FrequencyShape a sh:NodeShape ;
+    sh:targetClass gtfs:Frequency ;
+
+    # trip_id (Required)
+    sh:property [
+        sh:path gtfs:trip_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # start_time (Required)
+    sh:property [
+        sh:path gtfs:start_time ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
+    ] ;
+
+    # end_time (Required)
+    sh:property [
+        sh:path gtfs:end_time ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
+    ] ;
+
+    # headway_secs (Required, non-negative)
+    sh:property [
+        sh:path gtfs:headway_secs ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+    ] ;
+
+    # exact_times (Optional, Enum)
+    sh:property [
+        sh:path gtfs:exact_times ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] .
+
+gtfs:TransferShape a sh:NodeShape ;
+    sh:targetClass gtfs:Transfer ;
+
+    # from_stop_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:from_stop_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # to_stop_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:to_stop_id ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # transfer_type (Required, Enum)
+    sh:property [
+        sh:path gtfs:transfer_type ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2 3 4 5) ;
+    ] ;
+
+    # min_transfer_time (Optional, non-negative)
+    sh:property [
+        sh:path gtfs:min_transfer_time ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+    ] .
+
+gtfs:PathwayShape a sh:NodeShape ;
+    sh:targetClass gtfs:Pathway ;
+
+    # pathway_id (Required)
+    sh:property [
+        sh:path gtfs:pathway_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # from_stop_id (Required)
+    sh:property [
+        sh:path gtfs:from_stop_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # to_stop_id (Required)
+    sh:property [
+        sh:path gtfs:to_stop_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # pathway_mode (Required, Enum)
+    sh:property [
+        sh:path gtfs:pathway_mode ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (1 2 3 4 5 6 7) ;
+    ] ;
+
+    # is_bidirectional (Required, Enum)
+    sh:property [
+        sh:path gtfs:is_bidirectional ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1) ;
+    ] ;
+
+    # length (Optional, non-negative)
+    sh:property [
+        sh:path gtfs:length ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+    ] ;
+
+    # traversal_time (Optional, non-negative)
+    sh:property [
+        sh:path gtfs:traversal_time ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+    ] ;
+
+    # stair_count (Optional)
+    sh:property [
+        sh:path gtfs:stair_count ;
+        sh:datatype xsd:integer ;
+    ] ;
+
+    # max_slope (Optional)
+    sh:property [
+        sh:path gtfs:max_slope ;
+        sh:datatype xsd:decimal ;
+    ] ;
+
+    # min_width (Optional, non-negative)
+    sh:property [
+        sh:path gtfs:min_width ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+    ] .
+
+gtfs:LevelShape a sh:NodeShape ;
+    sh:targetClass gtfs:Level ;
+
+    # level_id (Required)
+    sh:property [
+        sh:path gtfs:level_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # level_index (Required)
+    sh:property [
+        sh:path gtfs:level_index ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+    ] ;
+
+    # level_name (Optional)
+    sh:property [
+        sh:path gtfs:level_name ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:LocationGroupShape a sh:NodeShape ;
+    sh:targetClass gtfs:LocationGroup ;
+
+    # location_group_id (Required)
+    sh:property [
+        sh:path gtfs:location_group_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # location_group_name (Optional)
+    sh:property [
+        sh:path gtfs:location_group_name ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:BookingRuleShape a sh:NodeShape ;
+    sh:targetClass gtfs:BookingRule ;
+
+    # booking_rule_id (Required)
+    sh:property [
+        sh:path gtfs:booking_rule_id ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # booking_type (Required, Enum)
+    sh:property [
+        sh:path gtfs:booking_type ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in (0 1 2) ;
+    ] .
+
+gtfs:FeedInfoShape a sh:NodeShape ;
+    sh:targetClass gtfs:FeedInfo ;
+
+    # feed_publisher_name (Required)
+    sh:property [
+        sh:path gtfs:feed_publisher_name ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # feed_publisher_url (Required)
+    sh:property [
+        sh:path gtfs:feed_publisher_url ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # feed_lang (Required)
+    sh:property [
+        sh:path gtfs:feed_lang ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:AttributionShape a sh:NodeShape ;
+    sh:targetClass gtfs:Attribution ;
+
+    # organization_name (Required)
+    sh:property [
+        sh:path gtfs:organization_name ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+gtfs:TranslationShape a sh:NodeShape ;
+    sh:targetClass gtfs:Translation ;
+
+    # table_name (Required)
+    sh:property [
+        sh:path gtfs:table_name ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # field_name (Required)
+    sh:property [
+        sh:path gtfs:field_name ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # language (Required)
+    sh:property [
+        sh:path gtfs:language ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    # translation (Required)
+    sh:property [
+        sh:path gtfs:translation ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] .

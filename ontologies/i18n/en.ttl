@@ -1,0 +1,611 @@
+@prefix gtfs: <http://vocab.gtfs.org/terms#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+gtfs:Agency rdfs:label "Agency"@en ;
+    rdfs:comment "Transit agencies with service represented in this dataset."@en .
+
+gtfs:agency_id rdfs:label "agency_id"@en ;
+    rdfs:comment "Identifies a transit brand which is often synonymous with a transit agency."@en .
+
+gtfs:agency_name rdfs:label "agency_name"@en ;
+    rdfs:comment "Full name of the transit agency."@en .
+
+gtfs:agency_url rdfs:label "agency_url"@en ;
+    rdfs:comment "URL of the transit agency."@en .
+
+gtfs:agency_timezone rdfs:label "agency_timezone"@en ;
+    rdfs:comment "Timezone where the transit agency is located."@en .
+
+gtfs:agency_lang rdfs:label "agency_lang"@en ;
+    rdfs:comment "Primary language used by this transit agency (IETF BCP 47)."@en .
+
+gtfs:agency_phone rdfs:label "agency_phone"@en ;
+    rdfs:comment "A voice telephone number for the specified agency."@en .
+
+gtfs:agency_fare_url rdfs:label "agency_fare_url"@en ;
+    rdfs:comment "URL of a web page where a rider can purchase tickets or other fare instruments."@en .
+
+gtfs:agency_email rdfs:label "agency_email"@en ;
+    rdfs:comment "Email address actively monitored by the agency’s customer service department."@en .
+
+gtfs:cemv_support rdfs:label "cemv_support"@en ;
+    rdfs:comment "Indicates if riders can access a transit service using a contactless EMV card."@en .
+
+gtfs:Stop rdfs:label "Stop"@en ;
+    rdfs:comment "Stops where vehicles pick up or drop off riders."@en .
+
+gtfs:stop_id rdfs:label "stop_id"@en ;
+    rdfs:comment "Identifies a location: stop/platform, station, entrance/exit, generic node or boarding area."@en .
+
+gtfs:stop_code rdfs:label "stop_code"@en ;
+    rdfs:comment "Short text or a number that identifies the location for riders."@en .
+
+gtfs:stop_name rdfs:label "stop_name"@en ;
+    rdfs:comment "Name of the location. The stop_name should match the agency's rider-facing name."@en .
+
+gtfs:tts_stop_name rdfs:label "tts_stop_name"@en ;
+    rdfs:comment "Readable version of the stop_name."@en .
+
+gtfs:stop_desc rdfs:label "stop_desc"@en ;
+    rdfs:comment "Description of the location that provides useful, quality information."@en .
+
+gtfs:stop_lat rdfs:label "stop_lat"@en ;
+    rdfs:comment "Latitude of the location."@en .
+
+gtfs:stop_lon rdfs:label "stop_lon"@en ;
+    rdfs:comment "Longitude of the location."@en .
+
+gtfs:zone_id rdfs:label "zone_id"@en ;
+    rdfs:comment "Identifies the fare zone for a stop."@en .
+
+gtfs:stop_url rdfs:label "stop_url"@en ;
+    rdfs:comment "URL of a web page about the location."@en .
+
+gtfs:location_type rdfs:label "location_type"@en ;
+    rdfs:comment "Location type. 0: Stop, 1: Station, 2: Entrance/Exit, 3: Generic Node, 4: Boarding Area."@en .
+
+gtfs:parent_station rdfs:label "parent_station"@en ;
+    rdfs:comment "Defines hierarchy between the different locations."@en .
+
+gtfs:stop_timezone rdfs:label "stop_timezone"@en ;
+    rdfs:comment "Timezone of the location."@en .
+
+gtfs:wheelchair_boarding rdfs:label "wheelchair_boarding"@en ;
+    rdfs:comment "Indicates whether wheelchair boardings are possible from the location."@en .
+
+gtfs:level_id rdfs:label "level_id"@en ;
+    rdfs:comment "Level of the location."@en .
+
+gtfs:platform_code rdfs:label "platform_code"@en ;
+    rdfs:comment "Platform identifier for a platform stop."@en .
+
+gtfs:stop_access rdfs:label "stop_access"@en ;
+    rdfs:comment "Indicates how the stop is accessed for a particular station."@en .
+
+gtfs:Route rdfs:label "Route"@en ;
+    rdfs:comment "Transit routes. A route is a group of trips that are displayed to riders as a single service."@en .
+
+gtfs:route_id rdfs:label "route_id"@en ;
+    rdfs:comment "Identifies a route."@en .
+
+gtfs:route_short_name rdfs:label "route_short_name"@en ;
+    rdfs:comment "Short name of a route. Often a short, abstract identifier."@en .
+
+gtfs:route_long_name rdfs:label "route_long_name"@en ;
+    rdfs:comment "Full name of a route. This name is generally more descriptive than the route_short_name."@en .
+
+gtfs:route_desc rdfs:label "route_desc"@en ;
+    rdfs:comment "Description of a route that provides useful, quality information."@en .
+
+gtfs:route_type rdfs:label "route_type"@en ;
+    rdfs:comment "Indicates the type of transportation used on a route."@en .
+
+gtfs:route_url rdfs:label "route_url"@en ;
+    rdfs:comment "URL of a web page about the particular route."@en .
+
+gtfs:route_color rdfs:label "route_color"@en ;
+    rdfs:comment "Route color designation that matches public facing material."@en .
+
+gtfs:route_text_color rdfs:label "route_text_color"@en ;
+    rdfs:comment "Legible color to use for text drawn against a background of route_color."@en .
+
+gtfs:route_sort_order rdfs:label "route_sort_order"@en ;
+    rdfs:comment "Orders the routes in a way which is ideal for presentation to customers."@en .
+
+gtfs:continuous_pickup rdfs:label "continuous_pickup"@en ;
+    rdfs:comment "Indicates that the rider can board the transit vehicle at any point along the vehicle’s travel path."@en .
+
+gtfs:continuous_drop_off rdfs:label "continuous_drop_off"@en ;
+    rdfs:comment "Indicates that the rider can alight from the transit vehicle at any point along the vehicle’s travel path."@en .
+
+gtfs:network_id rdfs:label "network_id"@en ;
+    rdfs:comment "Identifies a group of routes."@en .
+
+gtfs:Trip rdfs:label "Trip"@en ;
+    rdfs:comment "Trips for each route. A trip is a sequence of two or more stops that occur during a specific time period."@en .
+
+gtfs:service_id rdfs:label "service_id"@en ;
+    rdfs:comment "Identifies a set of dates when service is available for one or more routes."@en .
+
+gtfs:trip_id rdfs:label "trip_id"@en ;
+    rdfs:comment "Identifies a trip."@en .
+
+gtfs:trip_headsign rdfs:label "trip_headsign"@en ;
+    rdfs:comment "Text that appears on signage identifying the trip's destination to riders."@en .
+
+gtfs:trip_short_name rdfs:label "trip_short_name"@en ;
+    rdfs:comment "Public facing text used to identify the trip to riders."@en .
+
+gtfs:direction_id rdfs:label "direction_id"@en ;
+    rdfs:comment "Indicates the direction of travel for a trip."@en .
+
+gtfs:block_id rdfs:label "block_id"@en ;
+    rdfs:comment "Identifies the block to which the trip belongs."@en .
+
+gtfs:shape_id rdfs:label "shape_id"@en ;
+    rdfs:comment "Identifies a geospatial shape describing the vehicle travel path for a trip."@en .
+
+gtfs:wheelchair_accessible rdfs:label "wheelchair_accessible"@en ;
+    rdfs:comment "Indicates wheelchair accessibility."@en .
+
+gtfs:bikes_allowed rdfs:label "bikes_allowed"@en ;
+    rdfs:comment "Indicates whether bikes are allowed."@en .
+
+gtfs:cars_allowed rdfs:label "cars_allowed"@en ;
+    rdfs:comment "Indicates whether cars are allowed."@en .
+
+gtfs:StopTime rdfs:label "Stop Time"@en ;
+    rdfs:comment "Times that a vehicle arrives at and departs from individual stops for each trip."@en .
+
+gtfs:arrival_time rdfs:label "arrival_time"@en ;
+    rdfs:comment "Arrival time at a specific stop for a specific trip on a route."@en .
+
+gtfs:departure_time rdfs:label "departure_time"@en ;
+    rdfs:comment "Departure time from a specific stop for a specific trip on a route."@en .
+
+gtfs:stop_sequence rdfs:label "stop_sequence"@en ;
+    rdfs:comment "Order of stops for a particular trip."@en .
+
+gtfs:stop_headsign rdfs:label "stop_headsign"@en ;
+    rdfs:comment "Text that appears on signage identifying the trip's destination to riders."@en .
+
+gtfs:pickup_type rdfs:label "pickup_type"@en ;
+    rdfs:comment "Indicates pickup method."@en .
+
+gtfs:drop_off_type rdfs:label "drop_off_type"@en ;
+    rdfs:comment "Indicates drop off method."@en .
+
+gtfs:shape_dist_traveled rdfs:label "shape_dist_traveled"@en ;
+    rdfs:comment "Distance traveled from the start of the shape."@en .
+
+gtfs:timepoint rdfs:label "timepoint"@en ;
+    rdfs:comment "Indicates if the arrival and departure times for a stop are strictly adhered to by the vehicle."@en .
+
+gtfs:pickup_booking_rule_id rdfs:label "pickup_booking_rule_id"@en ;
+    rdfs:comment "Identifies the booking rule for picking up passengers."@en .
+
+gtfs:drop_off_booking_rule_id rdfs:label "drop_off_booking_rule_id"@en ;
+    rdfs:comment "Identifies the booking rule for dropping off passengers."@en .
+
+gtfs:Calendar rdfs:label "Calendar"@en ;
+    rdfs:comment "Service dates specified using a weekly schedule with start and end dates."@en .
+
+gtfs:monday rdfs:label "monday"@en ;
+    rdfs:comment "Service availability for Mondays."@en .
+
+gtfs:tuesday rdfs:label "tuesday"@en ;
+    rdfs:comment "Service availability for Tuesdays."@en .
+
+gtfs:wednesday rdfs:label "wednesday"@en ;
+    rdfs:comment "Service availability for Wednesdays."@en .
+
+gtfs:thursday rdfs:label "thursday"@en ;
+    rdfs:comment "Service availability for Thursdays."@en .
+
+gtfs:friday rdfs:label "friday"@en ;
+    rdfs:comment "Service availability for Fridays."@en .
+
+gtfs:saturday rdfs:label "saturday"@en ;
+    rdfs:comment "Service availability for Saturdays."@en .
+
+gtfs:sunday rdfs:label "sunday"@en ;
+    rdfs:comment "Service availability for Sundays."@en .
+
+gtfs:start_date rdfs:label "start_date"@en ;
+    rdfs:comment "Start date for the service."@en .
+
+gtfs:end_date rdfs:label "end_date"@en ;
+    rdfs:comment "End date for the service."@en .
+
+gtfs:agency rdfs:label "agency"@en ;
+    rdfs:comment "The agency that operates this route."@en .
+
+gtfs:route rdfs:label "route"@en ;
+    rdfs:comment "The route that this trip is part of."@en .
+
+gtfs:service rdfs:label "service"@en ;
+    rdfs:comment "The service schedule (calendar) for this trip."@en .
+
+gtfs:trip rdfs:label "trip"@en ;
+    rdfs:comment "The trip that this stop time belongs to."@en .
+
+gtfs:stop rdfs:label "stop"@en ;
+    rdfs:comment "The stop where this event occurs."@en .
+
+gtfs:CalendarDate rdfs:label "Calendar Date"@en ;
+    rdfs:comment "Exceptions for the service IDs defined in the calendar.txt file."@en .
+
+gtfs:date rdfs:label "date"@en ;
+    rdfs:comment "Date (in YYYYMMDD format) when the exception occurs/service is available."@en .
+
+gtfs:exception_type rdfs:label "exception_type"@en ;
+    rdfs:comment "Indicates whether service is added or removed for the specified date."@en .
+
+gtfs:FareAttribute rdfs:label "Fare Attribute"@en ;
+    rdfs:comment "Fare information for a transit organization's routes."@en .
+
+gtfs:fare_id rdfs:label "fare_id"@en ;
+    rdfs:comment "Identifies a fare class."@en .
+
+gtfs:price rdfs:label "price"@en ;
+    rdfs:comment "Fare price, in the unit specified by currency_type."@en .
+
+gtfs:currency_type rdfs:label "currency_type"@en ;
+    rdfs:comment "Currency used to pay the fare (ISO 4217)."@en .
+
+gtfs:payment_method rdfs:label "payment_method"@en ;
+    rdfs:comment "Indicates when the fare must be paid."@en .
+
+gtfs:transfers rdfs:label "transfers"@en ;
+    rdfs:comment "Indicates the number of transfers permitted on this fare."@en .
+
+gtfs:transfer_duration rdfs:label "transfer_duration"@en ;
+    rdfs:comment "Length of time in seconds before a transfer expires."@en .
+
+gtfs:FareRule rdfs:label "Fare Rule"@en ;
+    rdfs:comment "Rules for applying fare attributes to itineraries."@en .
+
+gtfs:origin_id rdfs:label "origin_id"@en ;
+    rdfs:comment "Identifies an origin zone."@en .
+
+gtfs:destination_id rdfs:label "destination_id"@en ;
+    rdfs:comment "Identifies a destination zone."@en .
+
+gtfs:contains_id rdfs:label "contains_id"@en ;
+    rdfs:comment "Identifies a zone that the itinerary passes through."@en .
+
+gtfs:fare rdfs:label "fare"@en ;
+    rdfs:comment "The fare attribute linked to this rule."@en .
+
+gtfs:Timeframe rdfs:label "Timeframe"@en ;
+    rdfs:comment "Defines a timeframe (e.g. Peak/Off-Peak) for fare rules."@en .
+
+gtfs:timeframe_group_id rdfs:label "timeframe_group_id"@en ;
+    rdfs:comment "Identifies a specific timeframe."@en .
+
+gtfs:start_time rdfs:label "start_time"@en ;
+    rdfs:comment "Time when the timeframe begins."@en .
+
+gtfs:end_time rdfs:label "end_time"@en ;
+    rdfs:comment "Time when the timeframe ends."@en .
+
+gtfs:RiderCategory rdfs:label "Rider Category"@en ;
+    rdfs:comment "Defines a category of riders (e.g. Senior, Child, Student)."@en .
+
+gtfs:rider_category_id rdfs:label "rider_category_id"@en ;
+    rdfs:comment "Identifies a rider category."@en .
+
+gtfs:rider_category_name rdfs:label "rider_category_name"@en ;
+    rdfs:comment "Name of the rider category."@en .
+
+gtfs:is_child rdfs:label "is_child"@en ;
+    rdfs:comment "Indicates if the rider category represents a child."@en .
+
+gtfs:is_elderly rdfs:label "is_elderly"@en ;
+    rdfs:comment "Indicates if the rider category represents an elderly person."@en .
+
+gtfs:is_student rdfs:label "is_student"@en ;
+    rdfs:comment "Indicates if the rider category represents a student."@en .
+
+gtfs:min_age rdfs:label "min_age"@en ;
+    rdfs:comment "Minimum age for this rider category."@en .
+
+gtfs:max_age rdfs:label "max_age"@en ;
+    rdfs:comment "Maximum age for this rider category."@en .
+
+gtfs:FareMedia rdfs:label "Fare Media"@en ;
+    rdfs:comment "Describes the physical or virtual media used for fare validation (e.g. transit card, mobile app)."@en .
+
+gtfs:fare_media_id rdfs:label "fare_media_id"@en ;
+    rdfs:comment "Identifies a fare media."@en .
+
+gtfs:fare_media_name rdfs:label "fare_media_name"@en ;
+    rdfs:comment "Name of the fare media."@en .
+
+gtfs:fare_media_type rdfs:label "fare_media_type"@en ;
+    rdfs:comment "The type of the fare media (0: None, 1: Paper ticket, 2: Transit card, etc.)."@en .
+
+gtfs:FareProduct rdfs:label "Fare Product"@en ;
+    rdfs:comment "Describes a specific fare product (e.g. One-way ticket, Monthly pass)."@en .
+
+gtfs:fare_product_id rdfs:label "fare_product_id"@en ;
+    rdfs:comment "Identifies a fare product."@en .
+
+gtfs:fare_product_name rdfs:label "fare_product_name"@en ;
+    rdfs:comment "Name of the fare product."@en .
+
+gtfs:amount rdfs:label "amount"@en ;
+    rdfs:comment "Cost of the fare product."@en .
+
+gtfs:currency rdfs:label "currency"@en ;
+    rdfs:comment "Currency of the amount (ISO 4217)."@en .
+
+gtfs:FareLegRule rdfs:label "Fare Leg Rule"@en ;
+    rdfs:comment "Rules for calculating the fare for a single leg of a journey."@en .
+
+gtfs:leg_group_id rdfs:label "leg_group_id"@en ;
+    rdfs:comment "Identifies a group of legs for fare calculation."@en .
+
+gtfs:from_area_id rdfs:label "from_area_id"@en ;
+    rdfs:comment "Identifies the origin area."@en .
+
+gtfs:to_area_id rdfs:label "to_area_id"@en ;
+    rdfs:comment "Identifies the destination area."@en .
+
+gtfs:from_timeframe_group_id rdfs:label "from_timeframe_group_id"@en ;
+    rdfs:comment "Timeframe at the start of the leg."@en .
+
+gtfs:to_timeframe_group_id rdfs:label "to_timeframe_group_id"@en ;
+    rdfs:comment "Timeframe at the end of the leg."@en .
+
+gtfs:FareLegJoinRule rdfs:label "Fare Leg Join Rule"@en ;
+    rdfs:comment "Rules for joining two leg groups."@en .
+
+gtfs:from_leg_group_id rdfs:label "from_leg_group_id"@en ;
+    rdfs:comment "The preceding leg group."@en .
+
+gtfs:to_leg_group_id rdfs:label "to_leg_group_id"@en ;
+    rdfs:comment "The succeeding leg group."@en .
+
+gtfs:FareTransferRule rdfs:label "Fare Transfer Rule"@en ;
+    rdfs:comment "Rules for fare costs when transferring between legs."@en .
+
+gtfs:transfer_count rdfs:label "transfer_count"@en ;
+    rdfs:comment "Number of transfers allowed."@en .
+
+gtfs:duration_limit rdfs:label "duration_limit"@en ;
+    rdfs:comment "Time limit for the transfer."@en .
+
+gtfs:duration_limit_type rdfs:label "duration_limit_type"@en ;
+    rdfs:comment "Type of duration limit (e.g. from start of first leg, from end of previous leg)."@en .
+
+gtfs:fare_transfer_type rdfs:label "fare_transfer_type"@en ;
+    rdfs:comment "Logic for calculating transfer cost (e.g. A+AB, AB)."@en .
+
+gtfs:rider_category rdfs:label "rider_category"@en ;
+    rdfs:comment "Rider category eligible for this product."@en .
+
+gtfs:fare_media rdfs:label "fare_media"@en ;
+    rdfs:comment "Fare media required for this product."@en .
+
+gtfs:fare_product rdfs:label "fare_product"@en ;
+    rdfs:comment "The fare product associated with this rule."@en .
+
+gtfs:from_area rdfs:label "from_area"@en ;
+    rdfs:comment "The origin area."@en .
+
+gtfs:to_area rdfs:label "to_area"@en ;
+    rdfs:comment "The destination area."@en .
+
+gtfs:from_timeframe rdfs:label "from_timeframe"@en ;
+    rdfs:comment "The starting timeframe."@en .
+
+gtfs:to_timeframe rdfs:label "to_timeframe"@en ;
+    rdfs:comment "The ending timeframe."@en .
+
+gtfs:Area rdfs:label "Area"@en ;
+    rdfs:comment "Defines a group of stops or valid locations for fare calculations."@en .
+
+gtfs:StopArea rdfs:label "Stop Area"@en ;
+    rdfs:comment "Assigns stops to areas."@en .
+
+gtfs:area_id rdfs:label "area_id"@en ;
+    rdfs:comment "Identifies an area."@en .
+
+gtfs:area_name rdfs:label "area_name"@en ;
+    rdfs:comment "Name of the area."@en .
+
+gtfs:Network rdfs:label "Network"@en ;
+    rdfs:comment "Defines a network identifier."@en .
+
+gtfs:network_name rdfs:label "network_name"@en ;
+    rdfs:comment "Name of the network."@en .
+
+gtfs:RouteNetwork rdfs:label "Route Network"@en ;
+    rdfs:comment "Associates routes with networks."@en .
+
+gtfs:network rdfs:label "network"@en ;
+    rdfs:comment "The network associated with this route."@en .
+
+gtfs:Shape rdfs:label "Shape"@en ;
+    rdfs:comment "Defines the vehicle travel path for a trip."@en .
+
+gtfs:shape_pt_lat rdfs:label "shape_pt_lat"@en ;
+    rdfs:comment "Latitude of a shape point."@en .
+
+gtfs:shape_pt_lon rdfs:label "shape_pt_lon"@en ;
+    rdfs:comment "Longitude of a shape point."@en .
+
+gtfs:shape_pt_sequence rdfs:label "shape_pt_sequence"@en ;
+    rdfs:comment "Sequence of the point along the shape."@en .
+
+gtfs:area rdfs:label "area"@en ;
+    rdfs:comment "The area associated with this stop or rule."@en .
+
+gtfs:Frequency rdfs:label "Frequency"@en ;
+    rdfs:comment "Represents trips that operate on regular intervals (headway)."@en .
+
+gtfs:headway_secs rdfs:label "headway_secs"@en ;
+    rdfs:comment "Time in seconds between two vehicle departures."@en .
+
+gtfs:exact_times rdfs:label "exact_times"@en ;
+    rdfs:comment "Indicates if frequency-based trips follow a fixed schedule."@en .
+
+gtfs:Transfer rdfs:label "Transfer"@en ;
+    rdfs:comment "Rules for making connections at transfer points between routes."@en .
+
+gtfs:from_stop_id rdfs:label "from_stop_id"@en ;
+    rdfs:comment "The stop from which a transfer begins."@en .
+
+gtfs:to_stop_id rdfs:label "to_stop_id"@en ;
+    rdfs:comment "The stop where a transfer ends."@en .
+
+gtfs:transfer_type rdfs:label "transfer_type"@en ;
+    rdfs:comment "Type of the transfer (e.g. Recommended, Timed, Requires minimum time)."@en .
+
+gtfs:min_transfer_time rdfs:label "min_transfer_time"@en ;
+    rdfs:comment "Minimum time required to transfer between stops."@en .
+
+gtfs:from_route_id rdfs:label "from_route_id"@en ;
+    rdfs:comment "The route from which a transfer begins."@en .
+
+gtfs:to_route_id rdfs:label "to_route_id"@en ;
+    rdfs:comment "The route where a transfer ends."@en .
+
+gtfs:from_trip_id rdfs:label "from_trip_id"@en ;
+    rdfs:comment "The trip from which a transfer begins."@en .
+
+gtfs:to_trip_id rdfs:label "to_trip_id"@en ;
+    rdfs:comment "The trip where a transfer ends."@en .
+
+gtfs:Pathway rdfs:label "Pathway"@en ;
+    rdfs:comment "A path identifying a specific connection between nodes in a station."@en .
+
+gtfs:pathway_id rdfs:label "pathway_id"@en ;
+    rdfs:comment "Identifies a pathway."@en .
+
+gtfs:pathway_mode rdfs:label "pathway_mode"@en ;
+    rdfs:comment "Type of pathway (e.g. walkway, stairs, elevator)."@en .
+
+gtfs:is_bidirectional rdfs:label "is_bidirectional"@en ;
+    rdfs:comment "Indicates if the pathway can be used in both directions."@en .
+
+gtfs:length rdfs:label "length"@en ;
+    rdfs:comment "Horizontal length of the pathway in meters."@en .
+
+gtfs:traversal_time rdfs:label "traversal_time"@en ;
+    rdfs:comment "Average time to traverse the pathway in seconds."@en .
+
+gtfs:stair_count rdfs:label "stair_count"@en ;
+    rdfs:comment "Number of stairs."@en .
+
+gtfs:max_slope rdfs:label "max_slope"@en ;
+    rdfs:comment "Maximum slope ratio of the pathway."@en .
+
+gtfs:min_width rdfs:label "min_width"@en ;
+    rdfs:comment "Minimum width of the pathway in meters."@en .
+
+gtfs:signposted_as rdfs:label "signposted_as"@en ;
+    rdfs:comment "Text displayed on physical signage."@en .
+
+gtfs:reversed_signposted_as rdfs:label "reversed_signposted_as"@en ;
+    rdfs:comment "Text displayed on signage in the reverse direction."@en .
+
+gtfs:Level rdfs:label "Level"@en ;
+    rdfs:comment "Describes a level within a station."@en .
+
+gtfs:level_id rdfs:label "level_id"@en ;
+    rdfs:comment "Identifies a level."@en .
+
+gtfs:level_index rdfs:label "level_index"@en ;
+    rdfs:comment "Numeric index of the level (e.g. 1 for ground, -1 for basement)."@en .
+
+gtfs:level_name rdfs:label "level_name"@en ;
+    rdfs:comment "Name of the level."@en .
+
+gtfs:from_stop rdfs:label "from_stop"@en ;
+    rdfs:comment "The stop where the transfer originates."@en .
+
+gtfs:to_stop rdfs:label "to_stop"@en ;
+    rdfs:comment "The stop where the transfer ends."@en .
+
+gtfs:from_route rdfs:label "from_route"@en ;
+    rdfs:comment "The route where the transfer originates."@en .
+
+gtfs:to_route rdfs:label "to_route"@en ;
+    rdfs:comment "The route where the transfer ends."@en .
+
+gtfs:from_trip rdfs:label "from_trip"@en ;
+    rdfs:comment "The trip where the transfer originates."@en .
+
+gtfs:to_trip rdfs:label "to_trip"@en ;
+    rdfs:comment "The trip where the transfer ends."@en .
+
+gtfs:level rdfs:label "level"@en ;
+    rdfs:comment "The level where this stop is located."@en .
+
+gtfs:LocationGroup rdfs:label "Location Group"@en ;
+    rdfs:comment "A group of stops where a rider may request pickup or drop off."@en .
+
+gtfs:GeoJsonLocation rdfs:label "GeoJSON Location"@en ;
+    rdfs:comment "A zone defined by GeoJSON polygon."@en .
+
+gtfs:BookingRule rdfs:label "Booking Rule"@en ;
+    rdfs:comment "Rules for rider-requested services."@en .
+
+gtfs:FeedInfo rdfs:label "Feed Info"@en ;
+    rdfs:comment "Information about the dataset itself."@en .
+
+gtfs:Attribution rdfs:label "Attribution"@en ;
+    rdfs:comment "Attribution for the dataset or subset."@en .
+
+gtfs:Translation rdfs:label "Translation"@en ;
+    rdfs:comment "Provides field translations."@en .
+
+gtfs:location_group_id rdfs:label "location_group_id"@en ;
+    rdfs:comment "Identifies a location group."@en .
+
+gtfs:location_group_name rdfs:label "location_group_name"@en ;
+    rdfs:comment "Name of the location group."@en .
+
+gtfs:booking_rule_id rdfs:label "booking_rule_id"@en ;
+    rdfs:comment "Identifies a booking rule."@en .
+
+gtfs:booking_type rdfs:label "booking_type"@en ;
+    rdfs:comment "Indicates how far in advance booking can be made."@en .
+
+gtfs:feed_publisher_name rdfs:label "feed_publisher_name"@en ;
+    rdfs:comment "Full name of the organization that publishes the dataset."@en .
+
+gtfs:feed_publisher_url rdfs:label "feed_publisher_url"@en ;
+    rdfs:comment "URL of the dataset publishing organization."@en .
+
+gtfs:feed_lang rdfs:label "feed_lang"@en ;
+    rdfs:comment "Default language of the dataset."@en .
+
+gtfs:organization_name rdfs:label "organization_name"@en ;
+    rdfs:comment "Name of the attributed organization."@en .
+
+gtfs:table_name rdfs:label "table_name"@en ;
+    rdfs:comment "The table containing the field to be translated."@en .
+
+gtfs:field_name rdfs:label "field_name"@en ;
+    rdfs:comment "The field to be translated."@en .
+
+gtfs:language rdfs:label "language"@en ;
+    rdfs:comment "The language of the translation."@en .
+
+gtfs:translation rdfs:label "translation"@en ;
+    rdfs:comment "The translated value."@en .
+
+gtfs:pickup_booking_rule rdfs:label "pickup_booking_rule"@en ;
+    rdfs:comment "Booking rule for pickup."@en .
+
+gtfs:drop_off_booking_rule rdfs:label "drop_off_booking_rule"@en ;
+    rdfs:comment "Booking rule for drop off."@en .
+
+gtfs:location_group rdfs:label "location_group"@en ;
+    rdfs:comment "The location group for this stop time."@en .
+
+gtfs:location rdfs:label "location"@en ;
+    rdfs:comment "The GeoJSON location for this stop time."@en .
