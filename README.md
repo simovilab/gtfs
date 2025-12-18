@@ -126,3 +126,12 @@ We use [Ontospy](https://github.com/lambdamusic/Ontospy) to generate static HTML
   ```
 
 - Ensure consistency with the source markdown in `assets/schedule.md`
+
+## Tasks
+
+- [ ] Complete YAML reference specification
+- [ ] Generate Markdown documentation from YAML source
+- [ ] Validate RDF triples and SHACL shapes
+- [ ] Create database models from ontology
+- [ ] Create ORM mappings from YAML/JSON reference
+- [ ] Enhance GTFS ontology documentation and outreach
