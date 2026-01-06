@@ -11,7 +11,29 @@
 ### Term Definitions
 
 {{ document_conventions.term_definitions.description }}
-
 {% for term in document_conventions.term_definitions.terms %}
 * **{{ term.term }}** - {{ term.definition }}
 {%- endfor %}
+
+### Presence
+
+{{ document_conventions.presence.description }}
+{% for presence in document_conventions.presence.conditions %}
+* **{{ presence.name }}** - {{ presence.definition }}
+{%- endfor %}
+
+### Field Types
+
+{{ document_conventions.field_types.description }}
+{% for field_type in document_conventions.field_types.types %}
+* **{{ field_type.name }}** - {{ field_type.definition }} {% if field_type.example %}<br> *Example: {{ field_type.example }}*{% endif %}
+{%- endfor %}
+
+### Field Signs
+
+{{ document_conventions.field_signs.description }}
+{% for field_sign in document_conventions.field_signs.signs %}
+* **{{ field_sign.name }}** - {{ field_sign.definition }}
+{%- endfor %}
+
+*Example: {{ document_conventions.field_signs.example }}*
