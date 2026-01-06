@@ -1,0 +1,56 @@
+#set text(font: "PT Sans")
+#show title: set text(size: 19pt)
+#show title: set align(center)
+#show link: underline
+
+#let reference(contents) = {
+  [
+
+    #title[#contents.name]
+
+    *Revised October 28, 2025. See #link(contents.revision_history_url)[Revision History] for more details.*
+
+    #contents.description
+
+    = Document Conventions
+
+    #contents.document_conventions.description
+
+    == Term Definitions
+
+    #contents.document_conventions.term_definitions.description
+
+  ]
+
+  for (term, definition) in contents.document_conventions.term_definitions.terms {
+    [/ #term: #definition]
+  }
+
+  [
+
+    == Presence
+
+    #contents.document_conventions.presence.description
+
+  ]
+
+  for (name, definition) in contents.document_conventions.presence.conditions {
+    [/ #name: #definition]
+  }
+
+  [
+
+    == Field Types
+
+    #contents.document_conventions.field_types.description
+
+  ]
+
+  for (name, definition) in contents.document_conventions.field_types.types {
+    [/ #name: #definition]
+  }
+}
+
+#reference(
+  yaml("../serializers/schedule.yaml"),
+)
