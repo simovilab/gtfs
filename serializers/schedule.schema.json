@@ -203,8 +203,19 @@
                 "description": "Conditional requirements for the file"
               },
               "notes": {
-                "type": "string",
-                "description": "Additional notes about the file"
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "description": "Additional notes about the file"
+                  },
+                  {
+                    "type": "array",
+                    "description": "Additional notes about the file",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
               }
             }
           }
@@ -322,12 +333,20 @@
                       },
                       "description": "Conditional requirements for the field"
                     },
-                    "comments": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      },
-                      "description": "Additional comments about the field"
+                    "notes": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "description": "Additional notes about the field"
+                        },
+                        {
+                          "type": "array",
+                          "description": "Additional notes about the field",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
                     },
                     "options": {
                       "type": "array",

@@ -1,0 +1,295 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GTFS Realtime Feed",
+  "description": "JSON Schema for a GTFS Realtime feed",
+  "type": "object",
+  "required": ["header", "entity"],
+  "properties": {
+    "header": {
+      "type": "object",
+      "required": ["timestamp", "gtfs_realtime_version", "incrementality"],
+      "properties": {
+        "gtfs_realtime_version": {
+          "type": "string",
+          "description": "Version of the feed specification. The current version is 2.0."
+        },
+        "incrementality": {
+          "type": "string",
+          "enum": ["FULL_DATASET", "DIFFERENTIAL"],
+          "description": "Determines whether the current fetch is incremental. FULL_DATASET: this feed update will overwrite all preceding realtime information for the feed, providing a full snapshot of all known realtime information. DIFFERENTIAL: currently unsupported and behavior is unspecified for feeds that use this mode."
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "This timestamp identifies the moment when the content of this feed has been created (in server time). In POSIX time (i.e., number of seconds since January 1st 1970 00:00:00 UTC). To avoid time skew between systems producing and consuming realtime information it is strongly advised to derive timestamp from a time server. It is completely acceptable to use Stratum 3 or even lower strata servers since time differences up to a couple of seconds are tolerable."
+        },
+        "feed_version": {
+          "type": "string",
+          "description": "String that matches the feed_info.feed_version from the GTFS feed that the realtime data is based on. Consumers can use this to identify which GTFS feed is currently active or when a new one is available to download."
+        }
+      }
+    },
+    "entity": {
+      "type": "array",
+      "description": "A definition (or update) of an entity in the transit feed. If the entity is not being deleted, exactly one of 'trip_update', 'vehicle', 'alert', 'shape', 'stop' or 'trip_modification' fields should be populated.",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Feed-unique identifier for this entity. The ids are used only to provide incrementality support. The actual entities referenced by the feed must be specified by explicit selectors (see EntitySelector below for more info)."
+          },
+          "is_deleted": {
+            "type": "boolean",
+            "description": "Whether this entity is to be deleted. Should be provided only for feeds with Incrementality of DIFFERENTIAL - this field should NOT be provided for feeds with Incrementality of FULL_DATASET."
+          },
+          "trip_update": {
+            "type": "object",
+            "description": "Realtime update on the progress of a vehicle along a trip",
+            "required": ["trip"],
+            "properties": {
+              "trip": {
+                "type": "object",
+                "description": "Descriptor that identifies the specific trip instance this update applies to.",
+                "properties": {
+                  "trip_id": {
+                    "type": "string",
+                    "description": "trip_id from static GTFS trips.txt. Required unless a trip can be uniquely resolved from other fields or schedule_relationship=NEW when it must be a new id."
+                  },
+                  "route_id": {
+                    "type": "string",
+                    "description": "route_id from static GTFS. Required when trip_id is omitted or when schedule_relationship=NEW to bind the new trip to a route."
+                  },
+                  "direction_id": {
+                    "type": "integer",
+                    "enum": [0, 1],
+                    "description": "Direction of travel; required if trip_id is omitted."
+                  },
+                  "start_time": {
+                    "type": "string",
+                    "pattern": "^\\d{1,2}:\\d{2}:\\d{2}$",
+                    "description": "Scheduled start time of this trip instance; required for frequency-based trips or when trip_id is omitted."
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "pattern": "^\\d{8}$",
+                    "description": "Service date (YYYYMMDD) for this trip instance; required for long/late trips, frequency trips, or when trip_id is omitted."
+                  },
+                  "schedule_relationship": {
+                    "type": "string",
+                    "enum": ["SCHEDULED", "ADDED", "UNSCHEDULED", "CANCELED", "REPLACEMENT", "DUPLICATED", "NEW", "DELETED"],
+                    "description": "Relationship of this trip to the static schedule."
+                  },
+                  "modified_trip": {
+                    "type": "object",
+                    "description": "Selector for a modified trip. When used, trip_id, route_id, direction_id, start_time, and start_date must be left empty.",
+                    "properties": {
+                      "modifications_id": {
+                        "type": "string",
+                        "description": "The id of the FeedEntity in which the contained TripModifications object affects this trip."
+                      },
+                      "affected_trip_id": {
+                        "type": "string",
+                        "description": "The trip_id from the GTFS feed that is modified by the modifications_id."
+                      },
+                      "start_time": {
+                        "type": "string",
+                        "pattern": "^\\d{1,2}:\\d{2}:\\d{2}$",
+                        "description": "The initially scheduled start time of this trip instance, applied to frequency-based modified trips."
+                      },
+                      "start_date": {
+                        "type": "string",
+                        "pattern": "^\\d{8}$",
+                        "description": "The start date of this trip instance in YYYYMMDD format, applied to the modified trip."
+                      }
+                    }
+                  }
+                }
+              },
+              "vehicle": {
+                "type": "object",
+                "description": "Descriptor for the vehicle serving this trip.",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Internal system identifier for the vehicle."
+                  },
+                  "label": {
+                    "type": "string",
+                    "description": "User-visible label to help riders identify the vehicle."
+                  },
+                  "license_plate": {
+                    "type": "string",
+                    "description": "License plate of the vehicle."
+                  },
+                  "wheelchair_accessible": {
+                    "type": "string",
+                    "enum": ["NO_VALUE", "UNKNOWN", "WHEELCHAIR_ACCESSIBLE", "WHEELCHAIR_INACCESSIBLE"],
+                    "description": "Wheelchair accessibility status for this trip. NO_VALUE (default): no accessibility info; won't overwrite static GTFS. UNKNOWN: no accessibility value; will overwrite static GTFS. WHEELCHAIR_ACCESSIBLE: trip is wheelchair accessible; overrides static GTFS. WHEELCHAIR_INACCESSIBLE: trip is not wheelchair accessible; overrides static GTFS."
+                  }
+                }
+              },
+              "stop_time_update": {
+                "type": "array",
+                "description": "Ordered updates to stop times for this trip. Must be sorted by stop_sequence; conditional requirements depend on schedule_relationship as per GTFS Realtime spec.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "stop_sequence": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "stop_sequence from stop_times.txt. Required for loops or when stop_id alone is ambiguous; required for NEW/REPLACEMENT trips."
+                    },
+                    "stop_id": {
+                      "type": "string",
+                      "description": "stop_id from stops.txt. Required if stop_sequence is not provided; required for NEW/REPLACEMENT trips."
+                    },
+                    "arrival": {
+                      "type": "object",
+                      "description": "Predicted or actual arrival time information (StopTimeEvent).",
+                      "properties": {
+                        "delay": {
+                          "type": "integer",
+                          "description": "Schedule deviation in seconds (positive=late, negative=early). Forbidden if schedule_relationship=NO_DATA; required if time is not given."
+                        },
+                        "time": {
+                          "type": "integer",
+                          "description": "Absolute arrival time in POSIX seconds. Forbidden if schedule_relationship=NO_DATA; required if delay is not given."
+                        },
+                        "scheduled_time": {
+                          "type": "integer",
+                          "description": "Scheduled arrival time in POSIX seconds. Optional for NEW/REPLACEMENT/DUPLICATED trips; forbidden otherwise."
+                        },
+                        "uncertainty": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Expected error in the arrival prediction in seconds. Omit to indicate unknown uncertainty. Set to 0 for completely certain predictions. Forbidden if schedule_relationship=NO_DATA."
+                        }
+                      }
+                    },
+                    "departure": {
+                      "type": "object",
+                      "description": "Predicted or actual departure time information (StopTimeEvent).",
+                      "properties": {
+                        "delay": {
+                          "type": "integer",
+                          "description": "Schedule deviation in seconds (positive=late, negative=early). Forbidden if schedule_relationship=NO_DATA; required if time is not given."
+                        },
+                        "time": {
+                          "type": "integer",
+                          "description": "Absolute departure time in POSIX seconds. Forbidden if schedule_relationship=NO_DATA; required if delay is not given."
+                        },
+                        "scheduled_time": {
+                          "type": "integer",
+                          "description": "Scheduled departure time in POSIX seconds. Optional for NEW/REPLACEMENT/DUPLICATED trips; forbidden otherwise."
+                        },
+                        "uncertainty": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Expected error in the departure prediction in seconds. Omit to indicate unknown uncertainty. Set to 0 for completely certain predictions. Forbidden if schedule_relationship=NO_DATA."
+                        }
+                      }
+                    },
+                    "departure_occupancy_status": {
+                      "type": "string",
+                      "enum": [
+                        "EMPTY",
+                        "MANY_SEATS_AVAILABLE",
+                        "FEW_SEATS_AVAILABLE",
+                        "STANDING_ROOM_ONLY",
+                        "CRUSHED_STANDING_ROOM_ONLY",
+                        "FULL",
+                        "NOT_ACCEPTING_PASSENGERS",
+                        "NO_DATA_AVAILABLE",
+                        "NOT_BOARDABLE"
+                      ],
+                      "description": "Predicted occupancy status immediately after departure from the stop. EMPTY: few/no passengers, still accepting. MANY_SEATS_AVAILABLE: large number of seats free. FEW_SEATS_AVAILABLE: small number of seats free. STANDING_ROOM_ONLY: only standing accommodations. CRUSHED_STANDING_ROOM_ONLY: standing only with limited space. FULL: vehicle full but may still allow boarding. NOT_ACCEPTING_PASSENGERS: not accepting passengers (usually does). NO_DATA_AVAILABLE: no occupancy data available. NOT_BOARDABLE: not boardable, never accepts passengers. (Experimental)"
+                    },
+                    "schedule_relationship": {
+                      "type": "string",
+                      "enum": ["SCHEDULED", "SKIPPED", "NO_DATA", "UNSCHEDULED"],
+                      "description": "Relation between this stop and the static schedule. SCHEDULED (default): vehicle serves stop per static schedule (not necessarily on-time); at least one of arrival/departure required. For frequency trips with exact_times=0, use UNSCHEDULED instead. SKIPPED: vehicle will not stop here; arrival/departure optional; delay propagates over skipped stop to subsequent stops unless their own predictions are provided; not propagated to subsequent stops. NO_DATA: no realtime data available; propagates to subsequent stops; arrival/departure forbidden unless TripDescriptor.schedule_relationship is NEW or REPLACEMENT (then scheduled times only). UNSCHEDULED: frequency-based trip (exact_times=0); not for exact_times=1 or non-frequency trips; TripDescriptor.schedule_relationship must also be UNSCHEDULED. (Experimental)"
+                    }
+                  }
+                }
+              },
+              "timestamp": {
+                "type": "integer",
+                "description": "Most recent moment when vehicle progress was measured for this trip (POSIX seconds)."
+              },
+              "delay": {
+                "type": "integer",
+                "description": "Current schedule deviation for the trip in seconds; positive=late, negative=early."
+              },
+              "trip_properties": {
+                "type": "object",
+                "description": "Updated properties for this trip (experimental).",
+                "properties": {
+                  "trip_id": {
+                    "type": "string",
+                    "description": "Identifier for a new duplicated trip; required when schedule_relationship=DUPLICATED."
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "pattern": "^\\d{8}$",
+                    "description": "Service date (YYYYMMDD) for the duplicated trip; required when schedule_relationship=DUPLICATED."
+                  },
+                  "start_time": {
+                    "type": "string",
+                    "pattern": "^\\d{1,2}:\\d{2}:\\d{2}$",
+                    "description": "Departure start time for the duplicated trip; required when schedule_relationship=DUPLICATED."
+                  },
+                  "shape_id": {
+                    "type": "string",
+                    "description": "Identifier of the trip shape when it differs from static GTFS or is defined in realtime."
+                  },
+                  "trip_headsign": {
+                    "type": "string",
+                    "description": "Headsign override for this trip."
+                  },
+                  "trip_short_name": {
+                    "type": "string",
+                    "description": "Short name override for this trip."
+                  }
+                }
+              }
+            }
+          },
+          "vehicle": {
+            "type": "object",
+            "description": "Realtime positioning information for a given vehicle",
+            "properties": {}
+          },
+          "alert": {
+            "type": "object",
+            "description": "Realtime alert information",
+            "properties": {}
+          },
+          "shape": {
+            "type": "object",
+            "description": "Realtime update on route shape",
+            "properties": {}
+          },
+          "stop": {
+            "type": "object",
+            "description": "Realtime update on stops",
+            "properties": {}
+          },
+          "trip_modification": {
+            "type": "object",
+            "description": "Realtime modifications to a trip",
+            "properties": {}
+          }
+        },
+        "oneOf": [
+          { "required": ["trip_update"] },
+          { "required": ["vehicle"] },
+          { "required": ["alert"] },
+          { "required": ["shape"] },
+          { "required": ["stop"] },
+          { "required": ["trip_modification"] }
+        ]
+      }
+    }
+  }
+}
