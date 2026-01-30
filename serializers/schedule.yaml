@@ -974,3 +974,45 @@ field_definitions:
           conditions:
             - 'Any value other than 1 or empty is Forbidden if start_pickup_drop_off_window or end_pickup_drop_off_window are defined.'
             - 'Optional otherwise.'
+        - name: 'shape_dist_traveled'
+          type: 'Non-negative float'
+          presence: 'Optional'
+          description: 'Actual distance traveled along the associated shape, from the first stop to the stop specified in this record. This field specifies how much of the shape to draw between any two stops during a trip.'
+          notes:
+            - 'Must be in the same units used in shapes.txt.'
+            - 'Values used for shape_dist_traveled must increase along with stop_sequence; they must not be used to show reverse travel along a route.'
+            - 'Recommended for routes that have looping or inlining (the vehicle crosses or travels over the same portion of alignment in one trip).'
+            - 'See shapes.shape_dist_traveled.'
+          example: 'If a bus travels a distance of 5.25 kilometers from the start of the shape to the stop,shape_dist_traveled=5.25.'
+        - name: 'timepoint'
+          type: 'Enum'
+          presence: 'Optional'
+          description: 'Indicates if arrival and departure times for a stop are strictly adhered to by the vehicle or if they are instead approximate and/or interpolated times.'
+          notes: 
+            - 'This field allows a GTFS producer to provide interpolated stop-times, while indicating that the times are approximate.'
+            - 'All records of stop_times.txt with defined arrival or departure times should have timepoint values populated.'
+            - 'If no timepoint values are provided, all times are considered exact.'
+          options:
+            - value: '0'
+              description: 'Times are considered approximate.'
+            - value: '1'
+              description: 'Times are considered exact.'
+        - name: 'pickup_booking_rule_id'
+          type: 'Foreign ID'
+          foreign_key: 'booking_rules.booking_rule_id'
+          presence: 'Optional'
+          description: 'Identifies the boarding booking rule at this stop time.'
+          notes:
+            - 'Recommended when pickup_type=2.'
+        - name: 'drop_off_booking_rule_id'
+          type: 'Foreign ID'
+          foreign_key: 'booking_rules.booking_rule_id'
+          presence: 'Optional'
+          description: 'Identifies the alighting booking rule at this stop time.'
+          notes:
+            - 'Recommended when drop_off_type=2.'
+      notes:
+        - 'On-demand Service Routing Behavior'
+        - 'When providing routing or travel time between the origin and destination, data consumers should ignore intermediate stop_times.txt records with the same trip_id that have start_pickup_drop_off_window and end_pickup_drop_off_window defined. For examples that demonstrate what should be ignored, see the data example page.'
+        - 'Simultaneous overlap of locations.geojson id geometry, start/end_pickup_drop_off_window time, and pickup_type or drop_off_type between two or more stop_times.txt records with the same trip_id is forbidden. For examples that demonstrate what is forbidden, see the data example page.'
+
