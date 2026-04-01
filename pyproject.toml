@@ -1,7 +1,12 @@
 [project]
-name = "gtfs-references"
+name = "gtfs-models"
 version = "0.1.0"
-description = "GTFS References"
+description = "GTFS Models"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = ["jinja2>=3.1.6", "ontospy>=2.1.1", "pyyaml>=6.0.3"]
+dependencies = [
+    "jinja2>=3.1.6",
+    "ontospy>=2.1.1",
+    "pyarrow>=23.0.1",
+    "pyyaml>=6.0.3",
+]
