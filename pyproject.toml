@@ -1,11 +1,7 @@
 [project]
-name = "gtfs-ontology"
+name = "gtfs-references"
 version = "0.1.0"
-description = "Add your description here"
+description = "GTFS References"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = [
-    "jinja2>=3.1.6",
-    "ontospy>=2.1.1",
-    "pyyaml>=6.0.3",
-]
+dependencies = ["jinja2>=3.1.6", "ontospy>=2.1.1", "pyyaml>=6.0.3"]
