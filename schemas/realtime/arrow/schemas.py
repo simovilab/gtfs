@@ -9,7 +9,7 @@ feed_message = pa.schema(
                 [
                     pa.field("gtfs_realtime_version", pa.string()),
                     pa.field("incrementality", pa.string()),
-                    pa.field("timestamp", pa.int64()),
+                    pa.field("timestamp", pa.timestamp("s")),
                     pa.field("feed_version", pa.string()),
                 ]
             ),
@@ -21,7 +21,7 @@ feed_message = pa.schema(
 
 feed_entity = pa.schema(
     [
-        pa.field("feed_timestamp", pa.int64()),
+        pa.field("feed_timestamp", pa.timestamp("s")),
         pa.field("feed_message_id", pa.string()),
         pa.field("id", pa.string()),
         pa.field("is_deleted", pa.bool_()),
@@ -32,7 +32,7 @@ feed_entity = pa.schema(
 
 trip_update = pa.schema(
     [
-        pa.field("feed_timestamp", pa.int64()),
+        pa.field("feed_timestamp", pa.timestamp("s")),
         pa.field("feed_entity_id", pa.string()),
         pa.field("id", pa.string()),
         pa.field(
@@ -70,7 +70,7 @@ trip_update = pa.schema(
                 ]
             ),
         ),
-        pa.field("timestamp", pa.int64()),
+        pa.field("timestamp", pa.timestamp("s")),
         pa.field("delay", pa.int32()),
         pa.field(
             "trip_properties",
@@ -92,7 +92,7 @@ trip_update = pa.schema(
 
 stop_time_update = pa.schema(
     [
-        pa.field("feed_timestamp", pa.int64()),
+        pa.field("feed_timestamp", pa.timestamp("s")),
         pa.field("trip_update_id", pa.string()),
         pa.field("trip_id", pa.string()),
         pa.field("route_id", pa.string()),
@@ -135,6 +135,30 @@ stop_time_update = pa.schema(
                 ]
             ),
         ),
+        pa.field("service_date", pa.string()),
+        pa.field("hour", pa.int8()),
+    ]
+)
+
+travel_times = pa.schema(
+    [
+        pa.field("event_timestamp", pa.timestamp("s")),
+        pa.field("route_id", pa.string()),
+        pa.field("trip_id", pa.string()),
+        pa.field("run_id", pa.string()),
+        pa.field("shape_id", pa.string()),
+        pa.field("direction_id", pa.int8()),
+        pa.field("service_id", pa.string()),
+        pa.field("stop_id", pa.string()),
+        pa.field("stop_sequence", pa.int32()),
+        pa.field("start_date", pa.string()),
+        pa.field("start_time_seconds", pa.int32()),
+        pa.field("travel_time", pa.int32()),
+        pa.field("dwell_time", pa.int32()),
+        pa.field("stopped", pa.bool_()),
+        pa.field("previous_stop_id", pa.string()),
+        pa.field("segment_travel_time", pa.int32()),
+        pa.field("travel_time_uncertainty", pa.int32()),
         pa.field("service_date", pa.string()),
         pa.field("hour", pa.int8()),
     ]
