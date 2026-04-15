@@ -1,0 +1,21 @@
+# Hola Oscar, por aquí
+
+from django.contrib.gis.db import models
+
+
+# -------------
+# GTFS Schedule
+# -------------
+
+{% for class in classes %}
+
+class {{ class.name }}(models.Model): {
+{% for field in class.columns %}
+{{ field.name }} {{ field.type }}{% if field.attrs and field.attrs|length %} [{{ field.attrs | join(', ') }}]{%
+endif %}
+
+{% endfor %}
+Note: '{{ class.description }}'
+}
+
+{% endfor %}
