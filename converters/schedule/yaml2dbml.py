@@ -231,10 +231,10 @@ def generate_schedule_dbml(overwrite: bool = True) -> Path:
 
     Returns the path to the generated file.
     """
-    base_dir = Path(__file__).parent.parent
-    yaml_path = base_dir / "serializers" / "schedule.yaml"
-    template_dir = base_dir / "converters" / "templates"
-    output_dir = base_dir / "models"
+    base_dir = Path(__file__).resolve().parents[2]
+    yaml_path = base_dir / "serializers" / "schedule" / "schedule.yaml"
+    template_dir = base_dir / "converters" / "schedule" / "templates"
+    output_dir = base_dir / "models" / "schedule" / "dbml"
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "schedule.dbml"
     if not overwrite:

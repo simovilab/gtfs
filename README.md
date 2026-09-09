@@ -142,6 +142,9 @@ uv run converters/schedule/ui_coverage.py --json
 
 # Build the browsable explorer into web/dist/index.html
 uv run converters/schedule/yaml2site.py
+
+# Build it and preview it locally at http://localhost:8777
+uv run converters/schedule/serve_site.py
 ```
 
 The coverage script fails on orphaned or schema-invalid annotations, but not on

@@ -16,10 +16,10 @@ def generate_schedule_markdown():
     """Generate schedule.md from YAML data and Jinja2 template."""
 
     # Define paths
-    base_dir = Path(__file__).parent.parent
-    yaml_path = base_dir / "serializers" / "schedule.yaml"
-    template_dir = base_dir / "converters" / "templates"
-    output_path = base_dir / "documentation" / "schedule.md"
+    base_dir = Path(__file__).resolve().parents[2]
+    yaml_path = base_dir / "serializers" / "schedule" / "schedule.yaml"
+    template_dir = base_dir / "converters" / "schedule" / "templates"
+    output_path = base_dir / "documentation" / "schedule" / "schedule.md"
 
     # Load YAML data
     with open(yaml_path, "r", encoding="utf-8") as f:
