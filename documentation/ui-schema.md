@@ -81,9 +81,34 @@ sin depender de la precisión del clic.
 
 ## 4. Vocabulario de validación
 
+Toda regla tiene una **severidad**. La distinción no es cosmética: decide si el
+editor bloquea el guardado o solo advierte.
+
+- `error` — la especificación lo **exige** ("Required", "must"). Bloquea.
+- `warning` — es una **recomendación** de Best Practices ("should", "recommend"),
+  o una regla que agregó el laboratorio. Advierte y deja continuar.
+
+Una regla escrita en forma corta (`min: 0`) es un `error`. Para declarar una
+advertencia se usa la forma larga:
+
+```yaml
+pattern:
+  value: '^[\x20-\x7E]+$'
+  severity: warning
+  notice: non_ascii_or_non_printable_char
+```
+
+El campo `notice` registra el aviso equivalente del validador canónico de GTFS,
+para poder contrastar el editor contra esa herramienta.
+
+**Codificar una recomendación como `error` es un defecto**, no una postura
+estricta: rechazaría feeds perfectamente válidos. Por ejemplo, exigir ASCII
+imprimible en los identificadores impediría guardar `parada_Ñ`, que la
+especificación permite.
+
 ### 4.1 Reglas derivadas de la especificación
 
-Son de cumplimiento obligatorio y siempre tienen severidad `error`:
+Son de cumplimiento obligatorio y por omisión tienen severidad `error`:
 
 | Regla | Significado |
 |---|---|
@@ -107,6 +132,18 @@ especificación.
 este archivo. Están en `schedule.yaml` y de ahí los toma el editor. Copiarlos
 garantizaría que algún día queden desactualizados.
 
+Tres precisiones que se verificaron contra el validador canónico y que
+contradicen suposiciones habituales:
+
+- La especificación **no impone longitud máxima** a los identificadores ni a
+  `stop_name`. El único tope real es de 4096 caracteres, en la capa de lectura
+  del CSV.
+- El ASCII imprimible en identificadores es una **recomendación**, no un
+  requisito: los IDs admiten cualquier UTF-8.
+- Los 12 caracteres de `route_short_name` son una **recomendación**
+  (`route_short_name_too_long` es un *warning*), no un límite de la
+  especificación.
+
 ### 4.2 Reglas propias del laboratorio
 
 `bounding_box` es distinta: **no viene de GTFS**. Una parada fuera de Costa Rica
@@ -125,6 +162,16 @@ bounding_box:
 Bloquear el guardado sería incorrecto: hay paradas transfronterizas legítimas
 hacia Panamá y Nicaragua. El editor debe advertir y dejar continuar.
 
+GTFS es un formato global y **no impone ninguna restricción geográfica** sobre
+las coordenadas; el `countryCode` del validador canónico solo sirve para validar
+teléfonos. La caja es enteramente criterio del laboratorio, y por eso nunca
+puede ser `error`.
+
+Vale la pena considerar además los avisos `point_near_origin` y
+`point_near_pole` del validador canónico, que detectan coordenadas en (0,0) o
+cerca de los polos. Son más universales que una caja por país y atrapan el error
+de digitación más común. Todavía no están en el vocabulario.
+
 Esta distinción —reglas de la especificación contra reglas del laboratorio— es
 la que justifica que exista el campo `severity`.
 
@@ -137,8 +184,12 @@ Algunas validaciones no se pueden resolver campo por campo:
   fija ISO 4217 según la moneda: CRC y USD usan 2, JPY usa 0. El editor debe
   releer la precisión cuando cambia la moneda.
 - **`routes.route_color`** declara `contrast_with: routes.route_text_color`. La
-  especificación pide contraste suficiente entre ambos; eso solo puede
-  evaluarse con los dos valores presentes.
+  especificación dice que el contraste *debería* ser suficiente, así que la
+  regla es `warning` y solo puede evaluarse con los dos valores presentes.
+
+Ni la especificación ni el validador definen una cantidad de decimales para
+`stop_lat`/`stop_lon`, así que no se declara ninguna: la precisión del ingreso
+es asunto del widget de mapa, no una regla de validación.
 
 ### 4.4 Llaves foráneas
 
@@ -205,8 +256,12 @@ cobertura no retroceda.
 2. Elegir un componente **del vocabulario existente**. Si ninguno sirve,
    agregarlo primero al `enum` de `schedule.ui.schema.json` y documentarlo en la
    sección 3 — no inventar valores sueltos.
-3. Escribir solo las validaciones que la especificación exige. Si el campo es
-   una enumeración, usar `enum_from_spec: true` en lugar de copiar los valores.
+3. Escribir solo las validaciones que la especificación exige, en forma corta.
+   Todo lo que sea recomendación o criterio propio va en forma larga con
+   `severity: warning`. Si el campo es una enumeración, usar
+   `enum_from_spec: true` en lugar de copiar los valores.
+   Ante la duda, revisar el aviso correspondiente del validador canónico: si
+   ahí es *warning*, aquí también.
 4. Agregar `label` y `help` al menos en español (el esquema lo exige); inglés y
    portugués son opcionales pero recomendados.
 5. Correr el script de cobertura y confirmar que no aparecen errores.

@@ -39,8 +39,13 @@ fields:
     validation:
       required: true
       unique_in_file: true
-      max_length: 255
-      pattern: '^[\x20-\x7E]+$'
+      # Printable ASCII is a GTFS Best Practice, not a requirement: IDs may be
+      # any UTF-8. Canonical validator emits non_ascii_or_non_printable_char as
+      # a WARNING, so this must not block saving.
+      pattern:
+        value: '^[\x20-\x7E]+$'
+        severity: warning
+        notice: non_ascii_or_non_printable_char
     i18n:
       es:
         label: 'ID de la parada'
@@ -56,7 +61,6 @@ fields:
     component: text_input
     validation:
       required: conditional
-      max_length: 255
     i18n:
       es:
         label: 'Nombre de la parada'
@@ -74,7 +78,6 @@ fields:
     validation:
       required: conditional
       range: [-90, 90]
-      decimals: 6
       bounding_box:
         region: costa_rica
         severity: warning
@@ -95,7 +98,6 @@ fields:
     validation:
       required: conditional
       range: [-180, 180]
-      decimals: 6
       bounding_box:
         region: costa_rica
         severity: warning
@@ -134,8 +136,13 @@ fields:
     validation:
       required: true
       unique_in_file: true
-      max_length: 255
-      pattern: '^[\x20-\x7E]+$'
+      # Printable ASCII is a GTFS Best Practice, not a requirement: IDs may be
+      # any UTF-8. Canonical validator emits non_ascii_or_non_printable_char as
+      # a WARNING, so this must not block saving.
+      pattern:
+        value: '^[\x20-\x7E]+$'
+        severity: warning
+        notice: non_ascii_or_non_printable_char
     i18n:
       es:
         label: 'ID de la ruta'
@@ -151,7 +158,12 @@ fields:
     component: text_input
     validation:
       required: conditional
-      max_length: 12
+      # Recommended maximum, not a spec limit: the canonical validator emits
+      # route_short_name_too_long as a WARNING.
+      max_length:
+        value: 12
+        severity: warning
+        notice: route_short_name_too_long
     i18n:
       es:
         label: 'Nombre corto'
@@ -185,7 +197,10 @@ fields:
       required: false
       pattern: '^[0-9A-Fa-f]{6}$'
       default: 'FFFFFF'
-      contrast_with: routes.route_text_color
+      # The spec says contrast "should" be sufficient — a recommendation.
+      contrast_with:
+        value: routes.route_text_color
+        severity: warning
     i18n:
       es:
         label: 'Color de la ruta'
@@ -204,8 +219,13 @@ fields:
     validation:
       required: true
       unique_in_file: true
-      max_length: 255
-      pattern: '^[\x20-\x7E]+$'
+      # Printable ASCII is a GTFS Best Practice, not a requirement: IDs may be
+      # any UTF-8. Canonical validator emits non_ascii_or_non_printable_char as
+      # a WARNING, so this must not block saving.
+      pattern:
+        value: '^[\x20-\x7E]+$'
+        severity: warning
+        notice: non_ascii_or_non_printable_char
     i18n:
       es:
         label: 'ID de la tarifa'

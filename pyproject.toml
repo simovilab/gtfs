@@ -7,7 +7,9 @@ requires-python = ">=3.14"
 dependencies = [
     "jinja2>=3.1.6",
     "jsonschema>=4.26.0",
+    "notebooklm>=0.0.1",
     "ontospy>=2.1.1",
+    "playwright>=1.62.0",
     "pyarrow>=23.0.1",
     "pyyaml>=6.0.3",
 ]
