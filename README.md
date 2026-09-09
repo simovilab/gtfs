@@ -143,13 +143,40 @@ uv run converters/schedule/ui_coverage.py --json
 # Build the browsable explorer into web/dist/index.html
 uv run converters/schedule/yaml2site.py
 
-# Build it and preview it locally at http://localhost:8777
+# Build it, preview it at http://localhost:8777, and edit annotations there
 uv run converters/schedule/serve_site.py
+uv run converters/schedule/serve_site.py --read-only   # preview without write-back
 ```
 
 The coverage script fails on orphaned or schema-invalid annotations, but not on
 fields that simply have no annotation yet — those are expected while the sweep
 across the spec is in progress, and are surfaced in the site as "not yet mapped".
+
+### Editing annotations from the site
+
+The explorer can also write annotations, not just display them. Its form is
+generated from `schedule.ui.schema.json`, so the component vocabulary and the
+validation rules never exist in two places.
+
+Edits are held as an overlay in the browser's `localStorage`, separate from the
+data built into the page; the difference between the two is the changeset, which
+is what drives the "new/modified/removed" badges and the export.
+
+How the changeset leaves the browser depends on where the page is running:
+
+- **On GitHub Pages** there is no server, so the page emits a YAML *patch* —
+  only the changed entries — to copy or download and paste under `fields:`. A
+  patch rather than a whole file on purpose: a full-file export would silently
+  drop the hand-written comments in `schedule.ui.yaml` that record why a given
+  rule is a warning and not an error.
+- **Under `serve_site.py`** a "write to file" button appears. It merges the
+  changeset into `serializers/schedule/schedule.ui.yaml` through ruamel's
+  round-trip loader, so comments on untouched entries survive. The endpoint
+  writes only that one file, only accepts same-origin requests from the local
+  server, and validates the whole document against the schema before writing.
+
+The browser's own checks are for fast feedback only. `ui_coverage.py` in CI
+remains the authority on whether the annotations are valid.
 
 ## Ontology Namespace
 

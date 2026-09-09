@@ -22,10 +22,14 @@ from pathlib import Path
 import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+import ui_form_model
+
 ROOT = Path(__file__).resolve().parents[2]
 SPEC_PATH = ROOT / "serializers" / "schedule" / "schedule.yaml"
 UI_PATH = ROOT / "serializers" / "schedule" / "schedule.ui.yaml"
+SCHEMA_PATH = ROOT / "serializers" / "schedule" / "schedule.ui.schema.json"
 TEMPLATE_DIR = ROOT / "converters" / "schedule" / "templates"
+ASSET_DIR = TEMPLATE_DIR / "site"
 OUTPUT_PATH = ROOT / "web" / "dist" / "index.html"
 
 LANGS = ("es", "en", "pt")
@@ -74,6 +78,27 @@ def as_list(value) -> list[str]:
     return [str(v) for v in value]
 
 
+def annotation_of(note: dict | None) -> dict | None:
+    """Shape one annotation for the page.
+
+    Absent optional keys are left out rather than emitted as null. The editor
+    compares a submitted annotation against this baseline to decide whether a
+    field still counts as changed, and `{"group": null}` would never compare
+    equal to a form that simply omits an empty group.
+    """
+    if not note:
+        return None
+    shaped = {
+        "component": note.get("component"),
+        "validation": note.get("validation") or {},
+        "i18n": note.get("i18n") or {},
+    }
+    for optional in ("group", "references"):
+        if note.get(optional):
+            shaped[optional] = note[optional]
+    return shaped
+
+
 def build_data(spec: dict, ui: dict) -> dict:
     annotations = ui.get("fields", {})
     tables = []
@@ -93,20 +118,11 @@ def build_data(spec: dict, ui: dict) -> dict:
                     "type": field.get("type", ""),
                     "presence": field.get("presence", ""),
                     "description": field.get("description", ""),
+                    "foreign_key": field.get("foreign_key"),
                     "conditions": as_list(field.get("conditions")),
                     "notes": as_list(field.get("notes")),
                     "options": normalize_options(field.get("options")),
-                    "annotation": (
-                        {
-                            "component": note.get("component"),
-                            "group": note.get("group"),
-                            "references": note.get("references"),
-                            "validation": note.get("validation", {}) or {},
-                            "i18n": note.get("i18n", {}) or {},
-                        }
-                        if note
-                        else None
-                    ),
+                    "annotation": annotation_of(note),
                 }
             )
 
@@ -139,8 +155,32 @@ def build_data(spec: dict, ui: dict) -> dict:
     }
 
 
+def asset(name: str) -> str:
+    """Read a CSS/JS asset verbatim.
+
+    These are plain files rather than Jinja templates so they stay valid,
+    lintable CSS and JavaScript, and so nothing in them is mistaken for
+    template syntax.
+    """
+    return (ASSET_DIR / name).read_text(encoding="utf-8")
+
+
+def embed(payload: dict) -> str:
+    """Serialize for a <script type="application/json"> block.
+
+    Escaping the three characters that could close the block early is what
+    keeps a description in schedule.yaml from being able to inject markup.
+    """
+    return (
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+    )
+
+
 def main() -> int:
-    for path in (SPEC_PATH, UI_PATH):
+    for path in (SPEC_PATH, UI_PATH, SCHEMA_PATH):
         if not path.exists():
             print(f"ERROR: missing required file: {path}", file=sys.stderr)
             return 2
@@ -155,17 +195,20 @@ def main() -> int:
     )
     template = env.get_template("site.html.jinja")
 
-    # json.dumps output is embedded inside a <script type="application/json">
-    # block; escape the sequences that could terminate it early.
-    payload = (
-        json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-        .replace("<", "\\u003c")
-        .replace(">", "\\u003e")
-        .replace("&", "\\u0026")
-    )
-
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text(template.render(data_json=payload), encoding="utf-8")
+    OUTPUT_PATH.write_text(
+        template.render(
+            data_json=embed(data),
+            form_json=embed(ui_form_model.load(SCHEMA_PATH)),
+            style=asset("style.css"),
+            state_js=asset("state.js"),
+            strings_js=asset("strings.js"),
+            render_js=asset("render.js"),
+            editor_js=asset("editor.js"),
+            export_js=asset("export.js"),
+        ),
+        encoding="utf-8",
+    )
 
     coverage = data["coverage"]
     print(f"Wrote {OUTPUT_PATH}")

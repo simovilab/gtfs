@@ -265,3 +265,75 @@ cobertura no retroceda.
 4. Agregar `label` y `help` al menos en español (el esquema lo exige); inglés y
    portugués son opcionales pero recomendados.
 5. Correr el script de cobertura y confirmar que no aparecen errores.
+
+## 8. Anotar desde el explorador
+
+Los pasos de la sección 7 se pueden hacer a mano en el YAML o desde el
+explorador, que trae el mismo formulario. La ventaja de la segunda vía no es
+ahorrar tecleo: es que el formulario **se genera desde
+`schedule.ui.schema.json`**. La lista de componentes, las reglas disponibles,
+cuáles admiten `severity` y qué idiomas son obligatorios se leen del esquema al
+construir el sitio. Agregar un componente al `enum` lo hace aparecer en el
+formulario en la siguiente compilación; no hay una segunda copia del
+vocabulario que se pueda desincronizar.
+
+### 8.1 Dos capas, nunca mezcladas
+
+El sitio guarda por separado lo que dice el repositorio y lo que la persona
+acaba de editar:
+
+| Capa | Origen | Dónde vive |
+|---|---|---|
+| Base | `schedule.yaml` + `schedule.ui.yaml` al compilar | dentro del HTML |
+| Borrador | ediciones sin guardar | `localStorage` del navegador |
+
+La mezcla ocurre solo al dibujar. De esa separación salen gratis las etiquetas
+«nuevo», «modificado» y «eliminado», el botón para descartar los cambios de un
+campo, y el parche de exportación: **la diferencia entre las dos capas es el
+conjunto de cambios**. Si una edición vuelve al valor que ya estaba
+confirmado, deja de contar como cambio.
+
+El borrador es local al navegador. No se comparte, no viaja a ningún servidor
+y no es un lugar donde dejar trabajo: es un buffer hasta que el cambio llegue
+al YAML.
+
+### 8.2 Cómo salen los cambios del navegador
+
+Hay dos caminos, según dónde esté abierta la página:
+
+- **En GitHub Pages** no hay servidor que pueda escribir nada. La página emite
+  un **parche**: solo las entradas modificadas, para copiar o descargar y pegar
+  bajo `fields:`. Es un fragmento y no el archivo completo a propósito. Una
+  exportación completa borraría en silencio los comentarios escritos a mano en
+  `schedule.ui.yaml`, que son justamente el registro de por qué una regla es
+  *warning* y no *error*.
+- **Con `serve_site.py`** aparece además «Guardar en el archivo». El servidor
+  escribe `schedule.ui.yaml` de verdad, usando el modo *round-trip* de
+  `ruamel.yaml`: reemplaza únicamente las entradas que cambiaron y conserva los
+  comentarios de todas las demás, del bloque `regions` y del encabezado. Los
+  comentarios que estuvieran *dentro* de una entrada reescrita sí se pierden;
+  no hay dónde volver a colgarlos.
+
+El endpoint solo escribe ese archivo, solo acepta peticiones del propio origen
+del servidor local, y valida el documento completo contra
+`schedule.ui.schema.json` **antes** de escribir. Un cambio inválido devuelve el
+error y no toca el disco. `--read-only` desactiva la escritura.
+
+### 8.3 Dónde se valida qué
+
+El formulario repite un subconjunto del esquema —componente obligatorio,
+etiqueta en español, `references` cuando el componente es `foreign_key_select`,
+forma `archivo.campo`, dependencias entre reglas— para que el error aparezca
+mientras se escribe. **No sustituye a la validación real**: la autoridad sigue
+siendo `jsonschema` sobre el archivo completo, en `ui_coverage.py` y en CI. El
+navegador da retroalimentación; CI decide.
+
+### 8.4 Sugerencia inicial
+
+Al anotar un campo sin anotación, el formulario propone un punto de partida
+leído de lo que la especificación ya dice: una llave foránea se propone como
+`foreign_key_select` apuntando a donde el `foreign_key` del campo indica, una
+enumeración como `select` con `enum_from_spec: true`, un `Color` como
+`color_picker`, y `presence` se traduce a `required`. Es una propuesta, no una
+decisión: hay que revisarla, y de todos modos falta escribir la etiqueta, que
+es la parte que ninguna heurística puede inventar.
