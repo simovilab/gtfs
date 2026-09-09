@@ -1,0 +1,182 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://gtfs.org/schema/schedule.ui.schema.json",
+  "title": "GTFS Schedule Editor Annotation Schema",
+  "description": "JSON Schema for schedule.ui.yaml, the companion file that maps each GTFS Schedule field to an editor component and its validation rules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "fields"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Annotation format version. Bump on breaking changes to this schema."
+    },
+    "regions": {
+      "type": "object",
+      "description": "Named geographic areas referenced by the bounding_box validation rule.",
+      "additionalProperties": { "$ref": "#/definitions/region" }
+    },
+    "fields": {
+      "type": "object",
+      "description": "Annotations keyed by '<file>.<field>', where <file> is the GTFS filename without the .txt extension (e.g. 'stops.stop_lat').",
+      "propertyNames": {
+        "pattern": "^[a-z_]+\\.[a-z_0-9]+$",
+        "description": "Key must be '<file>.<field>' in snake_case."
+      },
+      "additionalProperties": { "$ref": "#/definitions/annotation" }
+    }
+  },
+  "definitions": {
+    "region": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min_lat", "max_lat", "min_lon", "max_lon", "source"],
+      "properties": {
+        "label": { "$ref": "#/definitions/i18nStringMap" },
+        "min_lat": { "type": "number", "minimum": -90, "maximum": 90 },
+        "max_lat": { "type": "number", "minimum": -90, "maximum": 90 },
+        "min_lon": { "type": "number", "minimum": -180, "maximum": 180 },
+        "max_lon": { "type": "number", "minimum": -180, "maximum": 180 },
+        "source": {
+          "type": "string",
+          "description": "Where the coordinates came from. Required so the box can be re-verified rather than trusted."
+        },
+        "retrieved": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+      }
+    },
+    "i18nStringMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "es": { "type": "string" },
+        "en": { "type": "string" },
+        "pt": { "type": "string" }
+      }
+    },
+    "annotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["component", "i18n"],
+      "properties": {
+        "component": {
+          "type": "string",
+          "description": "Controlled vocabulary of editor components. Extend only when a field genuinely cannot be edited by an existing one.",
+          "enum": [
+            "text_input",
+            "id_input",
+            "number_input",
+            "select",
+            "color_picker",
+            "map_point",
+            "foreign_key_select",
+            "currency_select"
+          ]
+        },
+        "group": {
+          "type": "string",
+          "description": "Fields sharing a group are edited together as one widget (e.g. stop_lat + stop_lon render a single map)."
+        },
+        "references": {
+          "type": "string",
+          "pattern": "^[a-z_]+\\.[a-z_0-9]+$",
+          "description": "For foreign_key_select: the '<file>.<field>' this field points at. Validation is row existence, not a pattern."
+        },
+        "validation": { "$ref": "#/definitions/validation" },
+        "i18n": {
+          "type": "object",
+          "description": "Rider-facing editor labels. Distinct from the ontology i18n overlays, which carry transliterated machine names.",
+          "additionalProperties": false,
+          "required": ["es"],
+          "properties": {
+            "es": { "$ref": "#/definitions/i18nEntry" },
+            "en": { "$ref": "#/definitions/i18nEntry" },
+            "pt": { "$ref": "#/definitions/i18nEntry" }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "component": { "const": "foreign_key_select" } }, "required": ["component"] },
+          "then": { "required": ["references"] }
+        }
+      ]
+    },
+    "i18nEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "help": { "type": "string" }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Rules derived from the GTFS spec are errors. Advisory rules carry an explicit severity.",
+      "properties": {
+        "required": {
+          "description": "true = always required; false = optional; 'conditional' = the spec's Conditionally Required, resolved at runtime from the field's conditions.",
+          "oneOf": [{ "type": "boolean" }, { "type": "string", "const": "conditional" }]
+        },
+        "unique_in_file": { "type": "boolean" },
+        "range": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Inclusive [min, max]."
+        },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "max_length": { "type": "integer", "minimum": 1 },
+        "pattern": { "type": "string", "format": "regex" },
+        "decimals": {
+          "description": "Fixed number of decimal places, or 'currency_precision' to follow the ISO 4217 precision of the field named in decimals_from.",
+          "oneOf": [
+            { "type": "integer", "minimum": 0 },
+            { "type": "string", "const": "currency_precision" }
+          ]
+        },
+        "decimals_from": {
+          "type": "string",
+          "pattern": "^[a-z_]+\\.[a-z_0-9]+$",
+          "description": "The currency-code field that determines precision when decimals = currency_precision."
+        },
+        "enum_from_spec": {
+          "type": "boolean",
+          "description": "Options come from schedule.yaml's own `options` block. Never duplicate enum values here."
+        },
+        "empty_means": {
+          "type": "string",
+          "description": "Value an empty cell is equivalent to, where the spec defines one (e.g. '0 or empty')."
+        },
+        "code_list": {
+          "type": "string",
+          "enum": ["iso_4217", "iso_639_1", "bcp_47", "iana_tz"],
+          "description": "External code list the value must belong to."
+        },
+        "default": { "type": "string" },
+        "contrast_with": {
+          "type": "string",
+          "pattern": "^[a-z_]+\\.[a-z_0-9]+$",
+          "description": "Companion color field this value must remain legible against."
+        },
+        "bounding_box": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["region"],
+          "description": "Advisory geographic check. Defaults to a warning: a point outside the box is suspicious, not spec-invalid, and cross-border stops are legitimate.",
+          "properties": {
+            "region": { "type": "string" },
+            "severity": { "type": "string", "enum": ["error", "warning"], "default": "warning" }
+          }
+        }
+      },
+      "dependencies": {
+        "decimals_from": ["decimals"]
+      }
+    }
+  }
+}

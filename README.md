@@ -122,6 +122,32 @@ ajv validate -s serializers/schedule.schema.json -d serializers/schedule.json
 
 Artifact generation is orchestrated by dedicated scripts/tools per target (ORMs, docs, diagrams). Where applicable, outputs are written to the paths listed above. Refer to each generator’s instructions and `pyproject.toml` tasks if defined.
 
+## Editor Annotations (UI & Validation)
+
+Beyond the GTFS spec itself, the repo records **which visual component edits each
+field and what validation it needs**. That mapping is the lab's own decision, not
+part of GTFS, so it lives in a companion file rather than inside the ground truth:
+
+- **Annotations**: `serializers/schedule/schedule.ui.yaml`, keyed by `<file>.<field>`
+- **Schema for the annotations**: `serializers/schedule/schedule.ui.schema.json`
+- **Design rationale (Spanish)**: `documentation/ui-schema.md`
+
+Keeping them separate means `schedule.yaml` can be regenerated from an upstream
+spec change without colliding with editor decisions.
+
+```bash
+# Report how much of the spec has editor annotations
+uv run converters/schedule/ui_coverage.py
+uv run converters/schedule/ui_coverage.py --json
+
+# Build the browsable explorer into web/dist/index.html
+uv run converters/schedule/yaml2site.py
+```
+
+The coverage script fails on orphaned or schema-invalid annotations, but not on
+fields that simply have no annotation yet — those are expected while the sweep
+across the spec is in progress, and are surfaced in the site as "not yet mapped".
+
 ## Ontology Namespace
 
 - **Prefix**: gtfs

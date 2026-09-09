@@ -1,0 +1,254 @@
+# yaml-language-server: $schema=./schedule.ui.schema.json
+
+# ---------------------------------------------------------------
+# GTFS Schedule — editor/validation annotations (companion file)
+# ---------------------------------------------------------------
+# Companion to schedule.yaml. schedule.yaml stays a faithful transcription of
+# the upstream GTFS spec and is regenerated when the spec changes; this file
+# holds the lab's own editor decisions and is keyed by "<file>.<field>" so the
+# two can diff and evolve independently.
+#
+# See documentation/ui-schema.md for the vocabulary and the reasoning.
+
+version: 1
+
+# Named geographic areas referenced by the `bounding_box` validation rule.
+regions:
+  costa_rica:
+    label:
+      es: 'Costa Rica (territorio nacional)'
+      en: 'Costa Rica (national territory)'
+      pt: 'Costa Rica (território nacional)'
+    # Full national territory, including Isla del Coco (~5.53 N, -87.06 W).
+    # A mainland-only box (min_lat 8.0) would reject Isla del Coco, and a
+    # max_lon of -82.5 would reject the easternmost Caribbean coast near
+    # Sixaola/Manzanillo, whose real extent is -82.43.
+    min_lat: 5.4991601
+    max_lat: 11.2195684
+    min_lon: -87.1019965
+    max_lon: -82.4299043
+    source: 'OpenStreetMap / Nominatim, relation "Costa Rica"'
+    retrieved: '2026-09-08'
+
+fields:
+
+  # ----------------------------- stops.txt -----------------------------
+
+  stops.stop_id:
+    component: id_input
+    validation:
+      required: true
+      unique_in_file: true
+      max_length: 255
+      pattern: '^[\x20-\x7E]+$'
+    i18n:
+      es:
+        label: 'ID de la parada'
+        help: 'Identificador interno y único de la parada. No se muestra a las personas usuarias.'
+      en:
+        label: 'Stop ID'
+        help: 'Internal, unique identifier for the stop. Not shown to riders.'
+      pt:
+        label: 'ID da parada'
+        help: 'Identificador interno e único da parada. Não é exibido aos passageiros.'
+
+  stops.stop_name:
+    component: text_input
+    validation:
+      required: conditional
+      max_length: 255
+    i18n:
+      es:
+        label: 'Nombre de la parada'
+        help: 'Nombre de la parada tal como lo usa la agencia en señalización y horarios.'
+      en:
+        label: 'Stop name'
+        help: 'Name of the stop as the agency uses it on signage and timetables.'
+      pt:
+        label: 'Nome da parada'
+        help: 'Nome da parada conforme usado pela agência na sinalização e nos horários.'
+
+  stops.stop_lat:
+    component: map_point
+    group: stop_location
+    validation:
+      required: conditional
+      range: [-90, 90]
+      decimals: 6
+      bounding_box:
+        region: costa_rica
+        severity: warning
+    i18n:
+      es:
+        label: 'Latitud'
+        help: 'Ubicación de la parada. Debe ser el punto donde aborda la persona usuaria (acera o andén), no la calzada.'
+      en:
+        label: 'Latitude'
+        help: 'Stop location. Must be the point where riders board (sidewalk or platform), not the roadway.'
+      pt:
+        label: 'Latitude'
+        help: 'Localização da parada. Deve ser o ponto de embarque (calçada ou plataforma), não a via.'
+
+  stops.stop_lon:
+    component: map_point
+    group: stop_location
+    validation:
+      required: conditional
+      range: [-180, 180]
+      decimals: 6
+      bounding_box:
+        region: costa_rica
+        severity: warning
+    i18n:
+      es:
+        label: 'Longitud'
+        help: 'Ubicación de la parada. Debe ser el punto donde aborda la persona usuaria (acera o andén), no la calzada.'
+      en:
+        label: 'Longitude'
+        help: 'Stop location. Must be the point where riders board (sidewalk or platform), not the roadway.'
+      pt:
+        label: 'Longitude'
+        help: 'Localização da parada. Deve ser o ponto de embarque (calçada ou plataforma), não a via.'
+
+  stops.wheelchair_boarding:
+    component: select
+    validation:
+      required: false
+      enum_from_spec: true
+      empty_means: '0'
+    i18n:
+      es:
+        label: 'Accesibilidad en silla de ruedas'
+        help: 'El significado de cada opción depende de si la parada tiene estación madre. El editor debe mostrar las opciones del caso correspondiente.'
+      en:
+        label: 'Wheelchair boarding'
+        help: 'The meaning of each option depends on whether the stop has a parent station. The editor must show the options for the matching case.'
+      pt:
+        label: 'Acessibilidade em cadeira de rodas'
+        help: 'O significado de cada opção depende de a parada ter estação-mãe. O editor deve mostrar as opções do caso correspondente.'
+
+  # ----------------------------- routes.txt ----------------------------
+
+  routes.route_id:
+    component: id_input
+    validation:
+      required: true
+      unique_in_file: true
+      max_length: 255
+      pattern: '^[\x20-\x7E]+$'
+    i18n:
+      es:
+        label: 'ID de la ruta'
+        help: 'Identificador interno y único de la ruta. No se muestra a las personas usuarias.'
+      en:
+        label: 'Route ID'
+        help: 'Internal, unique identifier for the route. Not shown to riders.'
+      pt:
+        label: 'ID da rota'
+        help: 'Identificador interno e único da rota. Não é exibido aos passageiros.'
+
+  routes.route_short_name:
+    component: text_input
+    validation:
+      required: conditional
+      max_length: 12
+    i18n:
+      es:
+        label: 'Nombre corto'
+        help: 'Identificador breve que las personas usuarias asocian con la ruta (por ejemplo, "32" o "100X").'
+      en:
+        label: 'Short name'
+        help: 'Brief identifier riders associate with the route (for example, "32" or "100X").'
+      pt:
+        label: 'Nome curto'
+        help: 'Identificador breve que os passageiros associam à rota (por exemplo, "32" ou "100X").'
+
+  routes.route_type:
+    component: select
+    validation:
+      required: true
+      enum_from_spec: true
+    i18n:
+      es:
+        label: 'Tipo de transporte'
+        help: 'Modo de transporte de la ruta. Los valores no son consecutivos: 0–7, 11 y 12.'
+      en:
+        label: 'Route type'
+        help: 'Transport mode of the route. Values are not contiguous: 0–7, 11 and 12.'
+      pt:
+        label: 'Tipo de transporte'
+        help: 'Modo de transporte da rota. Os valores não são consecutivos: 0–7, 11 e 12.'
+
+  routes.route_color:
+    component: color_picker
+    validation:
+      required: false
+      pattern: '^[0-9A-Fa-f]{6}$'
+      default: 'FFFFFF'
+      contrast_with: routes.route_text_color
+    i18n:
+      es:
+        label: 'Color de la ruta'
+        help: 'Color en hexadecimal de seis dígitos, sin "#". Debe contrastar con el color del texto.'
+      en:
+        label: 'Route color'
+        help: 'Six-digit hexadecimal color, without "#". Must contrast with the text color.'
+      pt:
+        label: 'Cor da rota'
+        help: 'Cor hexadecimal de seis dígitos, sem "#". Deve contrastar com a cor do texto.'
+
+  # ------------------------- fare_attributes.txt -----------------------
+
+  fare_attributes.fare_id:
+    component: id_input
+    validation:
+      required: true
+      unique_in_file: true
+      max_length: 255
+      pattern: '^[\x20-\x7E]+$'
+    i18n:
+      es:
+        label: 'ID de la tarifa'
+        help: 'Identificador interno y único de la clase tarifaria.'
+      en:
+        label: 'Fare ID'
+        help: 'Internal, unique identifier for the fare class.'
+      pt:
+        label: 'ID da tarifa'
+        help: 'Identificador interno e único da classe tarifária.'
+
+  fare_attributes.price:
+    component: number_input
+    validation:
+      required: true
+      min: 0
+      decimals: currency_precision
+      decimals_from: fare_attributes.currency_type
+    i18n:
+      es:
+        label: 'Precio'
+        help: 'Monto de la tarifa, no negativo. La cantidad de decimales la define currency_type según ISO 4217 (CRC usa 2).'
+      en:
+        label: 'Price'
+        help: 'Fare amount, non-negative. The number of decimals is set by currency_type per ISO 4217 (CRC uses 2).'
+      pt:
+        label: 'Preço'
+        help: 'Valor da tarifa, não negativo. O número de casas decimais é definido por currency_type conforme ISO 4217 (CRC usa 2).'
+
+  fare_attributes.currency_type:
+    component: currency_select
+    validation:
+      required: true
+      pattern: '^[A-Z]{3}$'
+      code_list: iso_4217
+      default: 'CRC'
+    i18n:
+      es:
+        label: 'Moneda'
+        help: 'Código alfabético ISO 4217. Define la precisión decimal de price.'
+      en:
+        label: 'Currency'
+        help: 'ISO 4217 alphabetic code. Sets the decimal precision of price.'
+      pt:
+        label: 'Moeda'
+        help: 'Código alfabético ISO 4217. Define a precisão decimal de price.'
