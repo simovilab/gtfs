@@ -209,7 +209,29 @@ uv run converters/ui/composites.py
 
 # Build the composites page into web/dist/composites.html
 uv run converters/ui/composites2site.py
+
+# Build both pages, serve them, and edit composites.yaml from the browser
+uv run converters/schedule/serve_site.py
 ```
+
+### Editing composites from the page
+
+The page edits composites, views and derived sources — no hand-editing of the
+YAML. Edits are held as an overlay in `localStorage`, separate from the data
+built into the page; the difference between the two is the changeset, which
+drives the "new/modified/removed" badges and the export.
+
+Every reference input offers all 869 possible references (218 Schedule fields,
+650 Realtime paths), embedded already-resolved, and marks immediately whether
+what you typed exists. That same catalog lets the whole page — wireframe,
+counters, reverse index — re-render from an unsaved draft.
+
+Under `serve_site.py` a "write to file" button merges the changeset into
+`serializers/ui/composites.yaml` through ruamel's round-trip loader, so comments
+on untouched entries survive. The endpoint accepts same-origin requests only,
+and validates the whole merged document against the schema *and* resolves every
+reference before writing. On GitHub Pages there is no server, so the page emits
+a YAML patch to copy instead. `composites.py` in CI remains the authority.
 
 Because both files key into the same field namespace, the field explorer shows
 which screens display a given field, and the composites page reports which

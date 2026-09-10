@@ -145,6 +145,14 @@
           "default": false,
           "description": "The composite cannot render without this prop resolving."
         },
+        "mode": {
+          "enum": [
+            "fallback",
+            "all"
+          ],
+          "default": "fallback",
+          "description": "fallback: first non-empty source wins. all: every source is used together, because they are one value (a coordinate pair, a geometry) rather than alternatives."
+        },
         "sources": {
           "type": "array",
           "minItems": 1,
@@ -174,14 +182,6 @@
         },
         "i18n": {
           "$ref": "#/definitions/i18nBlock"
-        },
-        "mode": {
-          "enum": [
-            "fallback",
-            "all"
-          ],
-          "default": "fallback",
-          "description": "fallback: first non-empty source wins. all: every source is used together, because they are one value (a coordinate pair, a geometry) rather than alternatives."
         }
       },
       "oneOf": [

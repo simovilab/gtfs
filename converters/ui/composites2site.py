@@ -5,8 +5,17 @@ Writes web/dist/composites.html, a sibling of the field explorer that
 yaml2site.py builds. Same approach: data resolved at build time and embedded,
 so the result is a static page with no runtime requests.
 
-The page is read-only. composites.yaml is edited by hand and checked by
-converters/ui/composites.py, which is the CI step.
+Three payloads go into the page:
+
+    doc       the authored composites.yaml, which the editor treats as the
+              baseline its draft is diffed against
+    catalog   every reference that could be typed, resolved once here so the
+              browser can re-resolve an edited document on its own
+    form      the vocabulary, read out of the JSON schema
+
+Under serve_site.py the page can write composites.yaml back through
+converters/ui/composites_io.py. On GitHub Pages nothing answers api/status and
+it falls back to exporting a patch.
 
 Usage:
     uv run converters/ui/composites2site.py
@@ -19,9 +28,11 @@ import sys
 from pathlib import Path
 
 import jsonschema
+import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 import composites as model
+import composites_form
 
 ROOT = Path(__file__).resolve().parents[2]
 TEMPLATE_DIR = ROOT / "converters" / "ui" / "templates"
@@ -46,6 +57,28 @@ def embed(payload: dict) -> str:
     )
 
 
+def asset(name: str) -> str:
+    """Read a CSS/JS asset verbatim.
+
+    These are plain files rather than Jinja templates so they stay valid,
+    lintable CSS and JavaScript, and so nothing in them is mistaken for
+    template syntax.
+    """
+    return (ASSET_DIR / name).read_text(encoding="utf-8")
+
+
+def options(catalog: dict) -> str:
+    """The reference pick list, as <option> markup.
+
+    Rendered server-side rather than built in JavaScript: 869 options created
+    one at a time on load is visible work, and this is static text.
+    """
+    return "".join(
+        f'<option value="{ref}">' for ref in sorted(catalog)
+        if '"' not in ref and "<" not in ref
+    )
+
+
 def main() -> int:
     try:
         data = model.load()
@@ -58,7 +91,8 @@ def main() -> int:
               f"  at {location}: {e.message}", file=sys.stderr)
         return 1
 
-    errors, _ = model.check(data["document"], data)
+    document = data["document"]
+    errors, _ = model.check(document, data)
     if errors:
         # Building a page from a file with dangling references would show a
         # screen that cannot exist. Refuse, and point at the checker.
@@ -66,7 +100,11 @@ def main() -> int:
               "run converters/ui/composites.py for the list", file=sys.stderr)
         return 1
 
-    data.pop("document")
+    spec = yaml.safe_load(model.SCHEDULE_PATH.read_text(encoding="utf-8"))
+    realtime = yaml.safe_load(model.REALTIME_PATH.read_text(encoding="utf-8"))
+    ui = yaml.safe_load(model.UI_PATH.read_text(encoding="utf-8")) or {}
+    browser = composites_form.build(model.COMPOSITES_SCHEMA, spec, realtime,
+                                    ui.get("fields", {}), document)
 
     env = Environment(
         loader=FileSystemLoader(TEMPLATE_DIR),
@@ -75,10 +113,16 @@ def main() -> int:
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(
         env.get_template("composites.html.jinja").render(
-            data_json=embed(data),
+            doc_json=embed(document),
+            catalog_json=embed(browser["catalog"]),
+            form_json=embed(browser["form"]),
+            refs_options=options(browser["catalog"]),
             style=SHARED_CSS.read_text(encoding="utf-8"),
-            composites_css=(ASSET_DIR / "composites.css").read_text(encoding="utf-8"),
-            composites_js=(ASSET_DIR / "composites.js").read_text(encoding="utf-8"),
+            composites_css=asset("composites.css"),
+            state_js=asset("composites_state.js"),
+            composites_js=asset("composites.js"),
+            editor_js=asset("composites_editor.js"),
+            export_js=asset("composites_export.js"),
         ),
         encoding="utf-8",
     )

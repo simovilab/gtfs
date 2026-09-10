@@ -197,11 +197,61 @@ hermana del explorador de campos. Tiene dos modos:
   fuente, su tipo y presencia, y el componente de edición que ese campo tiene en
   `schedule.ui.yaml` (o «sin anotar», que es justamente la lista de trabajo).
 
-Abajo va el índice inverso completo: campo → pantallas.
+- **Fuentes** — las fuentes derivadas declaradas en el archivo y el índice
+  inverso completo: campo → pantallas.
 
-La página es de solo lectura. `composites.yaml` se edita a mano; el editor del
-explorador todavía no sabe editar listas repetidas, que es lo que hacen falta
-para `props` y `sources`.
+## 6.1 Editar desde la página
+
+No hace falta abrir el YAML. La página edita composites, vistas y fuentes
+derivadas, con la misma arquitectura de dos capas que el explorador de campos:
+
+| Capa | Qué es | Dónde vive |
+|---|---|---|
+| Base | `composites.yaml` tal como está en el repositorio | dentro de la página |
+| Borrador | los cambios sin guardar | `localStorage` del navegador |
+
+La diferencia entre las dos **es** el conjunto de cambios. De ahí salen gratis
+las etiquetas «nuevo / modificado / eliminado», el descarte por entrada y el
+parche de exportación.
+
+Lo que hace editable una estructura anidada es que el formulario trabaja sobre
+una copia del borrador direccionada por rutas (`props.0.sources.1`). Escribir
+actualiza el borrador directamente; solo agregar, quitar o reordenar una fila
+vuelve a dibujar el formulario. Por eso se puede editar una lista repetida sin
+perder el cursor en cada tecla.
+
+### Las referencias se resuelven mientras se escribe
+
+La página lleva incrustadas las 869 referencias posibles — 218 campos de
+Schedule y 650 rutas de Realtime — ya resueltas. Eso permite dos cosas:
+
+1. Cada campo de referencia ofrece la lista completa, y marca al instante si lo
+   escrito existe (`schedule`, `realtime`, `derivado`) o no (`no existe`).
+2. La página entera se vuelve a calcular sobre el borrador sin guardar: el
+   esquema, los contadores y el índice inverso reflejan el cambio antes de
+   escribirlo al archivo.
+
+### Cómo salen los cambios del navegador
+
+- **En GitHub Pages** no hay servidor: la página emite un **parche** YAML con
+  solo las entradas cambiadas, para copiar o descargar. Un parche y no el
+  archivo completo a propósito: una exportación completa borraría los
+  comentarios escritos a mano, incluidos los que dicen qué bloques siguen
+  siendo provisionales.
+- **Bajo `serve_site.py`** aparece el botón «Guardar en el archivo». Escribe
+  `composites.yaml` a través del cargador round-trip de ruamel, así que los
+  comentarios de las entradas que no se tocaron sobreviven. El endpoint acepta
+  solo peticiones del mismo origen, valida el documento completo contra el
+  esquema **y** resuelve todas las referencias antes de escribir nada.
+
+Las revisiones del navegador son para retroalimentación rápida. El servidor
+revalida todo antes de escribir, y CI decide.
+
+### Una normalización de una sola vez
+
+La primera vez que se edita una entrada, sus claves quedan en el orden del
+esquema. Es ruido en el primer diff de cada entrada y nunca vuelve a pasar; a
+cambio, todas las entradas terminan con la misma forma.
 
 ## 7. Alcance actual
 

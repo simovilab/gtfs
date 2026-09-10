@@ -48,9 +48,9 @@ derived_sources:
 
   shapes.geojson:
     i18n:
-      es: { label: 'Trazado en GeoJSON' }
-      en: { label: 'Alignment as GeoJSON' }
-      pt: { label: 'Traçado em GeoJSON' }
+      es: {label: 'Trazado en GeoJSON'}
+      en: {label: 'Alignment as GeoJSON'}
+      pt: {label: 'Traçado em GeoJSON'}
     from:
       - schedule:shapes.shape_id
       - schedule:shapes.shape_pt_lat
@@ -92,9 +92,9 @@ composites:
           - schedule:routes.route_short_name
           - schedule:routes.route_long_name
         i18n:
-          es: { label: 'Código' }
-          en: { label: 'Code' }
-          pt: { label: 'Código' }
+          es: {label: 'Código'}
+          en: {label: 'Code'}
+          pt: {label: 'Código'}
       - name: title
         required: true
         sources:
@@ -102,9 +102,9 @@ composites:
           - schedule:routes.route_short_name
         note: 'Reverse of `code` on purpose: the badge wants the short form, the heading wants the descriptive one.'
         i18n:
-          es: { label: 'Nombre' }
-          en: { label: 'Name' }
-          pt: { label: 'Nome' }
+          es: {label: 'Nombre'}
+          en: {label: 'Name'}
+          pt: {label: 'Nome'}
       - name: description
         sources:
           - schedule:routes.route_desc
@@ -158,9 +158,9 @@ composites:
           - schedule:routes.route_long_name
         note: 'Four levels deep because a headsign is the one thing riders use to tell two directions apart; showing nothing is not an option.'
         i18n:
-          es: { label: 'Destino' }
-          en: { label: 'Destination' }
-          pt: { label: 'Destino' }
+          es: {label: 'Destino'}
+          en: {label: 'Destination'}
+          pt: {label: 'Destino'}
       - name: eta
         required: true
         sources:
@@ -171,9 +171,9 @@ composites:
         freshness: 60s
         compute: 'Minutes remaining = source time minus FeedHeader.timestamp, not the device clock.'
         i18n:
-          es: { label: 'Llegada' }
-          en: { label: 'Arrival' }
-          pt: { label: 'Chegada' }
+          es: {label: 'Llegada'}
+          en: {label: 'Arrival'}
+          pt: {label: 'Chegada'}
       - name: eta_is_live
         sources:
           - realtime:FeedHeader.timestamp
@@ -220,9 +220,9 @@ composites:
           - schedule:trips.direction_id
         compute: 'Groups the whole block: one column, tab or section per direction.'
         i18n:
-          es: { label: 'Sentido' }
-          en: { label: 'Direction' }
-          pt: { label: 'Sentido' }
+          es: {label: 'Sentido'}
+          en: {label: 'Direction'}
+          pt: {label: 'Sentido'}
       - name: trip_start_time
         required: true
         sources:
@@ -230,9 +230,9 @@ composites:
           - schedule:stop_times.departure_time
         compute: 'For a frequency-based trip, frequencies.start_time. Otherwise the departure_time of the trip first stop_time, by stop_sequence.'
         i18n:
-          es: { label: 'Hora de salida' }
-          en: { label: 'Start time' }
-          pt: { label: 'Hora de partida' }
+          es: {label: 'Hora de salida'}
+          en: {label: 'Start time'}
+          pt: {label: 'Hora de partida'}
       - name: headway
         sources:
           - schedule:frequencies.headway_secs
@@ -276,17 +276,17 @@ composites:
           - schedule:stops.stop_code
         note: 'The number riders see on the sign and quote to the driver, distinct from stop_id.'
         i18n:
-          es: { label: 'Código' }
-          en: { label: 'Code' }
-          pt: { label: 'Código' }
+          es: {label: 'Código'}
+          en: {label: 'Code'}
+          pt: {label: 'Código'}
       - name: stop_name
         required: true
         sources:
           - schedule:stops.stop_name
         i18n:
-          es: { label: 'Parada' }
-          en: { label: 'Stop' }
-          pt: { label: 'Parada' }
+          es: {label: 'Parada'}
+          en: {label: 'Stop'}
+          pt: {label: 'Parada'}
       - name: stop_desc
         sources:
           - schedule:stops.stop_desc
@@ -320,9 +320,9 @@ composites:
           - derived:shapes.geojson
         note: 'Absent shapes.txt, the alignment degrades to a straight line between consecutive stops.'
         i18n:
-          es: { label: 'Trazado' }
-          en: { label: 'Alignment' }
-          pt: { label: 'Traçado' }
+          es: {label: 'Trazado'}
+          en: {label: 'Alignment'}
+          pt: {label: 'Traçado'}
       - name: stop_pins
         required: true
         mode: all
@@ -332,9 +332,9 @@ composites:
         compute: 'One pin per stop in RouteStops, reached through stop_times.stop_id.'
         note: 'One coordinate, two fields — not a fallback chain.'
         i18n:
-          es: { label: 'Paradas' }
-          en: { label: 'Stops' }
-          pt: { label: 'Paradas' }
+          es: {label: 'Paradas'}
+          en: {label: 'Stops'}
+          pt: {label: 'Paradas'}
       - name: pin_popup
         composite: RouteStops
         note: 'The popup is the RouteStops row for that pin: code, name and stop_desc.'
@@ -386,9 +386,9 @@ composites:
         sources:
           - schedule:fare_products.fare_product_name
         i18n:
-          es: { label: 'Tarifa' }
-          en: { label: 'Fare' }
-          pt: { label: 'Tarifa' }
+          es: {label: 'Tarifa'}
+          en: {label: 'Fare'}
+          pt: {label: 'Tarifa'}
       - name: amount
         required: true
         mode: all
@@ -397,17 +397,17 @@ composites:
           - schedule:fare_products.currency
         note: 'Amount and currency are one value; currency also sets the decimal precision.'
         i18n:
-          es: { label: 'Monto' }
-          en: { label: 'Amount' }
-          pt: { label: 'Valor' }
+          es: {label: 'Monto'}
+          en: {label: 'Amount'}
+          pt: {label: 'Valor'}
       - name: rider_category
         sources:
           - schedule:rider_categories.rider_category_name
         compute: 'Joined via fare_products.rider_category_id. Absent, the product applies to every rider.'
         i18n:
-          es: { label: 'Categoría' }
-          en: { label: 'Rider category' }
-          pt: { label: 'Categoria' }
+          es: {label: 'Categoría'}
+          en: {label: 'Rider category'}
+          pt: {label: 'Categoria'}
       - name: fare_media
         sources:
           - schedule:fare_media.fare_media_name
@@ -449,9 +449,9 @@ composites:
           - realtime:Alert.header_text.translation.text
         note: 'Required and realtime-only: absent a realtime feed the whole block is hidden, which is correct — no feed means no known alerts, not "no alerts".'
         i18n:
-          es: { label: 'Aviso' }
-          en: { label: 'Headline' }
-          pt: { label: 'Aviso' }
+          es: {label: 'Aviso'}
+          en: {label: 'Headline'}
+          pt: {label: 'Aviso'}
       - name: detail
         sources:
           - realtime:Alert.description_text.translation.text
@@ -480,11 +480,9 @@ views:
   routes_detail:
     path: '/routes/:route_id'
     i18n:
-      es: { label: 'Detalle de ruta' }
-      en: { label: 'Route detail' }
-      pt: { label: 'Detalhe da rota' }
-    notes:
-      - 'Block order follows the proposal sheet of 2026-09-10, top to bottom.'
+      es: {label: 'Detalle de ruta'}
+      en: {label: 'Route detail'}
+      pt: {label: 'Detalhe da rota'}
     blocks:
       - RouteHeader
       - RouteNextTrips
@@ -493,3 +491,5 @@ views:
       - RouteMap
       - RouteFares
       - RouteAlerts
+    notes:
+      - 'Block order follows the proposal sheet of 2026-09-10, top to bottom.'

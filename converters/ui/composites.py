@@ -28,6 +28,8 @@ from pathlib import Path
 import jsonschema
 import yaml
 
+import composites_io
+
 ROOT = Path(__file__).resolve().parents[2]
 COMPOSITES_PATH = ROOT / "serializers" / "ui" / "composites.yaml"
 COMPOSITES_SCHEMA = ROOT / "serializers" / "ui" / "composites.schema.json"
@@ -333,6 +335,51 @@ def load() -> dict:
         "derived": doc.get("derived_sources", {}),
     }
     return build(doc, ctx) | {"document": doc}
+
+
+def key_order(schema: dict) -> dict[str, tuple[str, ...]]:
+    """Each section's property order, taken from the schema.
+
+    The writer emits keys in this order so an entry rewritten by the editor
+    keeps the same shape as the hand-written ones around it.
+    """
+    d = schema["definitions"]
+    return {
+        "composites": tuple(d["composite"]["properties"]),
+        "views": tuple(d["view"]["properties"]),
+        "derived_sources": tuple(d["derivedSource"]["properties"]),
+    }
+
+
+def write(changes: dict[str, dict]) -> dict[str, int]:
+    """Validate a changeset, then merge it into composites.yaml.
+
+    Validation runs on the whole merged document, not just the incoming
+    entries, so a change can never leave the file in a state CI would reject.
+    Unresolved references are checked too: the schema only knows a reference is
+    well-formed, not that the field exists.
+    """
+    schema = json.loads(COMPOSITES_SCHEMA.read_text(encoding="utf-8"))
+    document = composites_io.load(COMPOSITES_PATH)
+    counts = composites_io.apply_changes(document, changes, key_order(schema))
+
+    # json round-trip: validate plain data, not ruamel's comment-carrying nodes.
+    plain = json.loads(json.dumps(document))
+    jsonschema.validate(plain, schema)
+
+    ui = yaml.safe_load(UI_PATH.read_text(encoding="utf-8")) or {}
+    ctx = {
+        "schedule": schedule_index(yaml.safe_load(SCHEDULE_PATH.read_text(encoding="utf-8"))),
+        "realtime": realtime_elements(yaml.safe_load(REALTIME_PATH.read_text(encoding="utf-8"))),
+        "annotations": ui.get("fields", {}),
+        "derived": plain.get("derived_sources", {}),
+    }
+    errors, _ = check(plain, build(plain, ctx))
+    if errors:
+        raise ValueError("; ".join(errors))
+
+    composites_io.dump(document, COMPOSITES_PATH)
+    return counts
 
 
 def main() -> int:

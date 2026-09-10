@@ -31,16 +31,73 @@
     <div class="langs" id="modes">
       <button data-m="wire"></button>
       <button data-m="detail"></button>
+      <button data-m="sources"></button>
     </div>
+    <div class="langs" id="newbar"></div>
   </div>
   <div id="body"></div>
+  <div id="draftbar" hidden></div>
 </main>
+
+<dialog id="out"><div class="dwrap">
+  <h2></h2>
+  <p class="help hint"></p>
+  <textarea readonly spellcheck="false"></textarea>
+  <div class="acts">
+    <button class="act primary" id="p-copy"></button>
+    <button class="act" id="p-close"></button>
+  </div>
+</div></dialog>
+
+<dialog id="ask"><div class="dwrap">
+  <p class="msg"></p>
+  <div class="acts">
+    <button class="act primary" id="a-yes"></button>
+    <button class="act" id="a-no"></button>
+  </div>
+</div></dialog>
 
 <footer id="footer"></footer>
 
-<script type="application/json" id="data">{{ data_json }}</script>
+{# Every reference that could be typed, offered to each reference input. #}
+<datalist id="refs">{{ refs_options }}</datalist>
+
+<script type="application/json" id="doc">{{ doc_json }}</script>
+<script type="application/json" id="catalog">{{ catalog_json }}</script>
+<script type="application/json" id="form-model">{{ form_json }}</script>
 <script>
+{{ state_js }}
 {{ composites_js }}
+{{ editor_js }}
+{{ export_js }}
+
+document.getElementById('view').onchange = e => { currentView = e.target.value; renderBody(); };
+document.querySelectorAll('#modes button').forEach(b =>
+  b.onclick = () => { mode = b.dataset.m; renderAll(); });
+
+window.addEventListener('beforeunload', e => {
+  // Drafts survive a reload in localStorage, but an unsaved change that never
+  // reached the YAML is still easy to forget about.
+  if (changedKeys().length) e.preventDefault();
+});
+
+// Deep link from the field explorer: composites.html#RouteHeader opens it.
+if (location.hash){
+  const wanted = decodeURIComponent(location.hash.slice(1));
+  const owner = MODEL.composites.find(c => c.name === wanted);
+  if (owner){
+    mode = 'detail';
+    const host = MODEL.views.find(v => blocksOf(v).some(c => c.name === owner.name));
+    if (host) currentView = host.name;
+  }
+}
+
+renderAll();
+if (location.hash){
+  const card = document.querySelector(`details.comp[data-name="${CSS.escape(location.hash.slice(1))}"]`);
+  if (card){ card.open = true; card.scrollIntoView({block: 'start'}); }
+}
+probeWriteAccess();
 </script>
 </body>
 </html>

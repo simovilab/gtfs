@@ -8,6 +8,7 @@ Two endpoints sit alongside the static files:
 
     GET  /api/status       does this server accept writes?
     PUT  /api/annotations  merge a changeset into schedule.ui.yaml
+    PUT  /api/composites   merge a changeset into composites.yaml
 
 The page probes /api/status at load. On GitHub Pages nothing answers, so it
 falls back to exporting a YAML patch to copy by hand; here, the "write to file"
@@ -38,6 +39,7 @@ import yaml2site
 
 # Same reason as in yaml2site: these converters run as scripts, not a package.
 sys.path.insert(0, str(yaml2site.ROOT / "converters" / "ui"))
+import composites  # noqa: E402
 import composites2site  # noqa: E402
 
 DIST_DIR = yaml2site.OUTPUT_PATH.parent
@@ -102,7 +104,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_PUT(self):  # noqa: N802
-        if self.path.rstrip("/") != "/api/annotations":
+        route = self.path.rstrip("/")
+        if route not in ("/api/annotations", "/api/composites"):
             return self._json(404, {"error": "no such endpoint"})
         if not self.writable:
             return self._json(403, {"error": "server started read-only"})
@@ -118,14 +121,22 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return self._json(400, {"error": "no changes given"})
 
         try:
-            counts = write_annotations(changes)
+            if route == "/api/annotations":
+                counts = write_annotations(changes)
+            else:
+                counts = composites.write(changes)
         except jsonschema.ValidationError as e:
             return self._json(422, {"errors": [f"{'.'.join(map(str, e.path))}: {e.message}"]})
+        except ValueError as e:  # references that resolve nowhere
+            return self._json(422, {"errors": str(e).split("; ")})
         except Exception as e:  # surfaced to the page rather than swallowed
             return self._json(500, {"error": str(e)})
 
-        code = yaml2site.main()
-        return self._json(200, {"counts": counts, "rebuilt": code == 0})
+        # Both pages are rebuilt either way: an annotation edit changes the
+        # component badges the composites page shows, and a composite edit
+        # changes the usage tags on the field explorer.
+        rebuilt = yaml2site.main() == 0 and composites2site.main() == 0
+        return self._json(200, {"counts": counts, "rebuilt": rebuilt})
 
     def handle_one_request(self):
         """Serve one request, tolerating a reader that walks away.
