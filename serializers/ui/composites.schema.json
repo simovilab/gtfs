@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://simovi.org/schemas/composites.schema.json",
+  "title": "SIMOVI display composites",
+  "description": "Which GTFS Schedule and Realtime fields each screen reads. Companion to schedule.yaml and realtime.yaml; not part of the GTFS specification.",
+  "type": "object",
+  "required": ["version", "composites", "views"],
+  "additionalProperties": false,
+
+  "properties": {
+    "version": { "const": 1 },
+
+    "composites": {
+      "type": "object",
+      "description": "Reusable display units, named in PascalCase.",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[A-Z][A-Za-z0-9]*$" },
+      "additionalProperties": { "$ref": "#/definitions/composite" }
+    },
+
+    "views": {
+      "type": "object",
+      "description": "Screens, named in snake_case, each an ordered stack of composites.",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+      "additionalProperties": { "$ref": "#/definitions/view" }
+    }
+  },
+
+  "definitions": {
+
+    "ref": {
+      "description": "A field reference. schedule: is flat (file.field). realtime: is a path walked through the protobuf messages, so arrival.time and departure.time stay distinguishable.",
+      "type": "string",
+      "oneOf": [
+        {
+          "pattern": "^schedule:[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$",
+          "description": "schedule:<file>.<field>, without the .txt"
+        },
+        {
+          "pattern": "^realtime:[A-Z][A-Za-z0-9]*(\\.[a-z][a-z0-9_]*)+$",
+          "description": "realtime:<Message>.<field>[.<field>...]"
+        }
+      ]
+    },
+
+    "i18nBlock": {
+      "description": "Rider-facing wording. Spanish is required; en and pt are optional.",
+      "type": "object",
+      "required": ["es"],
+      "additionalProperties": false,
+      "properties": {
+        "es": { "$ref": "#/definitions/i18nEntry" },
+        "en": { "$ref": "#/definitions/i18nEntry" },
+        "pt": { "$ref": "#/definitions/i18nEntry" }
+      }
+    },
+
+    "i18nEntry": {
+      "type": "object",
+      "required": ["label"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "help": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "param": {
+      "description": "An identifier passed in to instantiate the composite. A join key, not decoration.",
+      "type": "object",
+      "required": ["name", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "source": { "$ref": "#/definitions/ref" },
+        "required": { "type": "boolean", "default": true },
+        "note": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "prop": {
+      "description": "One drawn attribute. Either a fallback chain of fields, or a nested composite - never both.",
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "The composite cannot render without this prop resolving."
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/ref" },
+          "description": "Ordered fallback chain: first non-empty wins."
+        },
+        "composite": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$",
+          "description": "Name of a nested composite, instead of sources."
+        },
+        "freshness": {
+          "type": "string",
+          "pattern": "^[0-9]+[sm]$",
+          "description": "How old a realtime value may be before it is treated as absent."
+        },
+        "compute": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How the drawn value is derived from the sources, when it is not the raw value."
+        },
+        "note": { "type": "string", "minLength": 1 },
+        "i18n": { "$ref": "#/definitions/i18nBlock" }
+      },
+      "oneOf": [
+        { "required": ["sources"], "not": { "required": ["composite"] } },
+        { "required": ["composite"], "not": { "required": ["sources"] } }
+      ]
+    },
+
+    "composite": {
+      "type": "object",
+      "required": ["entity", "cardinality", "i18n", "props"],
+      "additionalProperties": false,
+      "properties": {
+        "entity": {
+          "description": "What one instance of this composite is about.",
+          "enum": ["route", "trip", "stop", "agency", "vehicle", "alert", "fare"]
+        },
+        "cardinality": {
+          "description": "Whether the screen draws one of these or a list.",
+          "enum": ["one", "many"]
+        },
+        "key": {
+          "allOf": [{ "$ref": "#/definitions/ref" }],
+          "description": "Identifier of each rendered instance. Required when cardinality is many, since the row identity is otherwise unstated."
+        },
+        "i18n": { "$ref": "#/definitions/i18nBlock" },
+        "params": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/param" }
+        },
+        "props": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/prop" }
+        },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "if": { "properties": { "cardinality": { "const": "many" } } },
+      "then": { "required": ["key"] }
+    },
+
+    "view": {
+      "type": "object",
+      "required": ["path", "i18n", "blocks"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^/[A-Za-z0-9/:_-]*$",
+          "description": "Route pattern, with :params where the view is parameterized."
+        },
+        "i18n": { "$ref": "#/definitions/i18nBlock" },
+        "blocks": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$" },
+          "description": "Composites stacked top to bottom."
+        },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

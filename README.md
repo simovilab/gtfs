@@ -178,6 +178,47 @@ How the changeset leaves the browser depends on where the page is running:
 The browser's own checks are for fast feedback only. `ui_coverage.py` in CI
 remains the authority on whether the annotations are valid.
 
+## Display Composites
+
+Which GTFS fields each **screen** reads. This is the transpose of the editor
+annotations: `schedule.ui.yaml` has one entry per field, `composites.yaml` has
+one entry per screen naming many fields.
+
+- **Composites**: `serializers/ui/composites.yaml`
+- **Schema**: `serializers/ui/composites.schema.json`
+- **Design rationale (Spanish)**: `documentation/composites.md`
+
+This file is **not** part of GTFS and the spec implies none of these screens —
+it is SIMOVI's presentation layer, which is why it lives in its own directory.
+
+A prop's `sources` is an ordered fallback chain, first non-empty wins:
+
+```yaml
+- name: eta
+  sources:
+    - realtime:TripUpdate.stop_time_update.departure.time
+    - schedule:stop_times.departure_time
+```
+
+That chain is the realtime-to-static degradation policy, written down once
+instead of reimplemented in every screen.
+
+```bash
+# Resolve every reference against the spec and report; non-zero on a dangling ref
+uv run converters/ui/composites.py
+
+# Build the composites page into web/dist/composites.html
+uv run converters/ui/composites2site.py
+```
+
+Because both files key into the same field namespace, the field explorer shows
+which screens display a given field, and the composites page reports which
+displayed fields still have no editor annotation — that list is the annotation
+priority order.
+
+Current scope is `/routes` only: four composites across two views, deliberately
+a vertical slice.
+
 ## Ontology Namespace
 
 - **Prefix**: gtfs

@@ -1,0 +1,274 @@
+# yaml-language-server: $schema=./composites.schema.json
+
+# ---------------------------------------------------------------
+# SIMOVI — display composites (companion file)
+# ---------------------------------------------------------------
+# This file is NOT part of the GTFS specification and nothing in the spec
+# implies it. It is SIMOVI's own presentation layer: which GTFS Schedule and
+# GTFS Realtime fields each screen reads, in what order, and what happens when
+# they are missing.
+#
+# It is the transpose of serializers/schedule/schedule.ui.yaml:
+#
+#   schedule.ui.yaml  "how does someone EDIT this field?"     one entry per field
+#   composites.yaml   "which fields does this SCREEN read?"   one entry, many fields
+#
+# A composite is assembled from the same pieces a UI component is:
+#
+#   params  the identifiers you pass in to instantiate it (routes.route_id).
+#           These are join keys, not decoration. Each one is backed by an
+#           editor component in schedule.ui.yaml — usually id_input.
+#   props   the attributes it draws (route_desc, route_color, an ETA). Each
+#           prop is an ORDERED FALLBACK CHAIN: first non-empty source wins.
+#           That chain is the realtime-to-static degradation policy, written
+#           down once here instead of reimplemented in every screen.
+#
+# A prop may name another composite instead of sources, which is how the small
+# pieces (RouteBadge) are reused rather than restated.
+#
+# Source references are prefixed by feed:
+#
+#   schedule:<file>.<field>          flat, as GTFS CSV is flat
+#   realtime:<Message>.<field>...    a path walked through the protobuf messages
+#
+# Both files key into the same field namespace, so the explorer can show, for
+# any field, which screens depend on it — and CI can reject a reference to a
+# field that does not exist in the spec.
+#
+# See documentation/composites.md for the vocabulary and the reasoning.
+
+version: 1
+
+composites:
+
+  # --------------------------- RouteBadge ----------------------------
+  # The smallest unit: what a route looks like in a list, on a map pin, or
+  # inside an alert. Everything larger reuses it rather than restating it.
+
+  RouteBadge:
+    entity: route
+    cardinality: one
+    i18n:
+      es:
+        label: 'Distintivo de ruta'
+        help: 'Identificación mínima de una ruta: su número y sus colores. Se reutiliza en listas, mapas y alertas.'
+      en:
+        label: 'Route badge'
+        help: 'Minimum identification of a route: its number and its colors. Reused in lists, maps and alerts.'
+      pt:
+        label: 'Emblema da rota'
+        help: 'Identificação mínima de uma rota: seu número e suas cores. Reutilizado em listas, mapas e alertas.'
+    params:
+      - name: route_id
+        source: schedule:routes.route_id
+        required: true
+    props:
+      - name: code
+        required: true
+        # route_short_name is Conditionally Required: a feed may carry only the
+        # long name. Falling back keeps the badge renderable for such feeds.
+        sources:
+          - schedule:routes.route_short_name
+          - schedule:routes.route_long_name
+        i18n:
+          es: { label: 'Código' }
+          en: { label: 'Code' }
+          pt: { label: 'Código' }
+      - name: background
+        sources:
+          - schedule:routes.route_color
+        note: 'Defaults to FFFFFF per the spec; the default lives in schedule.ui.yaml, not here.'
+      - name: foreground
+        sources:
+          - schedule:routes.route_text_color
+        note: 'Contrast against `background` is a warning-level rule in schedule.ui.yaml.'
+
+  # --------------------------- RouteHeader ---------------------------
+
+  RouteHeader:
+    entity: route
+    cardinality: one
+    i18n:
+      es:
+        label: 'Encabezado de ruta'
+        help: 'Bloque superior de la pantalla de una ruta: cómo se llama, quién la opera y de qué modo es.'
+      en:
+        label: 'Route header'
+        help: 'Top block of a route screen: what it is called, who operates it, and what mode it is.'
+      pt:
+        label: 'Cabeçalho da rota'
+        help: 'Bloco superior da tela de uma rota: como se chama, quem opera e qual o modo.'
+    params:
+      - name: route_id
+        source: schedule:routes.route_id
+        required: true
+    props:
+      - name: badge
+        required: true
+        composite: RouteBadge
+      - name: title
+        required: true
+        sources:
+          - schedule:routes.route_long_name
+          - schedule:routes.route_short_name
+        note: 'Reverse of RouteBadge.code on purpose: the badge wants the short form, the heading wants the descriptive one.'
+        i18n:
+          es: { label: 'Nombre' }
+          en: { label: 'Name' }
+          pt: { label: 'Nome' }
+      - name: description
+        sources:
+          - schedule:routes.route_desc
+      - name: mode
+        required: true
+        sources:
+          - schedule:routes.route_type
+        compute: 'Enum value rendered as an icon plus its label; option list comes from schedule.yaml.'
+      - name: operator
+        sources:
+          - schedule:agency.agency_name
+        compute: 'Joined via routes.agency_id; Conditionally Required when the feed has one agency.'
+      - name: more_info
+        sources:
+          - schedule:routes.route_url
+          - schedule:agency.agency_url
+
+  # ---------------------------- RouteMap -----------------------------
+
+  RouteMap:
+    entity: route
+    cardinality: one
+    i18n:
+      es:
+        label: 'Mapa de la ruta'
+        help: 'Trazado de la ruta, sus paradas y, cuando hay datos en tiempo real, la posición de los vehículos.'
+      en:
+        label: 'Route map'
+        help: 'The route alignment, its stops and, when realtime data exists, vehicle positions.'
+      pt:
+        label: 'Mapa da rota'
+        help: 'Traçado da rota, suas paradas e, quando há dados em tempo real, a posição dos veículos.'
+    params:
+      - name: route_id
+        source: schedule:routes.route_id
+        required: true
+    props:
+      - name: alignment
+        sources:
+          - schedule:shapes.shape_pt_lat
+          - schedule:shapes.shape_pt_lon
+        compute: 'Points ordered by shape_pt_sequence; shape_id reached through trips.shape_id. Absent shapes.txt degrades to a straight line between stops.'
+        note: 'This prop deliberately names two fields with no fallback between them — they are one geometry, not alternatives.'
+      - name: stop_pins
+        required: true
+        sources:
+          - schedule:stops.stop_lat
+          - schedule:stops.stop_lon
+        compute: 'Reached through stop_times.stop_id for the route trips.'
+      - name: stop_label
+        sources:
+          - schedule:stops.stop_name
+          - schedule:stops.stop_code
+      - name: vehicles
+        sources:
+          - realtime:VehiclePosition.position.latitude
+          - realtime:VehiclePosition.position.longitude
+        freshness: 90s
+        note: 'Absent realtime, the layer is hidden rather than shown empty — a stale vehicle is worse than no vehicle.'
+      - name: vehicle_bearing
+        sources:
+          - realtime:VehiclePosition.position.bearing
+        freshness: 90s
+
+  # -------------------------- RouteNextTrips -------------------------
+
+  RouteNextTrips:
+    entity: trip
+    cardinality: many
+    i18n:
+      es:
+        label: 'Próximos viajes'
+        help: 'Lista de las próximas salidas de la ruta. Usa tiempo real cuando existe y horario programado cuando no.'
+      en:
+        label: 'Next trips'
+        help: 'List of the route upcoming departures. Uses realtime when available and the scheduled timetable when not.'
+      pt:
+        label: 'Próximas viagens'
+        help: 'Lista das próximas partidas da rota. Usa tempo real quando existe e o horário programado quando não.'
+    params:
+      - name: route_id
+        source: schedule:routes.route_id
+        required: true
+      - name: stop_id
+        source: schedule:stops.stop_id
+        required: false
+        note: 'Optional: given a stop, the list narrows to departures from it.'
+    # One row per trip, so the per-row identity has to be named explicitly.
+    key: schedule:trips.trip_id
+    props:
+      - name: destination
+        required: true
+        sources:
+          - realtime:TripUpdate.trip_properties.trip_headsign
+          - schedule:trips.trip_headsign
+          - schedule:stop_times.stop_headsign
+          - schedule:routes.route_long_name
+        note: 'Four levels deep because a headsign is the one thing riders use to tell two directions apart; showing nothing is not an option.'
+        i18n:
+          es: { label: 'Destino' }
+          en: { label: 'Destination' }
+          pt: { label: 'Destino' }
+      - name: eta
+        required: true
+        sources:
+          - realtime:TripUpdate.stop_time_update.departure.time
+          - realtime:TripUpdate.stop_time_update.arrival.time
+          - schedule:stop_times.departure_time
+          - schedule:stop_times.arrival_time
+        freshness: 60s
+        compute: 'Minutes remaining = source time minus FeedHeader.timestamp, not the device clock.'
+        i18n:
+          es: { label: 'Llegada' }
+          en: { label: 'Arrival' }
+          pt: { label: 'Chegada' }
+      - name: eta_is_live
+        sources:
+          - realtime:FeedHeader.timestamp
+        compute: 'True when `eta` resolved to a realtime source. Drives the live indicator; must never be shown for a scheduled time.'
+      - name: delay
+        sources:
+          - realtime:TripUpdate.stop_time_update.departure.delay
+          - realtime:TripUpdate.delay
+        freshness: 60s
+      - name: occupancy
+        sources:
+          - realtime:VehiclePosition.occupancy_status
+          - realtime:TripUpdate.stop_time_update.departure_occupancy_status
+        freshness: 90s
+      - name: accessible
+        sources:
+          - schedule:trips.wheelchair_accessible
+          - schedule:stops.wheelchair_boarding
+        note: 'Two different questions — accessible vehicle, accessible stop. Shown as one badge only when both are known.'
+
+views:
+
+  routes_index:
+    path: '/routes'
+    i18n:
+      es: { label: 'Listado de rutas' }
+      en: { label: 'Route index' }
+      pt: { label: 'Lista de rotas' }
+    blocks:
+      - RouteBadge
+
+  routes_detail:
+    path: '/routes/:route_id'
+    i18n:
+      es: { label: 'Detalle de ruta' }
+      en: { label: 'Route detail' }
+      pt: { label: 'Detalhe da rota' }
+    blocks:
+      - RouteHeader
+      - RouteMap
+      - RouteNextTrips

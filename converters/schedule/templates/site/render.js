@@ -77,6 +77,16 @@ function stateTag(key){
   return `<span class="tag state ${cls}">${esc(text)}</span>`;
 }
 
+/* Which screens display this field. The link opens the composites page with
+ * that composite expanded, so the two files stay one click apart. */
+function usesHtml(f){
+  const s = t();
+  if (!f.usage || !f.usage.length) return '';
+  const seen = [...new Set(f.usage.map(u => u.composite))];
+  return `<p class="uses">${esc(s.shownIn)}: ` + seen.map(c =>
+    `<a href="composites.html#${encodeURIComponent(c)}">${esc(c)}</a>`).join(', ') + `</p>`;
+}
+
 function specColumn(f){
   const s = t();
   return `<div class="col"><h3>${esc(s.spec)}</h3>
@@ -90,6 +100,7 @@ function specColumn(f){
     ${f.notes.length ? `<p class="optcat">${esc(s.notes)}</p>
       <ul class="notes">${f.notes.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>` : ''}
     ${f.options.length ? `<p class="optcat">${esc(s.options)}</p>${optionsHtml(f.options)}` : ''}
+    ${usesHtml(f)}
   </div>`;
 }
 
@@ -128,6 +139,7 @@ function fieldHtml(f){
     ${f.presence ? `<span class="tag req">${esc(f.presence)}</span>` : ''}
     ${a ? `<span class="tag comp">${esc(a.component)}</span>`
         : `<span class="tag gap">${esc(s.nomap)}</span>`}
+    ${f.usage && f.usage.length ? `<span class="tag use">${esc(s.displayed)}</span>` : ''}
     ${stateTag(f.key)}
   </summary>`;
 

@@ -25,6 +25,11 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 import ui_form_model
 
 ROOT = Path(__file__).resolve().parents[2]
+
+# The composites model lives beside the other UI converters. It is imported by
+# path rather than as a package because these converters are run as scripts.
+sys.path.insert(0, str(ROOT / "converters" / "ui"))
+import composites as composites_model  # noqa: E402
 SPEC_PATH = ROOT / "serializers" / "schedule" / "schedule.yaml"
 UI_PATH = ROOT / "serializers" / "schedule" / "schedule.ui.yaml"
 SCHEMA_PATH = ROOT / "serializers" / "schedule" / "schedule.ui.schema.json"
@@ -99,8 +104,30 @@ def annotation_of(note: dict | None) -> dict | None:
     return shaped
 
 
+def display_usage() -> dict[str, list[dict]]:
+    """'routes.route_color' -> the composites that display it.
+
+    A missing or broken composites file must not stop the field explorer from
+    building: composites.py is the authority on whether that file is valid,
+    and it fails on its own in CI.
+    """
+    try:
+        model = composites_model.load()
+    except Exception as e:  # noqa: BLE001 - reported, not swallowed
+        print(f"WARNING: composites not resolved ({e}); "
+              f"fields will show no usage", file=sys.stderr)
+        return {}
+    usage: dict[str, list[dict]] = {}
+    for ref, uses in model["reverse"].items():
+        feed, _, path = ref.partition(":")
+        if feed == "schedule":
+            usage.setdefault(path, []).extend(uses)
+    return usage
+
+
 def build_data(spec: dict, ui: dict) -> dict:
     annotations = ui.get("fields", {})
+    usage = display_usage()
     tables = []
 
     for entry in spec.get("field_definitions", {}).get("files", []):
@@ -123,6 +150,7 @@ def build_data(spec: dict, ui: dict) -> dict:
                     "notes": as_list(field.get("notes")),
                     "options": normalize_options(field.get("options")),
                     "annotation": annotation_of(note),
+                    "usage": usage.get(key, []),
                 }
             )
 

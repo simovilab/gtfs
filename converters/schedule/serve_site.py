@@ -36,6 +36,10 @@ import jsonschema
 import ui_yaml_io
 import yaml2site
 
+# Same reason as in yaml2site: these converters run as scripts, not a package.
+sys.path.insert(0, str(yaml2site.ROOT / "converters" / "ui"))
+import composites2site  # noqa: E402
+
 DIST_DIR = yaml2site.OUTPUT_PATH.parent
 MAX_BODY = 4 * 1024 * 1024
 LOCAL_HOSTS = ("localhost", "127.0.0.1")
@@ -158,6 +162,11 @@ def main() -> int:
     if not args.no_build:
         if (code := yaml2site.main()) != 0:
             return code
+        # The composites page is a sibling in the same directory, so the nav
+        # link between the two pages resolves during a local preview too.
+        if composites2site.main() != 0:
+            print("WARNING: composites page not rebuilt; the nav link will "
+                  "serve a stale page or 404", file=sys.stderr)
 
     if not (DIST_DIR / "index.html").exists():
         print(f"ERROR: nothing to serve; {DIST_DIR / 'index.html'} is missing", file=sys.stderr)

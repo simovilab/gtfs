@@ -5,12 +5,18 @@ on:
     branches: [main]
     paths:
       - 'serializers/schedule/**'
+      - 'serializers/realtime/**'
+      - 'serializers/ui/**'
       - 'converters/schedule/**'
+      - 'converters/ui/**'
       - '.github/workflows/schedule-ui-site.yml'
   pull_request:
     paths:
       - 'serializers/schedule/**'
+      - 'serializers/realtime/**'
+      - 'serializers/ui/**'
       - 'converters/schedule/**'
+      - 'converters/ui/**'
       - '.github/workflows/schedule-ui-site.yml'
   schedule:
     # Weekly, so drift between schedule.yaml and schedule.ui.yaml surfaces
@@ -52,8 +58,26 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Check display composites
+        id: composites
+        run: |
+          # Without pipefail the exit status would be tee's, and a dangling
+          # field reference would pass the build.
+          set -o pipefail
+          uv run converters/ui/composites.py | tee composites.txt
+          {
+            echo "### Display composites"
+            echo
+            echo '```'
+            cat composites.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Build the explorer site
         run: uv run converters/schedule/yaml2site.py
+
+      - name: Build the composites page
+        run: uv run converters/ui/composites2site.py
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIMOVI — Composites de visualización</title>
+<style>
+{{ style }}
+{{ composites_css }}
+</style>
+</head>
+<body>
+<header><div class="hwrap">
+  <h1 id="title">SIMOVI<small id="subtitle"></small></h1>
+  <nav class="pages">
+    <a href="index.html">GTFS Schedule</a>
+    <a href="composites.html" aria-current="page">Composites</a>
+  </nav>
+  <div class="langs" id="langs"></div>
+</div></header>
+
+<main>
+  <p class="warnbox" id="notspec"></p>
+  <div class="bar">
+    <p id="stats"></p>
+    <p id="covtext"></p>
+    <div class="meter"><i id="covbar"></i></div>
+  </div>
+  <div class="controls">
+    <select id="view"></select>
+    <div class="langs" id="modes">
+      <button data-m="wire"></button>
+      <button data-m="detail"></button>
+    </div>
+  </div>
+  <div id="body"></div>
+</main>
+
+<footer id="footer"></footer>
+
+<script type="application/json" id="data">{{ data_json }}</script>
+<script>
+{{ composites_js }}
+</script>
+</body>
+</html>
