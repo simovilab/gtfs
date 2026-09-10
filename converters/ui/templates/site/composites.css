@@ -50,6 +50,7 @@ nav.pages a:hover:not([aria-current=page]){border-color:var(--accent);color:var(
 .tag.rt{background:var(--gap-soft);color:var(--gap);font-family:var(--mono)}
 .tag.sched{background:var(--ok-soft);color:var(--ok);font-family:var(--mono)}
 .tag.used{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.tag.der{background:var(--warn-soft);color:var(--warn);font-family:var(--mono)}
 
 .prop{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:8px;
   background:var(--bg)}

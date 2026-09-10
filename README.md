@@ -216,8 +216,9 @@ which screens display a given field, and the composites page reports which
 displayed fields still have no editor annotation — that list is the annotation
 priority order.
 
-Current scope is `/routes` only: four composites across two views, deliberately
-a vertical slice.
+Current scope is `/routes` only: the seven blocks from the 2026-09-10 lab
+proposal — `RouteHeader`, `RouteNextTrips`, `RouteSchedule`, `RouteStops`,
+`RouteMap`, `RouteFares` (Fares v2), `RouteAlerts` — in that order.
 
 ## Ontology Namespace
 

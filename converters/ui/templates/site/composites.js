@@ -22,13 +22,16 @@ const CSTRINGS = {
     entity: 'Entidad', cardinality: 'Cardinalidad', one: 'uno', many: 'lista',
     params: 'Parámetros', props: 'Props', key: 'Identidad de fila',
     sources: 'Cadena de respaldo', nested: 'Composite anidado',
+    combined: 'Se usan todas juntas', derivedFrom: 'Derivado de', derived: 'derivado',
     required: 'obligatorio', optional: 'opcional',
     freshness: 'Vigencia', compute: 'Cálculo', note: 'Nota',
     usedBy: 'Usado en', nestedIn: 'Anidado en', unused: 'sin usar',
     noAnnotation: 'sin anotar', missing: 'no existe en la referencia',
     reverse: 'Índice inverso: campo → pantallas',
     field: 'Campo', usedIn: 'Aparece en',
-    empty: 'Vacío', andMore: '… una fila por cada viaje',
+    empty: 'Vacío', andMore: e => `… una fila por cada ${e}`,
+    entities: {route:'ruta', trip:'viaje', stop:'parada', agency:'agencia',
+               vehicle:'vehículo', alert:'alerta', fare:'tarifa'},
     footer: 'Generado desde <code>serializers/ui/composites.yaml</code>, resuelto contra <code>schedule.yaml</code>, <code>realtime.yaml</code> y <code>schedule.ui.yaml</code>. Este archivo no forma parte de la especificación GTFS.',
     notSpec: 'Los composites son decisiones de producto de SIMOVI, no parte de GTFS. La especificación no implica ninguna de estas pantallas.'
   },
@@ -40,13 +43,16 @@ const CSTRINGS = {
     entity: 'Entity', cardinality: 'Cardinality', one: 'one', many: 'list',
     params: 'Params', props: 'Props', key: 'Row identity',
     sources: 'Fallback chain', nested: 'Nested composite',
+    combined: 'All used together', derivedFrom: 'Built from', derived: 'derived',
     required: 'required', optional: 'optional',
     freshness: 'Freshness', compute: 'Computed', note: 'Note',
     usedBy: 'Used by', nestedIn: 'Nested in', unused: 'unused',
     noAnnotation: 'not annotated', missing: 'not a field in the reference',
     reverse: 'Reverse index: field → screens',
     field: 'Field', usedIn: 'Appears in',
-    empty: 'Empty', andMore: '… one row per trip',
+    empty: 'Empty', andMore: e => `… one row per ${e}`,
+    entities: {route:'route', trip:'trip', stop:'stop', agency:'agency',
+               vehicle:'vehicle', alert:'alert', fare:'fare'},
     footer: 'Generated from <code>serializers/ui/composites.yaml</code>, resolved against <code>schedule.yaml</code>, <code>realtime.yaml</code> and <code>schedule.ui.yaml</code>. This file is not part of the GTFS specification.',
     notSpec: 'Composites are SIMOVI product decisions, not part of GTFS. The specification implies none of these screens.'
   },
@@ -58,13 +64,16 @@ const CSTRINGS = {
     entity: 'Entidade', cardinality: 'Cardinalidade', one: 'um', many: 'lista',
     params: 'Parâmetros', props: 'Props', key: 'Identidade da linha',
     sources: 'Cadeia de fallback', nested: 'Composite aninhado',
+    combined: 'Usadas em conjunto', derivedFrom: 'Derivado de', derived: 'derivado',
     required: 'obrigatório', optional: 'opcional',
     freshness: 'Validade', compute: 'Cálculo', note: 'Nota',
     usedBy: 'Usado em', nestedIn: 'Aninhado em', unused: 'sem uso',
     noAnnotation: 'sem anotação', missing: 'não existe na referência',
     reverse: 'Índice inverso: campo → telas',
     field: 'Campo', usedIn: 'Aparece em',
-    empty: 'Vazio', andMore: '… uma linha por viagem',
+    empty: 'Vazio', andMore: e => `… uma linha por ${e}`,
+    entities: {route:'rota', trip:'viagem', stop:'parada', agency:'agência',
+               vehicle:'veículo', alert:'alerta', fare:'tarifa'},
     footer: 'Gerado a partir de <code>serializers/ui/composites.yaml</code>, resolvido contra <code>schedule.yaml</code>, <code>realtime.yaml</code> e <code>schedule.ui.yaml</code>. Este arquivo não faz parte da especificação GTFS.',
     notSpec: 'Composites são decisões de produto da SIMOVI, não parte do GTFS. A especificação não implica nenhuma destas telas.'
   }
@@ -81,6 +90,9 @@ let mode = 'wire';
 
 const ct = () => CSTRINGS[lang];
 const byName = name => CDATA.composites.find(c => c.name === name);
+
+/** The entity name in the reading language; the machine name if unlisted. */
+const entityName = entity => (ct().entities || {})[entity] || entity;
 
 /** Rider-facing label, falling back to Spanish and then to the machine name. */
 function labelOf(i18n, fallback){
@@ -119,12 +131,13 @@ function wireBlock(composite, nested){
   // A list composite is drawn twice, the second faded, because "one row per
   // trip" is a fact about the screen that a single row would hide.
   const repeat = composite.cardinality === 'many'
-    ? `<div class="wfrep">${body}</div><p class="wfmore">${esc(s.andMore)}</p>` : '';
+    ? `<div class="wfrep">${body}</div>
+       <p class="wfmore">${esc(s.andMore(entityName(composite.entity)))}</p>` : '';
   return `<div class="wf${nested ? ' nest' : ''}">
     <div class="wfhead">
       <span class="wfname">${esc(composite.name)}</span>
       <span class="wfsub">${esc(labelOf(composite.i18n, composite.name))}</span>
-      <span class="tag ent">${esc(composite.entity)}</span>
+      <span class="tag ent">${esc(entityName(composite.entity))}</span>
       <span class="tag card">${esc(composite.cardinality === 'many' ? s.many : s.one)}</span>
     </div>${body}${repeat}
   </div>`;
@@ -139,6 +152,11 @@ function sourceCells(source){
   if (!source.exists)
     return `<span class="cref missing">${esc(source.ref)}</span>
       <span class="cmeta">${esc(s.missing)}</span>`;
+  if (source.feed === 'derived')
+    return `<span class="tag der">${esc(s.derived)}</span>
+      <span class="cref">${esc(source.path)}</span>
+      <span class="cmeta">${esc(labelOf({[lang]: {label: (source.label||{})[lang]}}, '')
+        || (source.label || {}).es || '')}</span>`;
   const badge = source.feed === 'realtime'
     ? `<span class="tag rt">realtime</span>` : `<span class="tag sched">schedule</span>`;
   const component = source.feed === 'schedule'
@@ -160,11 +178,17 @@ function propBlock(prop){
     prop.note && `<b>${esc(s.note)}:</b> ${esc(prop.note)}`,
   ].filter(Boolean);
 
+  // `mode: all` is not an ordering, so it must not be drawn as a numbered
+  // chain — the numbers would read as a priority that does not exist.
+  const combined = prop.mode === 'all';
   const body = prop.composite
     ? `<p class="pnote"><b>${esc(s.nested)}:</b> <code>${esc(prop.composite)}</code></p>`
-    : `<p class="optcat">${esc(s.sources)}</p>
-       <ol class="chain${prop.sources.length === 1 ? ' single' : ''}">
-         ${prop.sources.map(sourceRow).join('')}</ol>`;
+    : `<p class="optcat">${esc(combined ? s.combined : s.sources)}</p>
+       <ol class="chain${combined || prop.sources.length === 1 ? ' single' : ''}">
+         ${prop.sources.map(sourceRow).join('')}</ol>`
+      + prop.sources.filter(x => (x.sources || []).length).map(x =>
+          `<p class="optcat">${esc(s.derivedFrom)} <code>${esc(x.path)}</code></p>
+           <ol class="chain single">${x.sources.map(sourceRow).join('')}</ol>`).join('');
 
   return `<div class="prop">
     <div class="prophead">
@@ -198,7 +222,7 @@ function compositeDetail(composite){
   return `<details class="comp"${composite.name === highlightName ? ' open' : ''}>
     <summary>
       <span class="cname">${esc(composite.name)}</span>
-      <span class="tag ent">${esc(composite.entity)}</span>
+      <span class="tag ent">${esc(entityName(composite.entity))}</span>
       <span class="tag card">${esc(composite.cardinality === 'many' ? s.many : s.one)}</span>
       ${where.length ? where.map(w => `<span class="tag used">${w}</span>`).join('')
                      : `<span class="tag gap">${esc(s.unused)}</span>`}

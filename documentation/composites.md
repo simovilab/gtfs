@@ -49,8 +49,9 @@ Un composite se arma con las mismas piezas que un componente de interfaz:
 - **`props`** — los atributos que dibuja (`route_desc`, un color, un ETA). Cada
   prop es una **cadena de respaldo ordenada**.
 
-Un prop puede nombrar otro composite en lugar de `sources`. Así `RouteBadge` se
-reutiliza dentro de `RouteHeader` en vez de repetirse.
+Un prop puede nombrar otro composite en lugar de `sources`. Así `RouteStops` se
+reutiliza como contenido del globo del mapa dentro de `RouteMap`, en vez de
+repetirse.
 
 ```yaml
 RouteHeader:
@@ -61,9 +62,6 @@ RouteHeader:
       source: schedule:routes.route_id
       required: true
   props:
-    - name: badge
-      required: true
-      composite: RouteBadge
     - name: title
       required: true
       sources:
@@ -101,11 +99,30 @@ inventándola distinto.
 como ausente. `compute` documenta la transformación cuando lo que se dibuja no es
 el valor crudo.
 
+### La excepción: `mode: all`
+
+A veces las fuentes de un prop no son alternativas sino **un solo valor**. Una
+coordenada son dos campos; un monto son cifra y moneda; una alerta necesita causa
+y efecto juntos. Para esos casos:
+
+```yaml
+- name: stop_pins
+  mode: all
+  sources:
+    - schedule:stops.stop_lat
+    - schedule:stops.stop_lon
+```
+
+`mode: all` es lo que impide leer esa lista como una prioridad que no existe. La
+página tampoco las numera, justamente para no sugerir un orden. El valor por
+defecto es `fallback`.
+
 ## 4. Referencias a campos
 
 ```
 schedule:<archivo>.<campo>          plano, porque GTFS Schedule es plano
 realtime:<Mensaje>.<campo>...       un camino recorrido por los mensajes protobuf
+derived:<nombre>                    un artefacto que la aplicación construye
 ```
 
 La referencia de tiempo real se **recorre**, no se busca por nombre plano. Es lo
@@ -115,6 +132,26 @@ decir la pantalla.
 
 El verificador recorre el grafo de mensajes paso a paso. Si un tramo intermedio
 resulta ser un escalar, la referencia no resuelve y falla.
+
+### Fuentes derivadas
+
+No todo lo que se dibuja es un campo del feed. El mapa consume **GeoJSON**, no
+filas de `shapes.txt`. Eso se declara aparte, diciendo de qué campos se construye:
+
+```yaml
+derived_sources:
+  shapes.geojson:
+    from:
+      - schedule:shapes.shape_id
+      - schedule:shapes.shape_pt_lat
+      - schedule:shapes.shape_pt_lon
+      - schedule:shapes.shape_pt_sequence
+```
+
+Declararlo así mantiene la cadena completa: si `shapes.txt` pierde un campo, se
+rompe la build igual que con cualquier otra referencia, y el índice inverso sigue
+llegando hasta los campos de origen — `shape_pt_lat` aparece como «se muestra en
+RouteMap», aunque el mapa nunca lo lea directamente.
 
 ## 5. Qué revisa CI y qué no
 
@@ -134,6 +171,13 @@ Advierte, sin fallar, cuando:
 - un prop obligatorio tiene **todas** sus fuentes en tiempo real, así que no
   puede dibujarse desde un feed estático
 - un composite no lo usa ninguna vista ni lo anida nadie
+- una fuente derivada que nadie muestra
+- un prop con `mode: all` y una sola fuente, que no dice nada
+
+La advertencia de «prop obligatorio con todas sus fuentes en tiempo real» no se
+emite cuando el composite entero es de tiempo real. `RouteAlerts` sin feed de
+tiempo real desaparece, y eso es correcto: no hay feed no significa que no haya
+alertas.
 
 Lo que **no** revisa: si la pantalla es buena. Eso no es trabajo de un
 validador.
@@ -161,7 +205,22 @@ para `props` y `sources`.
 
 ## 7. Alcance actual
 
-Solo `/routes`. Cuatro composites — `RouteBadge`, `RouteHeader`, `RouteMap`,
-`RouteNextTrips` — en dos vistas. Es una rebanada vertical a propósito: sirve
-para saber si el modelo de cadenas de respaldo aguanta el contacto con una
-pantalla real antes de escribir las demás.
+Solo `/routes`, con los siete bloques de la propuesta del taller del 10 de
+septiembre de 2026, en el orden en que están en la hoja:
+
+| Composite | Notas de la propuesta |
+|---|---|
+| `RouteHeader` | **Provisional**: la foto corta la parte superior de la hoja |
+| `RouteNextTrips` | Tiempo real con respaldo en horario programado |
+| `RouteSchedule` | «Reemplazo de la tabla de horarios de uso común», marcado provisional |
+| `RouteStops` | También escrito `RouteStopsSchedule` |
+| `RouteMap` | Consume `shapes.geojson`; el globo reutiliza `RouteStops` |
+| `RouteFares` | GTFS-Fares v2 explícitamente, no `fare_attributes.txt` |
+| `RouteAlerts` | Tiempo real; sin feed, el bloque no se muestra |
+
+Dos cosas de la propuesta quedaron **fuera** a propósito:
+
+- **El calculador de tarifas.** Aparece en la hoja y es una funcionalidad, no un
+  bloque de visualización. `RouteFares` solo muestra los productos aplicables.
+- **El bloque superior.** `RouteHeader` está escrito por analogía, no
+  transcrito. Hay que confirmarlo contra la hoja completa.

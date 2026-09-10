@@ -127,6 +127,20 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         code = yaml2site.main()
         return self._json(200, {"counts": counts, "rebuilt": code == 0})
 
+    def handle_one_request(self):
+        """Serve one request, tolerating a reader that walks away.
+
+        Reloading or navigating mid-response closes the socket while the file
+        is still being copied. That is normal browsing, not a fault, so it is
+        reported as one line instead of a traceback.
+        """
+        try:
+            super().handle_one_request()
+        except (BrokenPipeError, ConnectionResetError):
+            self.close_connection = True
+            sys.stderr.write(f"  {self.command or '?'} {self.path or '?'} "
+                             f"-> client disconnected\n")
+
     def log_message(self, fmt, *args):
         if not self.path.startswith("/api/"):
             return

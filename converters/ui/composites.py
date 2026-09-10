@@ -124,6 +124,18 @@ def resolve(ref: str, ctx: dict) -> dict:
                 annotated=bool(note),
                 label={l: (note.get("i18n", {}).get(l) or {}).get("label", "") for l in LANGS},
             )
+    elif feed == "derived":
+        artifact = ctx["derived"].get(path)
+        if artifact:
+            out.update(
+                exists=True, type="derived", name=path,
+                description=artifact.get("note", ""),
+                # Everything the artifact is built from, so the reverse index
+                # still reaches the underlying spec fields.
+                sources=[resolve(r, ctx) for r in artifact.get("from", [])],
+                label={l: (artifact.get("i18n", {}).get(l) or {}).get("label", "")
+                       for l in LANGS},
+            )
     elif feed == "realtime":
         field = resolve_realtime(path, ctx["realtime"])
         if field:
@@ -148,10 +160,17 @@ def build(doc: dict, ctx: dict) -> dict:
         props = []
         for prop in spec.get("props") or []:
             sources = [resolve(s, ctx) for s in prop.get("sources") or []]
-            props.append({**prop, "required": prop.get("required", False), "sources": sources})
+            props.append({**prop, "required": prop.get("required", False),
+                          "mode": prop.get("mode", "fallback"), "sources": sources})
             for source in sources:
                 reverse.setdefault(source["ref"], []).append(
                     {"composite": name, "prop": prop["name"]})
+                # A field used only to build shapes.geojson is still displayed
+                # by whatever draws that geojson.
+                for under in source.get("sources") or []:
+                    reverse.setdefault(under["ref"], []).append(
+                        {"composite": name, "prop": prop["name"],
+                         "via": source["path"]})
 
         for param in params:
             reverse.setdefault(param["resolved"]["ref"], []).append(
@@ -184,6 +203,7 @@ def build(doc: dict, ctx: dict) -> dict:
     return {
         "composites": composites,
         "views": views,
+        "derived": ctx["derived"],
         "reverse": reverse,
         "langs": list(LANGS),
         "stats": {
@@ -191,7 +211,8 @@ def build(doc: dict, ctx: dict) -> dict:
             "views": len(views),
             "refs": len(refs),
             "schedule": len(schedule_refs),
-            "realtime": len(refs) - len(schedule_refs),
+            "realtime": sum(1 for r in refs if r.startswith("realtime:")),
+            "derived": sum(1 for r in refs if r.startswith("derived:")),
             "annotated": annotated,
             "percent": round(100 * annotated / len(schedule_refs), 1) if schedule_refs else 0.0,
         },
@@ -208,6 +229,10 @@ def check(doc: dict, model: dict) -> tuple[list[str], list[str]]:
 
     for composite in model["composites"]:
         where = composite["name"]
+        # A block that is realtime-only end to end (alerts, vehicle positions)
+        # is meant to disappear without a realtime feed. Only a *mixed* block
+        # is suspicious when one of its required props cannot degrade.
+        mixed = {s["feed"] for p in composite["props"] for s in p["sources"]} != {"realtime"}
 
         seen = set()
         for prop in composite["props"]:
@@ -223,12 +248,25 @@ def check(doc: dict, model: dict) -> tuple[list[str], list[str]]:
                 if not source["exists"]:
                     errors.append(f"{where}.{prop['name']}: '{source['ref']}' "
                                   f"is not a field in the reference")
+                for under in source.get("sources") or []:
+                    if not under["exists"]:
+                        errors.append(f"{where}.{prop['name']}: "
+                                      f"'{source['ref']}' is built from "
+                                      f"'{under['ref']}', which is not a field "
+                                      f"in the reference")
+
+            if prop.get("mode") == "all" and len(prop["sources"]) < 2:
+                warnings.append(f"{where}.{prop['name']}: mode 'all' with a "
+                                f"single source says nothing; drop it")
 
             live = [s for s in prop["sources"] if s["feed"] == "realtime"]
+            if prop.get("mode") == "all":
+                continue  # the remaining checks are about fallback ordering
             if prop.get("freshness") and not live:
                 warnings.append(f"{where}.{prop['name']}: freshness set but no "
                                 f"realtime source, so it can never expire")
-            if prop["required"] and prop["sources"] and len(live) == len(prop["sources"]):
+            if (mixed and prop["required"] and prop["sources"]
+                    and len(live) == len(prop["sources"])):
                 warnings.append(f"{where}.{prop['name']}: required but every source "
                                 f"is realtime, so it cannot render from a static feed")
 
@@ -243,6 +281,11 @@ def check(doc: dict, model: dict) -> tuple[list[str], list[str]]:
 
         if not composite["usedBy"] and not composite["nestedIn"]:
             warnings.append(f"{where}: no view uses it and nothing nests it")
+
+    used = {s["ref"] for c in model["composites"] for p in c["props"] for s in p["sources"]}
+    for name in model["derived"]:
+        if f"derived:{name}" not in used:
+            warnings.append(f"derived source '{name}': nothing displays it")
 
     for view in model["views"]:
         for block in view["blocks"]:
@@ -287,6 +330,7 @@ def load() -> dict:
         "schedule": schedule_index(yaml.safe_load(SCHEDULE_PATH.read_text(encoding="utf-8"))),
         "realtime": realtime_elements(yaml.safe_load(REALTIME_PATH.read_text(encoding="utf-8"))),
         "annotations": ui.get("fields", {}),
+        "derived": doc.get("derived_sources", {}),
     }
     return build(doc, ctx) | {"document": doc}
 
@@ -310,7 +354,7 @@ def main() -> int:
 
     print(f"{stats['composites']} composites across {stats['views']} views")
     print(f"{stats['refs']} field references — {stats['schedule']} schedule, "
-          f"{stats['realtime']} realtime")
+          f"{stats['realtime']} realtime, {stats['derived']} derived")
     print(f"{stats['annotated']}/{stats['schedule']} displayed schedule fields "
           f"have an editor annotation ({stats['percent']}%)")
 
