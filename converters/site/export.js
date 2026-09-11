@@ -5,8 +5,8 @@
  *   GitHub Pages - no server, nothing to write to. The page emits a YAML
  *     *patch* (only the entries that changed) to copy or download. A patch and
  *     not the whole file on purpose: a full-file export would silently drop
- *     every hand-written comment in schedule.ui.yaml, and those comments are
- *     the record of why a rule is a warning rather than an error.
+ *     every hand-written comment in the annotation file, and those comments
+ *     are the record of why a rule is a warning rather than an error.
  *
  *   serve_site.py - a companion endpoint on localhost can write the real file,
  *     comments and all, through ruamel's round-trip loader. The page asks
@@ -45,9 +45,9 @@ function patchYaml(){
     }
 
   const lines = [
-    '# Cambios exportados del explorador GTFS Schedule.',
+    `# Cambios exportados del explorador ${PAGE.feedLabel}.`,
     '# Fragmento, no el archivo completo: pegue las entradas bajo `fields:` en',
-    '# serializers/schedule/schedule.ui.yaml y confirme en una rama.',
+    `# ${PAGE.file} y confirme en una rama.`,
     ''
   ];
   if (added.length){
@@ -131,7 +131,7 @@ function downloadPatch(){
   const blob = new Blob([patchYaml()], {type: 'text/yaml;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'schedule.ui.patch.yaml';
+  a.download = PAGE.patchName;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
@@ -152,7 +152,7 @@ async function writeToFile(){
   const s = t(), button = document.getElementById('d-write');
   button.disabled = true;
   try {
-    const res = await fetch('api/annotations', {
+    const res = await fetch(PAGE.endpoint, {
       method: 'PUT',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({changes: OVERLAY})

@@ -20,7 +20,13 @@ resolver would have looked it up in the reference files.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+
+# rt_spec knows how to walk the protobuf message graph. Imported by path
+# because these converters are run as scripts rather than as a package.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "realtime"))
+import rt_spec  # noqa: E402
 
 LANGS = ("es", "en", "pt")
 
@@ -95,37 +101,50 @@ def schedule_catalog(spec: dict, annotations: dict) -> dict[str, dict]:
     return out
 
 
-def realtime_catalog(spec: dict) -> dict[str, dict]:
+def realtime_catalog(spec: dict, annotations: dict) -> dict[str, dict]:
     """Every walkable realtime path, so arrival.time and departure.time both exist.
+
+    Many paths reach one field definition, and the annotation belongs to the
+    definition — so `key` says which one, and every path that reaches it
+    carries the same annotation. That is what makes the two pages agree about
+    whether a displayed realtime field is annotated.
 
     A message already on the current path is not descended into again; without
     that guard a self-referential message would enumerate forever.
     """
-    elements = {e["name"]: e for e in spec.get("elements", [])}
+    idx = rt_spec.index(spec)
     out: dict[str, dict] = {}
 
-    def walk(message: str, prefix: str, depth: int, seen: frozenset) -> None:
-        element = elements.get(message)
-        if not element or element.get("data_type") != "message" or depth > MAX_RT_DEPTH:
+    def walk(element: dict, prefix: str, depth: int, seen: frozenset) -> None:
+        if element.get("data_type") != "message" or depth > MAX_RT_DEPTH:
             return
+        near = idx["positions"].get(element["name"], [None])[0]
         for field in element.get("fields") or []:
             path = f"{prefix}.{field['name']}"
-            kind = field.get("type") or {}
-            nested = (kind.get("element") or {}).get("name")
+            key = f"{element['name']}.{field['name']}"
+            type_name, data_type = rt_spec.field_type(field)
+            note = annotations.get(key) or {}
             out[f"realtime:{path}"] = _trim({
                 "feed": "realtime",
                 "path": path,
+                "key": key,
                 "group": prefix.split(".", 1)[0],
-                "type": (kind.get("element") or kind.get("format") or {}).get("name", ""),
+                "type": type_name,
                 "presence": field.get("presence", ""),
                 "cardinality": field.get("cardinality", ""),
+                "origin": note.get("origin"),
+                "component": note.get("component"),
+                "annotated": bool(note),
+                "label": _trim({l: (note.get("i18n", {}).get(l) or {}).get("label", "")
+                                for l in LANGS}),
             })
-            if nested and nested not in seen:
-                walk(nested, path, depth + 1, seen | {nested})
+            if data_type == "message" and type_name not in seen:
+                nested = rt_spec.element_at(idx, type_name, near)
+                if nested:
+                    walk(nested, path, depth + 1, seen | {type_name})
 
-    for name, element in elements.items():
-        if element.get("data_type") == "message":
-            walk(name, name, 1, frozenset({name}))
+    for element in rt_spec.messages(idx):
+        walk(element, element["name"], 1, frozenset({element["name"]}))
     return out
 
 
@@ -146,13 +165,13 @@ def derived_catalog(document: dict) -> dict[str, dict]:
 
 
 def build(schema_path: Path, spec: dict, realtime: dict, annotations: dict,
-          document: dict) -> dict:
+          realtime_annotations: dict, document: dict) -> dict:
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     return {
         "form": form_model(schema),
         # Derived entries are rebuilt in the browser as the reader edits
         # derived_sources, so these are only the starting set.
         "catalog": schedule_catalog(spec, annotations)
-                   | realtime_catalog(realtime)
+                   | realtime_catalog(realtime, realtime_annotations)
                    | derived_catalog(document),
     }

@@ -92,10 +92,19 @@ mindmap
 │   ├── realtime.md
 │   └── schedule.md
 ├── serializers/
-│   ├── schedule.xml
-│   ├── schedule.json
-│   ├── schedule.schema.json
-│   └── schedule.yaml
+│   ├── schedule/
+│   │   ├── schedule.yaml
+│   │   ├── schedule.schema.json
+│   │   ├── schedule.ui.yaml
+│   │   └── schedule.ui.schema.json
+│   ├── realtime/
+│   │   ├── realtime.yaml
+│   │   ├── realtime.schema.json
+│   │   ├── realtime.ui.yaml
+│   │   └── realtime.ui.schema.json
+│   └── ui/
+│       ├── composites.yaml
+│       └── composites.schema.json
 ├── LICENSE
 ├── main.py
 ├── pyproject.toml
@@ -126,31 +135,59 @@ Artifact generation is orchestrated by dedicated scripts/tools per target (ORMs,
 
 Beyond the GTFS spec itself, the repo records **which visual component edits each
 field and what validation it needs**. That mapping is the lab's own decision, not
-part of GTFS, so it lives in a companion file rather than inside the ground truth:
+part of GTFS, so it lives in a companion file rather than inside the ground truth.
+There is one such companion per feed:
 
-- **Annotations**: `serializers/schedule/schedule.ui.yaml`, keyed by `<file>.<field>`
-- **Schema for the annotations**: `serializers/schedule/schedule.ui.schema.json`
-- **Design rationale (Spanish)**: `documentation/ui-schema.md`
+| Feed | Annotations | Schema | Rationale (Spanish) |
+|---|---|---|---|
+| Schedule | `serializers/schedule/schedule.ui.yaml` | `schedule.ui.schema.json` | `documentation/ui-schema.md` |
+| Realtime | `serializers/realtime/realtime.ui.yaml` | `realtime.ui.schema.json` | `documentation/realtime-ui-schema.md` |
 
-Keeping them separate means `schedule.yaml` can be regenerated from an upstream
-spec change without colliding with editor decisions.
+Schedule annotations are keyed by `<file>.<field>`; Realtime ones by
+`<Message>.<field>`. Keeping them separate from the specs means `schedule.yaml`
+and `realtime.yaml` can be regenerated from an upstream spec change without
+colliding with editor decisions.
 
 ```bash
-# Report how much of the spec has editor annotations
+# Report how much of each spec has editor annotations
 uv run converters/schedule/ui_coverage.py
+uv run converters/realtime/ui_coverage.py
 uv run converters/schedule/ui_coverage.py --json
 
-# Build the browsable explorer into web/dist/index.html
-uv run converters/schedule/yaml2site.py
+# Build the browsable explorers into web/dist/
+uv run converters/schedule/yaml2site.py       # index.html
+uv run converters/realtime/realtime2site.py   # realtime.html
 
-# Build it, preview it at http://localhost:8777, and edit annotations there
+# Build all three pages, preview at http://localhost:8777, and edit there
 uv run converters/schedule/serve_site.py
 uv run converters/schedule/serve_site.py --read-only   # preview without write-back
 ```
 
-The coverage script fails on orphaned or schema-invalid annotations, but not on
+The coverage scripts fail on orphaned or schema-invalid annotations, but not on
 fields that simply have no annotation yet — those are expected while the sweep
 across the spec is in progress, and are surfaced in the site as "not yet mapped".
+
+### What the Realtime annotations add
+
+Two pages, one code path: both explorers are built by `converters/site/`, and
+only the reference and the vocabulary differ. The vocabulary differs in one
+important way, because a Realtime feed is *produced* rather than typed:
+
+- **`origin`** (required) says where the value comes from — `operator`,
+  `system`, `derived` or `constant`. Most Realtime fields are written by a
+  machine and will never have an editor; recording that is what keeps the
+  coverage figure honest. `component` is required only when `origin` is
+  `operator`, which in practice means service alerts.
+- **The key is the field's definition**, not a path to it. `StopTimeEvent.time`
+  is annotated once and both `arrival.time` and `departure.time` inherit it —
+  `composites.yaml` still distinguishes them, because there the question is
+  which one a screen shows.
+- **`references`** names a GTFS *Schedule* field, and CI resolves it against
+  `schedule.yaml`. That join is what makes a realtime feed consumable, and a
+  typo in it is otherwise invisible until a screen is empty.
+- **`bounding_box` regions are not redeclared** — they are read from
+  `schedule.ui.yaml`, because the national box belongs to the territory and not
+  to the feed.
 
 ### Editing annotations from the site
 
@@ -233,10 +270,10 @@ and validates the whole merged document against the schema *and* resolves every
 reference before writing. On GitHub Pages there is no server, so the page emits
 a YAML patch to copy instead. `composites.py` in CI remains the authority.
 
-Because both files key into the same field namespace, the field explorer shows
+Because all three files key into the same field namespace, each explorer shows
 which screens display a given field, and the composites page reports which
-displayed fields still have no editor annotation — that list is the annotation
-priority order.
+displayed fields — Schedule and Realtime alike — still have no editor
+annotation. That list is the annotation priority order.
 
 Current scope is `/routes` only: the seven blocks from the 2026-09-10 lab
 proposal — `RouteHeader`, `RouteNextTrips`, `RouteSchedule`, `RouteStops`,

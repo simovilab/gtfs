@@ -13,8 +13,9 @@
 <header><div class="hwrap">
   <h1 id="title">SIMOVI<small id="subtitle"></small></h1>
   <nav class="pages">
-    <a href="index.html">GTFS Schedule</a>
-    <a href="composites.html" aria-current="page">Composites</a>
+    {%- for item in nav %}
+    <a href="{{ item.href }}"{% if item.current %} aria-current="page"{% endif %}>{{ item.label }}</a>
+    {%- endfor %}
   </nav>
   <div class="langs" id="langs"></div>
 </div></header>

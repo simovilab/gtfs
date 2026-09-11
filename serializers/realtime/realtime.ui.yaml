@@ -1,0 +1,607 @@
+# yaml-language-server: $schema=./realtime.ui.schema.json
+
+# ---------------------------------------------------------------
+# GTFS Realtime — editor/validation annotations (companion file)
+# ---------------------------------------------------------------
+# Companion to realtime.yaml, the same way schedule.ui.yaml is a companion to
+# schedule.yaml. realtime.yaml stays a faithful transcription of the upstream
+# spec and is regenerated when the spec changes; this file holds the lab's own
+# decisions and is keyed by "<Message>.<field>" so the two can diff and evolve
+# independently.
+#
+# Two things differ from the Schedule side, both because a Realtime feed is
+# produced rather than typed:
+#
+#   `origin` says where the value comes from. Most of these fields are written
+#   by a machine and have no editor at all; only service alerts are really
+#   authored by a person. Saying so is what keeps the coverage figure honest —
+#   otherwise the file would forever read as 80% incomplete when in fact those
+#   fields are complete and simply have no editor.
+#
+#   The key is the field's *definition*, not a path to it. StopTimeEvent.time
+#   is annotated once, and both arrival.time and departure.time inherit it.
+#   composites.yaml still distinguishes the two, because there the question is
+#   which one a screen shows; here the question is what the field means.
+#
+# `regions` is not redeclared here: bounding_box reads the regions defined in
+# schedule.ui.yaml, since the national box is a property of the territory and
+# not of the feed.
+#
+# See documentation/ui-schema.md for the vocabulary and the reasoning.
+
+version: 1
+
+fields:
+
+  # --------------------------- FeedHeader ----------------------------
+
+  FeedHeader.timestamp:
+    origin: system
+    validation:
+      required: true
+      posix_time: true
+      # The canonical validator's W001 asks for a header timestamp close to
+      # the moment of publication; how close is a judgement, so it is a
+      # warning and the number is ours.
+      not_stale:
+        value: 90
+        severity: warning
+        notice: W001
+    i18n:
+      es:
+        label: 'Momento de creación del feed'
+        help: 'Cuándo se construyó este mensaje, en segundos POSIX. Es el reloj contra el que se mide la frescura de todo lo demás.'
+      en:
+        label: 'Feed creation time'
+        help: 'When this message was built, in POSIX seconds. It is the clock everything else is measured for freshness against.'
+      pt:
+        label: 'Momento de criação do feed'
+        help: 'Quando esta mensagem foi construída, em segundos POSIX. É o relógio contra o qual se mede a atualidade de todo o resto.'
+
+  # --------------------------- FeedEntity ----------------------------
+
+  FeedEntity.id:
+    origin: system
+    component: id_input
+    validation:
+      required: true
+      unique_in_feed: true
+    i18n:
+      es:
+        label: 'ID de la entidad'
+        help: 'Identificador único dentro de este mensaje. No tiene que coincidir con ningún ID del GTFS estático ni sobrevivir entre mensajes.'
+      en:
+        label: 'Entity ID'
+        help: 'Unique within this message. It need not match any static GTFS ID, nor survive between messages.'
+      pt:
+        label: 'ID da entidade'
+        help: 'Único dentro desta mensagem. Não precisa coincidir com nenhum ID do GTFS estático nem sobreviver entre mensagens.'
+
+  # --------------------------- TripUpdate ----------------------------
+
+  TripUpdate.delay:
+    origin: system
+    component: number_input
+    validation:
+      required: false
+      # Seconds. Negative is early, positive is late; there is no spec bound,
+      # but a delay past two hours is almost always a clock or unit bug.
+      range:
+        value: [-7200, 7200]
+        severity: warning
+    i18n:
+      es:
+        label: 'Desfase del viaje'
+        help: 'Segundos de adelanto (negativo) o atraso (positivo) del viaje completo. Solo se usa si no hay desfase por parada.'
+      en:
+        label: 'Trip delay'
+        help: 'Seconds early (negative) or late (positive) for the whole trip. Only used when there is no per-stop delay.'
+      pt:
+        label: 'Defasagem da viagem'
+        help: 'Segundos adiantado (negativo) ou atrasado (positivo) para a viagem inteira. Usado apenas quando não há defasagem por parada.'
+
+  # -------------------------- StopTimeEvent --------------------------
+
+  StopTimeEvent.time:
+    origin: system
+    validation:
+      required: conditional
+      posix_time: true
+    i18n:
+      es:
+        label: 'Hora prevista'
+        help: 'Momento absoluto de llegada o salida, en segundos POSIX. La misma definición sirve para arrival y departure: cuál de las dos es lo decide la pantalla, no el campo.'
+      en:
+        label: 'Predicted time'
+        help: 'Absolute arrival or departure moment, in POSIX seconds. One definition serves both arrival and departure: which of the two it is, is decided by the screen, not by the field.'
+      pt:
+        label: 'Horário previsto'
+        help: 'Momento absoluto de chegada ou partida, em segundos POSIX. A mesma definição serve para arrival e departure: qual das duas é, quem decide é a tela.'
+
+  StopTimeEvent.delay:
+    origin: system
+    component: number_input
+    validation:
+      required: conditional
+      range:
+        value: [-7200, 7200]
+        severity: warning
+    i18n:
+      es:
+        label: 'Desfase en la parada'
+        help: 'Segundos respecto al horario de stop_times.txt. Preferido sobre `time` cuando el sistema razona en desfases.'
+      en:
+        label: 'Delay at the stop'
+        help: 'Seconds relative to the stop_times.txt schedule. Preferred over `time` when the system reasons in delays.'
+      pt:
+        label: 'Defasagem na parada'
+        help: 'Segundos em relação ao horário de stop_times.txt. Preferido a `time` quando o sistema raciocina em defasagens.'
+
+  # -------------------------- StopTimeUpdate -------------------------
+
+  StopTimeUpdate.stop_id:
+    origin: system
+    component: foreign_key_select
+    references: stops.stop_id
+    validation:
+      required: conditional
+    i18n:
+      es:
+        label: 'Parada'
+        help: 'Debe existir en stops.txt del GTFS estático. Un ID que no está en el horario deja la predicción sin dónde mostrarse.'
+      en:
+        label: 'Stop'
+        help: 'Must exist in the static feed''s stops.txt. An ID the timetable does not have leaves the prediction with nowhere to show.'
+      pt:
+        label: 'Parada'
+        help: 'Deve existir em stops.txt do GTFS estático. Um ID que o horário não tem deixa a previsão sem onde aparecer.'
+
+  StopTimeUpdate.departure_occupancy_status:
+    origin: system
+    component: select
+    validation:
+      required: false
+      enum_from_spec: true
+    i18n:
+      es:
+        label: 'Ocupación al salir de la parada'
+        help: 'Ocupación prevista del vehículo al partir de esta parada. Es una predicción, a diferencia de la de VehiclePosition, que es una medición.'
+      en:
+        label: 'Occupancy on departure'
+        help: 'Predicted vehicle occupancy on leaving this stop. A prediction, unlike the VehiclePosition one, which is a measurement.'
+      pt:
+        label: 'Ocupação na partida'
+        help: 'Ocupação prevista do veículo ao sair desta parada. É uma previsão, diferente da de VehiclePosition, que é uma medição.'
+
+  # -------------------------- TripProperties -------------------------
+
+  TripProperties.trip_headsign:
+    origin: operator
+    component: text_input
+    validation:
+      required: false
+      max_length:
+        value: 40
+        severity: warning
+    i18n:
+      es:
+        label: 'Letrero del viaje (en vivo)'
+        help: 'Sustituye al letrero del GTFS estático para este viaje. Se escribe a mano cuando un desvío cambia el destino anunciado.'
+      en:
+        label: 'Trip headsign (live)'
+        help: 'Replaces the static feed''s headsign for this trip. Typed by hand when a diversion changes the announced destination.'
+      pt:
+        label: 'Letreiro da viagem (ao vivo)'
+        help: 'Substitui o letreiro do GTFS estático para esta viagem. Escrito à mão quando um desvio muda o destino anunciado.'
+
+  # ------------------------- TripDescriptor --------------------------
+
+  TripDescriptor.trip_id:
+    origin: system
+    component: foreign_key_select
+    references: trips.trip_id
+    validation:
+      required: conditional
+    i18n:
+      es:
+        label: 'Viaje'
+        help: 'Viaje de trips.txt al que se refiere esta actualización. Obligatorio salvo que el viaje sea nuevo y se describa por ruta, dirección y hora.'
+      en:
+        label: 'Trip'
+        help: 'The trips.txt trip this update refers to. Required unless the trip is new and described by route, direction and time instead.'
+      pt:
+        label: 'Viagem'
+        help: 'A viagem de trips.txt à qual esta atualização se refere. Obrigatória salvo se a viagem for nova e descrita por rota, sentido e horário.'
+
+  TripDescriptor.route_id:
+    origin: system
+    component: foreign_key_select
+    references: routes.route_id
+    validation:
+      required: conditional
+    i18n:
+      es:
+        label: 'Ruta'
+        help: 'Debe coincidir con la ruta del viaje en routes.txt. Si difiere, gana la del GTFS estático.'
+      en:
+        label: 'Route'
+        help: 'Must match the trip''s route in routes.txt. Where they differ, the static feed wins.'
+      pt:
+        label: 'Rota'
+        help: 'Deve coincidir com a rota da viagem em routes.txt. Havendo divergência, prevalece a do GTFS estático.'
+
+  # --------------------------- Position ------------------------------
+
+  Position.latitude:
+    origin: system
+    component: map_point
+    group: vehicle_position
+    validation:
+      required: true
+      range: [-90, 90]
+      bounding_box:
+        region: costa_rica
+        severity: warning
+    i18n:
+      es:
+        label: 'Latitud del vehículo'
+        help: 'Posición medida por el AVL. La región de referencia se toma de schedule.ui.yaml: la caja del país no depende del feed.'
+      en:
+        label: 'Vehicle latitude'
+        help: 'Position measured by the AVL. The reference region comes from schedule.ui.yaml: the national box does not depend on the feed.'
+      pt:
+        label: 'Latitude do veículo'
+        help: 'Posição medida pelo AVL. A região de referência vem de schedule.ui.yaml: a caixa do país não depende do feed.'
+
+  Position.longitude:
+    origin: system
+    component: map_point
+    group: vehicle_position
+    validation:
+      required: true
+      range: [-180, 180]
+      bounding_box:
+        region: costa_rica
+        severity: warning
+    i18n:
+      es:
+        label: 'Longitud del vehículo'
+        help: 'Posición medida por el AVL, junto con la latitud. Las dos se editan y se validan como un solo punto.'
+      en:
+        label: 'Vehicle longitude'
+        help: 'Position measured by the AVL, together with the latitude. The two are edited and validated as a single point.'
+      pt:
+        label: 'Longitude do veículo'
+        help: 'Posição medida pelo AVL, junto com a latitude. As duas são editadas e validadas como um único ponto.'
+
+  Position.bearing:
+    origin: system
+    validation:
+      required: false
+      # Degrees clockwise from true north. 360 is accepted as 0 by producers
+      # in the wild, so the range is closed rather than half-open.
+      range: [0, 360]
+    i18n:
+      es:
+        label: 'Rumbo'
+        help: 'Grados desde el norte verdadero, en sentido horario. Es hacia dónde apunta el vehículo, no necesariamente hacia dónde avanza.'
+      en:
+        label: 'Bearing'
+        help: 'Degrees clockwise from true north. Where the vehicle is pointing, not necessarily where it is going.'
+      pt:
+        label: 'Rumo'
+        help: 'Graus a partir do norte verdadeiro, em sentido horário. É para onde o veículo aponta, não necessariamente para onde avança.'
+
+  # ------------------------ VehiclePosition --------------------------
+
+  VehiclePosition.timestamp:
+    origin: system
+    validation:
+      required: false
+      posix_time: true
+      not_stale:
+        value: 120
+        severity: warning
+    i18n:
+      es:
+        label: 'Momento de la medición'
+        help: 'Cuándo se midió esta posición, no cuándo se publicó el feed. La diferencia entre ambos es la latencia real del sistema.'
+      en:
+        label: 'Measurement time'
+        help: 'When this position was measured, not when the feed was published. The gap between the two is the system''s real latency.'
+      pt:
+        label: 'Momento da medição'
+        help: 'Quando esta posição foi medida, não quando o feed foi publicado. A diferença entre as duas é a latência real do sistema.'
+
+  VehiclePosition.occupancy_status:
+    origin: system
+    component: select
+    validation:
+      required: false
+      enum_from_spec: true
+    i18n:
+      es:
+        label: 'Ocupación del vehículo'
+        help: 'Ocupación medida a bordo. Es una medición, a diferencia de la de StopTimeUpdate, que es una predicción.'
+      en:
+        label: 'Vehicle occupancy'
+        help: 'Occupancy measured on board. A measurement, unlike the StopTimeUpdate one, which is a prediction.'
+      pt:
+        label: 'Ocupação do veículo'
+        help: 'Ocupação medida a bordo. É uma medição, diferente da de StopTimeUpdate, que é uma previsão.'
+
+  # ----------------------------- Alert -------------------------------
+  # The only part of a Realtime feed a person really writes. Everything from
+  # here down is origin `operator`, and these are the annotations that describe
+  # an actual editing screen rather than a producer's output.
+
+  Alert.active_period:
+    origin: operator
+    component: subform
+    validation:
+      required: false
+      empty_means: 'La alerta está activa mientras aparezca en el feed.'
+    i18n:
+      es:
+        label: 'Periodos de vigencia'
+        help: 'Uno o varios intervalos. Sin ninguno, la alerta vale mientras siga publicada, que es lo correcto para una incidencia en curso.'
+      en:
+        label: 'Active periods'
+        help: 'One or more intervals. With none, the alert holds for as long as it stays published, which is right for an ongoing incident.'
+      pt:
+        label: 'Períodos de vigência'
+        help: 'Um ou mais intervalos. Sem nenhum, o alerta vale enquanto continuar publicado, o que é o correto para uma ocorrência em curso.'
+
+  Alert.informed_entity:
+    origin: operator
+    component: subform
+    validation:
+      required: true
+    i18n:
+      es:
+        label: 'A qué afecta'
+        help: 'Rutas, paradas, viajes o agencias alcanzados por la alerta. Al menos uno: una alerta que no dice a qué afecta no se puede mostrar en ninguna pantalla.'
+      en:
+        label: 'What it affects'
+        help: 'The routes, stops, trips or agencies the alert reaches. At least one: an alert that does not say what it affects cannot be shown on any screen.'
+      pt:
+        label: 'O que é afetado'
+        help: 'Rotas, paradas, viagens ou agências alcançadas pelo alerta. Pelo menos um: um alerta que não diz o que afeta não pode ser exibido em nenhuma tela.'
+
+  Alert.cause:
+    origin: operator
+    component: select
+    validation:
+      required: conditional
+      enum_from_spec: true
+      empty_means: UNKNOWN_CAUSE
+    i18n:
+      es:
+        label: 'Causa'
+        help: 'Por qué ocurre. Junto con el efecto es lo que permite redactar un aviso automático cuando no hay texto escrito.'
+      en:
+        label: 'Cause'
+        help: 'Why it is happening. Together with the effect it is what allows an automatic notice to be worded when no text has been written.'
+      pt:
+        label: 'Causa'
+        help: 'Por que está acontecendo. Junto com o efeito é o que permite redigir um aviso automático quando não há texto escrito.'
+
+  Alert.effect:
+    origin: operator
+    component: select
+    validation:
+      required: conditional
+      enum_from_spec: true
+      empty_means: UNKNOWN_EFFECT
+    i18n:
+      es:
+        label: 'Efecto'
+        help: 'Qué le pasa al servicio. NO_SERVICE y REDUCED_SERVICE son los que cambian cómo se dibuja la ruta en pantalla.'
+      en:
+        label: 'Effect'
+        help: 'What happens to the service. NO_SERVICE and REDUCED_SERVICE are the ones that change how the route is drawn on screen.'
+      pt:
+        label: 'Efeito'
+        help: 'O que acontece com o serviço. NO_SERVICE e REDUCED_SERVICE são os que mudam como a rota é desenhada na tela.'
+
+  Alert.severity_level:
+    origin: operator
+    component: select
+    validation:
+      required: false
+      enum_from_spec: true
+      empty_means: UNKNOWN_SEVERITY
+    i18n:
+      es:
+        label: 'Severidad'
+        help: 'Cuánta atención merece. Ordena las alertas en pantalla; no cambia su contenido.'
+      en:
+        label: 'Severity'
+        help: 'How much attention it deserves. It orders alerts on screen; it does not change their content.'
+      pt:
+        label: 'Severidade'
+        help: 'Quanta atenção merece. Ordena os alertas na tela; não muda seu conteúdo.'
+
+  Alert.header_text:
+    origin: operator
+    component: translated_text
+    validation:
+      required: true
+      # A headline is read at a glance on a stop display. The spec sets no
+      # limit, so this is the lab's own and must not block publishing.
+      max_length:
+        value: 80
+        severity: warning
+    i18n:
+      es:
+        label: 'Titular'
+        help: 'Una línea, leída de un vistazo. Es lo único que cabe en una pantalla de parada, así que debe poder leerse sin el cuerpo del texto.'
+      en:
+        label: 'Headline'
+        help: 'One line, read at a glance. It is all that fits on a stop display, so it has to stand on its own without the body text.'
+      pt:
+        label: 'Manchete'
+        help: 'Uma linha, lida de relance. É tudo o que cabe num painel de parada, portanto precisa se sustentar sem o corpo do texto.'
+
+  Alert.description_text:
+    origin: operator
+    component: translated_text
+    validation:
+      required: true
+    i18n:
+      es:
+        label: 'Descripción'
+        help: 'El cuerpo de la alerta. Debe repetir lo esencial del titular: hay pantallas que muestran solo uno de los dos.'
+      en:
+        label: 'Description'
+        help: 'The body of the alert. It must repeat the essentials of the headline: some screens show only one of the two.'
+      pt:
+        label: 'Descrição'
+        help: 'O corpo do alerta. Deve repetir o essencial da manchete: há telas que mostram apenas um dos dois.'
+
+  Alert.url:
+    origin: operator
+    component: translated_text
+    validation:
+      required: false
+      pattern: '^https?://'
+    i18n:
+      es:
+        label: 'Enlace'
+        help: 'Página con más detalle. Traducible, porque el sitio de la agencia puede tener una dirección por idioma.'
+      en:
+        label: 'Link'
+        help: 'Page with more detail. Translatable, because the agency site may have one address per language.'
+      pt:
+        label: 'Link'
+        help: 'Página com mais detalhes. Traduzível, porque o site da agência pode ter um endereço por idioma.'
+
+  # --------------------------- TimeRange -----------------------------
+
+  TimeRange.start:
+    origin: operator
+    component: datetime_input
+    group: alert_window
+    validation:
+      required: conditional
+      posix_time: true
+      empty_means: 'Vigente desde siempre, hasta `end`.'
+    i18n:
+      es:
+        label: 'Desde'
+        help: 'Inicio del periodo de vigencia. Vacío significa que la alerta ya estaba vigente.'
+      en:
+        label: 'From'
+        help: 'Start of the active period. Empty means the alert was already in force.'
+      pt:
+        label: 'De'
+        help: 'Início do período de vigência. Vazio significa que o alerta já estava em vigor.'
+
+  TimeRange.end:
+    origin: operator
+    component: datetime_input
+    group: alert_window
+    validation:
+      required: conditional
+      posix_time: true
+      after: TimeRange.start
+      empty_means: 'Vigente hasta que se retire del feed.'
+    i18n:
+      es:
+        label: 'Hasta'
+        help: 'Fin del periodo de vigencia. Vacío significa que dura hasta que alguien retire la alerta.'
+      en:
+        label: 'Until'
+        help: 'End of the active period. Empty means it lasts until someone withdraws the alert.'
+      pt:
+        label: 'Até'
+        help: 'Fim do período de vigência. Vazio significa que dura até alguém retirar o alerta.'
+
+  # ------------------------- EntitySelector --------------------------
+
+  EntitySelector.agency_id:
+    origin: operator
+    component: foreign_key_select
+    references: agency.agency_id
+    validation:
+      required: conditional
+    i18n:
+      es:
+        label: 'Agencia afectada'
+        help: 'Afecta a todo el servicio de una agencia. El selector más amplio que existe; úselo solo cuando de verdad aplica a todo.'
+      en:
+        label: 'Affected agency'
+        help: 'Affects an agency''s entire service. The broadest selector there is; use it only when it really does apply to everything.'
+      pt:
+        label: 'Agência afetada'
+        help: 'Afeta todo o serviço de uma agência. O seletor mais amplo que existe; use-o só quando realmente se aplica a tudo.'
+
+  EntitySelector.route_id:
+    origin: operator
+    component: foreign_key_select
+    references: routes.route_id
+    validation:
+      required: conditional
+    i18n:
+      es:
+        label: 'Ruta afectada'
+        help: 'El selector más usado. Debe existir en routes.txt: una alerta sobre una ruta que el horario no tiene no aparece en ninguna pantalla.'
+      en:
+        label: 'Affected route'
+        help: 'The most used selector. Must exist in routes.txt: an alert about a route the timetable does not have shows up on no screen.'
+      pt:
+        label: 'Rota afetada'
+        help: 'O seletor mais usado. Deve existir em routes.txt: um alerta sobre uma rota que o horário não tem não aparece em nenhuma tela.'
+
+  EntitySelector.stop_id:
+    origin: operator
+    component: foreign_key_select
+    references: stops.stop_id
+    validation:
+      required: conditional
+    i18n:
+      es:
+        label: 'Parada afectada'
+        help: 'Junto con una ruta significa «esta ruta en esta parada»; sola significa la parada entera, para todas las rutas.'
+      en:
+        label: 'Affected stop'
+        help: 'With a route it means “this route at this stop”; on its own it means the whole stop, for every route.'
+      pt:
+        label: 'Parada afetada'
+        help: 'Junto com uma rota significa “esta rota nesta parada”; sozinha significa a parada inteira, para todas as rotas.'
+
+  # -------------------------- Translation ----------------------------
+
+  Translation.text:
+    origin: operator
+    component: textarea
+    validation:
+      required: true
+    i18n:
+      es:
+        label: 'Texto'
+        help: 'El texto en un idioma. Toda cadena visible del feed pasa por aquí, así que es el campo que más se escribe a mano.'
+      en:
+        label: 'Text'
+        help: 'The text in one language. Every rider-visible string in the feed goes through here, so it is the most hand-written field there is.'
+      pt:
+        label: 'Texto'
+        help: 'O texto em um idioma. Toda cadeia visível do feed passa por aqui, portanto é o campo mais escrito à mão.'
+
+  Translation.language:
+    origin: operator
+    component: select
+    validation:
+      required: conditional
+      code_list: bcp_47
+      default: es
+    i18n:
+      es:
+        label: 'Idioma'
+        help: 'Código BCP-47. Obligatorio salvo que haya una sola traducción, que entonces se toma como la del idioma del feed.'
+      en:
+        label: 'Language'
+        help: 'BCP-47 code. Required unless there is a single translation, which is then taken as the feed language''s.'
+      pt:
+        label: 'Idioma'
+        help: 'Código BCP-47. Obrigatório salvo se houver uma única tradução, que então é tomada como a do idioma do feed.'

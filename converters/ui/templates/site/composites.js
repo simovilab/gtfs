@@ -16,7 +16,7 @@ const CSTRINGS = {
   es: {
     subtitle: 'Composites de visualización: qué campos GTFS lee cada pantalla',
     stats: s => `${s.composites} composites en ${s.views} vistas · ${s.refs} referencias a campos (${s.schedule} schedule, ${s.realtime} realtime, ${s.derived} derivadas)`,
-    coverage: s => `${s.annotated} de ${s.schedule} campos de schedule que se muestran tienen anotación de edición (${s.percent}%). El resto marca la prioridad para anotar.`,
+    coverage: s => `${s.displayedAnnotated} de ${s.displayed} campos mostrados tienen anotación de edición — schedule ${s.annotated}/${s.schedule}, realtime ${s.rtAnnotated}/${s.realtime}. El resto marca la prioridad para anotar.`,
     wire: 'Esquema', detail: 'Detalle', sources: 'Fuentes',
     entity: 'Entidad', cardinality: 'Cardinalidad', one: 'uno', many: 'lista',
     params: 'Parámetros', props: 'Props', key: 'Identidad de fila',
@@ -77,7 +77,7 @@ const CSTRINGS = {
   en: {
     subtitle: 'Display composites: which GTFS fields each screen reads',
     stats: s => `${s.composites} composites across ${s.views} views · ${s.refs} field references (${s.schedule} schedule, ${s.realtime} realtime, ${s.derived} derived)`,
-    coverage: s => `${s.annotated} of ${s.schedule} displayed schedule fields have an editor annotation (${s.percent}%). The rest is the annotation priority list.`,
+    coverage: s => `${s.displayedAnnotated} of ${s.displayed} displayed fields have an editor annotation — schedule ${s.annotated}/${s.schedule}, realtime ${s.rtAnnotated}/${s.realtime}. The rest is the annotation priority list.`,
     wire: 'Wireframe', detail: 'Detail', sources: 'Sources',
     entity: 'Entity', cardinality: 'Cardinality', one: 'one', many: 'list',
     params: 'Params', props: 'Props', key: 'Row identity',
@@ -138,7 +138,7 @@ const CSTRINGS = {
   pt: {
     subtitle: 'Composites de exibição: quais campos GTFS cada tela lê',
     stats: s => `${s.composites} composites em ${s.views} telas · ${s.refs} referências a campos (${s.schedule} schedule, ${s.realtime} realtime, ${s.derived} derivadas)`,
-    coverage: s => `${s.annotated} de ${s.schedule} campos de schedule exibidos têm anotação de edição (${s.percent}%). O restante é a lista de prioridade.`,
+    coverage: s => `${s.displayedAnnotated} de ${s.displayed} campos exibidos têm anotação de edição — schedule ${s.annotated}/${s.schedule}, realtime ${s.rtAnnotated}/${s.realtime}. O restante é a lista de prioridade.`,
     wire: 'Esquema', detail: 'Detalhe', sources: 'Fontes',
     entity: 'Entidade', cardinality: 'Cardinalidade', one: 'um', many: 'lista',
     params: 'Parâmetros', props: 'Props', key: 'Identidade da linha',
@@ -294,13 +294,20 @@ function sourceCells(source){
       <span class="cmeta">${esc((source.label || {})[lang] || (source.label || {}).es || '')}</span>`;
   const badge = source.feed === 'realtime'
     ? `<span class="tag rt">realtime</span>` : `<span class="tag sched">schedule</span>`;
-  const component = source.feed === 'schedule'
-    ? (source.component ? `<span class="tag comp">${esc(source.component)}</span>`
-                        : `<span class="tag gap">${esc(s.noAnnotation)}</span>`)
-    : '';
-  return `${badge}<span class="cref">${esc(source.path)}</span>
+  // Both feeds have annotations now, so both get the same treatment: what
+  // edits this field, or a gap marker saying nobody has decided yet. On the
+  // realtime side a field no person types shows its origin instead, which is
+  // an answer and not a gap.
+  const note = source.annotated
+    ? `<span class="tag comp">${esc(source.component || source.origin)}</span>`
+    : `<span class="tag gap">${esc(s.noAnnotation)}</span>`;
+  // The explorers key on the field's *definition*; a realtime path is one
+  // route to it, so the link carries the key and the text keeps the path.
+  const page = source.feed === 'realtime' ? 'realtime.html' : 'index.html';
+  const anchor = encodeURIComponent(source.key || source.path);
+  return `${badge}<a class="cref" href="${page}#${anchor}">${esc(source.path)}</a>
     <span class="cmeta">${esc(source.type)}${source.presence ? ' · ' + esc(source.presence) : ''}</span>
-    ${component}`;
+    ${note}`;
 }
 
 const sourceRow = source => `<li>${sourceCells(source)}</li>`;

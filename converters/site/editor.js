@@ -1,64 +1,21 @@
 /* The edit form.
  *
- * Every control here is generated from FORM, which yaml2site derives from
- * schedule.ui.schema.json at build time. Nothing about the vocabulary is
- * written twice: add a component to the schema's enum, or a rule to
- * `validation`, and it shows up in this form on the next build. The form does
- * a fast subset of the schema's checks so mistakes surface while typing; the
- * authoritative check is still jsonschema, run by ui_coverage.py in CI.
+ * Every control here is generated from FORM, which the builder derives from
+ * the annotation schema governing this page — schedule.ui.schema.json or
+ * realtime.ui.schema.json. Nothing about either vocabulary is written twice:
+ * add a component to a schema's enum, or a rule to `validation`, and it shows
+ * up in this form on the next build. That is also why one form serves two
+ * feeds whose annotations do not have the same keys.
+ *
+ * The form does a fast subset of the schema's checks so mistakes surface while
+ * typing; the authoritative check is still jsonschema, run by the coverage
+ * scripts in CI.
+ *
+ * suggest(f) is the one piece each feed supplies for itself, since inferring a
+ * starting annotation means reading that reference's own type vocabulary.
  */
 
 const ruleSpec = name => FORM.rules.find(r => r.name === name);
-
-/* ------------------------------------------------------------- suggestion */
-
-/** A starting annotation inferred from what the spec already says.
- *
- * Most of the 200+ unannotated fields are mechanical: a foreign key is a
- * foreign_key_select pointing where the spec says it points, an Enum is a
- * select reading the spec's own options. Seeding those turns annotation into
- * review rather than typing. The human still has to write the label. */
-function suggest(f){
-  const type = (f.type || '').toLowerCase();
-  const validation = {};
-
-  const presence = (f.presence || '').toLowerCase();
-  if (presence.startsWith('required')) validation.required = true;
-  else if (presence.startsWith('conditionally required')) validation.required = 'conditional';
-  else if (presence) validation.required = false;
-
-  let component = 'text_input', references;
-
-  if (f.foreign_key){
-    component = 'foreign_key_select';
-    references = f.foreign_key.replace('.txt', '');
-  } else if (type.includes('enum')){
-    component = 'select';
-    validation.enum_from_spec = true;
-  } else if (type.includes('color')){
-    component = 'color_picker';
-    validation.pattern = '^[0-9A-Fa-f]{6}$';
-  } else if (type.includes('latitude')){
-    component = 'map_point';
-    validation.range = [-90, 90];
-  } else if (type.includes('longitude')){
-    component = 'map_point';
-    validation.range = [-180, 180];
-  } else if (type.includes('currency code')){
-    component = 'currency_select';
-    validation.code_list = 'iso_4217';
-  } else if (type.includes('id')){
-    component = 'id_input';
-  } else if (/integer|float|currency amount/.test(type)){
-    component = 'number_input';
-    if (type.includes('non-negative')) validation.min = 0;
-    else if (type.includes('positive')) validation.min = 1;
-  }
-
-  const i18n = {};
-  i18n[FORM.langsRequired[0] || 'es'] = {label: ''};
-  return {component, ...(references ? {references} : {}), validation, i18n};
-}
 
 /* ---------------------------------------------------------------- drawing */
 
@@ -116,6 +73,24 @@ function addRuleSelect(used){
     `</select></div>`;
 }
 
+/* One control per scalar property in the annotation schema, drawn from its
+ * declared kind. `component` is a select because the schema says enum;
+ * `group` is a text box because the schema says string. */
+function topFieldRow(spec, a){
+  const s = t();
+  const label = esc(s[spec.name] || spec.name);
+  const value = a[spec.name] || '';
+  const control = spec.kind === 'choice'
+    ? `<select data-top="${esc(spec.name)}">` +
+      (spec.required ? '' : `<option value=""></option>`) +
+      spec.choices.map(c =>
+        `<option value="${esc(c)}"${c === value ? ' selected' : ''}>${esc(c)}</option>`
+      ).join('') + `</select>`
+    : `<input data-top="${esc(spec.name)}" type="text" class="mono" value="${esc(value)}">`;
+  return `<div class="row" title="${esc(spec.doc || '')}">
+    <label${spec.required ? ' class="req"' : ''}>${label}</label>${control}</div>`;
+}
+
 function formHtml(key, a){
   const s = t();
   const rules = Object.keys(a.validation || {});
@@ -134,15 +109,8 @@ function formHtml(key, a){
 
   return `<ul class="errs" id="formerrs" hidden></ul>
     <fieldset>
-      <legend>${esc(s.component)}</legend>
-      <div class="row"><label class="req">${esc(s.component)}</label>
-        <select id="f-component">${FORM.components.map(c =>
-          `<option value="${esc(c)}"${c === a.component ? ' selected' : ''}>${esc(c)}</option>`
-        ).join('')}</select></div>
-      <div class="row"><label>${esc(s.group)}</label>
-        <input id="f-group" type="text" class="mono" value="${esc(a.group || '')}"></div>
-      <div class="row"><label>${esc(s.references)}</label>
-        <input id="f-references" type="text" class="mono" placeholder="stops.stop_id" value="${esc(a.references || '')}"></div>
+      <legend>${esc(s.definition)}</legend>
+      ${FORM.topFields.map(spec => topFieldRow(spec, a)).join('')}
     </fieldset>
     <fieldset>
       <legend>${esc(s.validation)}</legend>
@@ -212,15 +180,13 @@ function readForm(root){
     if (Object.keys(entry).length) i18n[box.dataset.lang] = entry;
   }
 
-  const group = root.querySelector('#f-group').value.trim();
-  const references = root.querySelector('#f-references').value.trim();
+  const top = {};
+  for (const input of root.querySelectorAll('[data-top]')){
+    const v = input.value.trim();
+    if (v) top[input.dataset.top] = v;
+  }
 
-  return {
-    component: root.querySelector('#f-component').value,
-    ...(group ? {group} : {}),
-    ...(references ? {references} : {}),
-    validation, i18n
-  };
+  return {...top, validation, i18n};
 }
 
 /** Fast subset of the JSON Schema. Returns human-readable problems. */
@@ -228,17 +194,21 @@ function validateAnnotation(a){
   const s = t(), errors = [];
   const key = new RegExp(FORM.refPattern);
 
-  if (!a.component) errors.push(s.errComponent);
+  for (const name of FORM.annotationRequired)
+    if (name !== 'i18n' && !a[name]) errors.push(s.errRequired(name));
 
   for (const lang of FORM.langsRequired)
     if (!(a.i18n[lang] || {}).label) errors.push(s.errLabel(LANG_NAMES[lang] || lang));
 
-  for (const needed of FORM.componentRequires[a.component] || [])
-    if (!a[needed]) errors.push(s.errRef);
+  // The schema's if/then clauses: "with origin = operator, component is required".
+  for (const rule of FORM.conditionals)
+    if (a[rule.field] === rule.value)
+      for (const needed of rule.require)
+        if (!a[needed]) errors.push(s.errWhen(rule.field, rule.value, needed));
 
-  for (const [field, value] of [['references', a.references],
-                                ['contrast_with', a.validation.contrast_with],
-                                ['decimals_from', a.validation.decimals_from]]){
+  const refs = [...FORM.refFields.annotation.map(n => [n, a[n]]),
+                ...FORM.refFields.validation.map(n => [n, a.validation[n]])];
+  for (const [field, value] of refs){
     const raw = (value && typeof value === 'object' && 'value' in value) ? value.value : value;
     if (raw && !key.test(raw)) errors.push(s.errPattern(field));
   }
@@ -254,7 +224,7 @@ function validateAnnotation(a){
 /* ----------------------------------------------------------- form control */
 
 function openForm(key){
-  const a = annotationOf(key) || suggest(INDEX.get(key).field);
+  const a = annotationOf(key) || suggest(INDEX.get(key).field, INDEX.get(key).table);
   editing = key;
 
   formNode = document.createElement('form');

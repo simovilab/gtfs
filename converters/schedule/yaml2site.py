@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""Build the static editor/validation explorer site.
+"""Build the GTFS Schedule field explorer.
 
 Merges serializers/schedule/schedule.yaml (GTFS ground truth) with
 serializers/schedule/schedule.ui.yaml (editor annotations) into a single
 self-contained HTML page written to web/dist/index.html.
+
+The page itself is built by converters/site/explorer.py, which the Realtime
+explorer uses too. What is left here is the one feed-specific job: turning
+schedule.yaml's files and fields into the payload that page draws.
 
 Data is embedded at build time rather than fetched at page load so the result
 is a fully static page with no runtime requests, which is what GitHub Pages
@@ -15,29 +19,41 @@ Usage:
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
 import yaml
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-
-import ui_form_model
 
 ROOT = Path(__file__).resolve().parents[2]
 
-# The composites model lives beside the other UI converters. It is imported by
-# path rather than as a package because these converters are run as scripts.
+# The shared explorer and the composites model live in sibling directories.
+# They are imported by path rather than as packages because these converters
+# are run as scripts.
+sys.path.insert(0, str(ROOT / "converters" / "site"))
 sys.path.insert(0, str(ROOT / "converters" / "ui"))
 import composites as composites_model  # noqa: E402
+import explorer  # noqa: E402
+import ui_form_model  # noqa: E402
+
 SPEC_PATH = ROOT / "serializers" / "schedule" / "schedule.yaml"
 UI_PATH = ROOT / "serializers" / "schedule" / "schedule.ui.yaml"
 SCHEMA_PATH = ROOT / "serializers" / "schedule" / "schedule.ui.schema.json"
-TEMPLATE_DIR = ROOT / "converters" / "schedule" / "templates"
-ASSET_DIR = TEMPLATE_DIR / "site"
+ASSET_DIR = ROOT / "converters" / "schedule" / "templates" / "site"
 OUTPUT_PATH = ROOT / "web" / "dist" / "index.html"
 
-LANGS = ("es", "en", "pt")
+LANGS = explorer.LANGS
+
+# What the page says about itself: which files back it, where its edits go.
+PAGE = {
+    "feed": "schedule",
+    "feedLabel": "GTFS Schedule",
+    "specFile": "serializers/schedule/schedule.yaml",
+    "file": "serializers/schedule/schedule.ui.yaml",
+    "fileName": "schedule.ui.yaml",
+    "patchName": "schedule.ui.patch.yaml",
+    "endpoint": "api/annotations",
+    "draftKey": "gtfs.schedule.ui.draft.v1",
+}
 
 
 def table_name(filename: str) -> str:
@@ -144,6 +160,12 @@ def build_data(spec: dict, ui: dict) -> dict:
                     "key": key,
                     "type": field.get("type", ""),
                     "presence": field.get("presence", ""),
+                    # The spec-column rows, named by translation key. Schedule
+                    # fields have a type and a presence; Realtime adds more.
+                    "facts": [
+                        {"k": "type", "v": field.get("type", "")},
+                        {"k": "presence", "v": field.get("presence", "")},
+                    ],
                     "description": field.get("description", ""),
                     "foreign_key": field.get("foreign_key"),
                     "conditions": as_list(field.get("conditions")),
@@ -158,7 +180,7 @@ def build_data(spec: dict, ui: dict) -> dict:
         tables.append(
             {
                 "name": table,
-                "file": entry["file"],
+                "title": entry["file"],
                 "presence": entry.get("presence", ""),
                 "description": entry.get("description", ""),
                 "fields": fields,
@@ -183,30 +205,6 @@ def build_data(spec: dict, ui: dict) -> dict:
     }
 
 
-def asset(name: str) -> str:
-    """Read a CSS/JS asset verbatim.
-
-    These are plain files rather than Jinja templates so they stay valid,
-    lintable CSS and JavaScript, and so nothing in them is mistaken for
-    template syntax.
-    """
-    return (ASSET_DIR / name).read_text(encoding="utf-8")
-
-
-def embed(payload: dict) -> str:
-    """Serialize for a <script type="application/json"> block.
-
-    Escaping the three characters that could close the block early is what
-    keeps a description in schedule.yaml from being able to inject markup.
-    """
-    return (
-        json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
-        .replace("<", "\\u003c")
-        .replace(">", "\\u003e")
-        .replace("&", "\\u0026")
-    )
-
-
 def main() -> int:
     for path in (SPEC_PATH, UI_PATH, SCHEMA_PATH):
         if not path.exists():
@@ -217,25 +215,15 @@ def main() -> int:
     ui = yaml.safe_load(UI_PATH.read_text(encoding="utf-8"))
     data = build_data(spec, ui)
 
-    env = Environment(
-        loader=FileSystemLoader(TEMPLATE_DIR),
-        autoescape=select_autoescape(["html"]),
-    )
-    template = env.get_template("site.html.jinja")
-
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text(
-        template.render(
-            data_json=embed(data),
-            form_json=embed(ui_form_model.load(SCHEMA_PATH)),
-            style=asset("style.css"),
-            state_js=asset("state.js"),
-            strings_js=asset("strings.js"),
-            render_js=asset("render.js"),
-            editor_js=asset("editor.js"),
-            export_js=asset("export.js"),
-        ),
-        encoding="utf-8",
+    explorer.render(
+        OUTPUT_PATH,
+        page=PAGE,
+        data=data,
+        form=ui_form_model.load(SCHEMA_PATH),
+        suggest_js=explorer.asset("suggest.js", ASSET_DIR),
+        title="GTFS Schedule — Componentes de edición y validación",
+        heading="GTFS Schedule",
+        current="schedule",
     )
 
     coverage = data["coverage"]

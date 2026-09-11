@@ -1,0 +1,338 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://gtfs.org/schema/realtime.ui.schema.json",
+  "title": "GTFS Realtime Editor Annotation Schema",
+  "description": "JSON Schema for realtime.ui.yaml, the companion file that records where each GTFS Realtime field's value comes from and, where a person supplies it, which editor component and validation rules it needs. Keyed by '<Message>.<field>' — the field's own definition, not a path to it, so StopTimeEvent.time is annotated once and both arrival.time and departure.time inherit it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "fields"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Annotation format version. Bump on breaking changes to this schema."
+    },
+    "fields": {
+      "type": "object",
+      "description": "Annotations keyed by '<Message>.<field>', where <Message> is the protobuf message that declares the field (e.g. 'Alert.header_text', 'StopTimeEvent.time'). Enums are not keyed here: they have no fields of their own, and their values are shown on whichever field selects them.",
+      "propertyNames": {
+        "pattern": "^[A-Z][A-Za-z]*\\.[a-z_0-9]+$",
+        "description": "Key must be '<Message>.<field>': the message in PascalCase, the field in snake_case."
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/annotation"
+      }
+    }
+  },
+  "definitions": {
+    "annotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin",
+        "i18n"
+      ],
+      "properties": {
+        "origin": {
+          "type": "string",
+          "description": "Where the value comes from. This is the key difference from the Schedule annotations: a Schedule field is always typed by someone, while most Realtime fields are produced by a machine and have no editor at all. Recording that is what keeps the coverage figure honest. 'operator': A person writes this value in an editor — service alerts, mostly. 'system': Produced by a machine: AVL, the prediction engine, the feed builder. 'derived': Computed from the Schedule feed plus observation, not entered anywhere. 'constant': Fixed for the whole feed and set once in configuration.",
+          "enum": [
+            "operator",
+            "system",
+            "derived",
+            "constant"
+          ]
+        },
+        "component": {
+          "type": "string",
+          "description": "Controlled vocabulary of editor components, required when origin is 'operator' and meaningless otherwise. Extend only when a field genuinely cannot be edited by an existing one.",
+          "enum": [
+            "text_input",
+            "textarea",
+            "id_input",
+            "number_input",
+            "select",
+            "toggle",
+            "datetime_input",
+            "date_input",
+            "time_input",
+            "duration_input",
+            "map_point",
+            "foreign_key_select",
+            "translated_text",
+            "subform"
+          ]
+        },
+        "group": {
+          "type": "string",
+          "description": "Fields sharing a group are edited together as one widget (e.g. Position.latitude + Position.longitude render a single map, TimeRange.start + TimeRange.end a single date range)."
+        },
+        "references": {
+          "type": "string",
+          "pattern": "^[a-z_]+\\.[a-z_0-9]+$",
+          "description": "The GTFS *Schedule* field this value must match, as '<file>.<field>'. Realtime identifiers are resolved against the static feed, so this is the join that makes a feed consumable — and the check that catches a route_id no timetable has."
+        },
+        "validation": {
+          "$ref": "#/definitions/validation"
+        },
+        "i18n": {
+          "type": "object",
+          "description": "Rider-facing editor labels. Present even for fields no person edits: the label is also what the field is called when a screen or a diagnostic names it.",
+          "additionalProperties": false,
+          "required": [
+            "es"
+          ],
+          "properties": {
+            "es": {
+              "$ref": "#/definitions/i18nEntry"
+            },
+            "en": {
+              "$ref": "#/definitions/i18nEntry"
+            },
+            "pt": {
+              "$ref": "#/definitions/i18nEntry"
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "operator"
+              }
+            },
+            "required": [
+              "origin"
+            ]
+          },
+          "then": {
+            "required": [
+              "component"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "component": {
+                "const": "foreign_key_select"
+              }
+            },
+            "required": [
+              "component"
+            ]
+          },
+          "then": {
+            "required": [
+              "references"
+            ]
+          }
+        }
+      ]
+    },
+    "i18nEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "help": {
+          "type": "string"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Rules the GTFS Realtime spec requires are ERRORS and may be written in scalar short form. Rules that only encode a Best Practice recommendation, or a check the lab added, MUST use the long form with an explicit severity of 'warning' — encoding a recommendation as an error would reject valid feeds.",
+      "properties": {
+        "required": {
+          "description": "true = always required; false = optional; 'conditional' = the spec's Conditionally Required or Conditionally Forbidden, resolved at runtime from the field's conditions.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "const": "conditional"
+            }
+          ]
+        },
+        "unique_in_feed": {
+          "description": "The value must not repeat within one feed message. The Schedule side calls this unique_in_file; a Realtime feed has no files, only one message per fetch.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/severityWrapper"
+            }
+          ]
+        },
+        "posix_time": {
+          "description": "The value is POSIX time in *seconds*, not milliseconds. Worth stating: a timestamp in milliseconds is the single most common Realtime producer error, it is syntactically valid, and it puts every prediction about fifty thousand years into the future.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/severityWrapper"
+            }
+          ]
+        },
+        "not_stale": {
+          "description": "Longest age, in seconds, the value may have before a consumer should stop trusting it. This is about the feed being fresh, not about a screen degrading — a screen's fallback policy lives in composites.yaml.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "$ref": "#/definitions/severityWrapper"
+            }
+          ]
+        },
+        "range": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2,
+              "description": "Inclusive [min, max]."
+            },
+            {
+              "$ref": "#/definitions/severityWrapper"
+            }
+          ]
+        },
+        "min": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/definitions/severityWrapper"
+            }
+          ]
+        },
+        "max": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "#/definitions/severityWrapper"
+            }
+          ]
+        },
+        "max_length": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "$ref": "#/definitions/severityWrapper"
+            }
+          ]
+        },
+        "pattern": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "regex"
+            },
+            {
+              "$ref": "#/definitions/severityWrapper"
+            }
+          ]
+        },
+        "enum_from_spec": {
+          "type": "boolean",
+          "description": "Options come from the enum realtime.yaml declares for this field. Never duplicate enum values here."
+        },
+        "empty_means": {
+          "type": "string",
+          "description": "Value an omitted field is equivalent to, where the spec defines one. Protobuf cannot distinguish 'absent' from 'default', so where it matters it has to be written down."
+        },
+        "code_list": {
+          "type": "string",
+          "enum": [
+            "bcp_47",
+            "iso_639_1",
+            "iana_tz",
+            "iana_media_type"
+          ],
+          "description": "External code list the value must belong to."
+        },
+        "default": {
+          "type": "string"
+        },
+        "after": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z]*\\.[a-z_0-9]+$",
+          "description": "The '<Message>.<field>' this value must not precede, for the two ends of a time range."
+        },
+        "bounding_box": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "region"
+          ],
+          "description": "Advisory geographic check. Regions are not redeclared here — they are read from schedule.ui.yaml, because the national box is a property of the territory and not of the feed. Defaults to a warning: a point outside the box is suspicious, not spec-invalid.",
+          "properties": {
+            "region": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "error",
+                "warning"
+              ],
+              "default": "warning"
+            }
+          }
+        }
+      }
+    },
+    "severityWrapper": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value"
+      ],
+      "description": "Long form of a rule, used when it is not an ERROR. Rules the GTFS Realtime spec requires are errors; rules that only encode a Best Practice recommendation are warnings and must say so explicitly.",
+      "properties": {
+        "value": {
+          "description": "The rule's value, same shape as its scalar short form."
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warning"
+          ],
+          "default": "error"
+        },
+        "notice": {
+          "type": "string",
+          "description": "Canonical GTFS Realtime validator rule this mirrors, e.g. 'E001' or 'W001'."
+        }
+      }
+    }
+  }
+}

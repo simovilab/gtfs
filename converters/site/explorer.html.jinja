@@ -3,17 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GTFS Schedule — Componentes de edición y validación</title>
+<title>{{ page_title }}</title>
 <style>
 {{ style }}
 </style>
 </head>
 <body>
 <header><div class="hwrap">
-  <h1 id="title">GTFS Schedule<small id="subtitle"></small></h1>
+  <h1 id="title">{{ heading }}<small id="subtitle"></small></h1>
   <nav class="pages">
-    <a href="index.html" aria-current="page">GTFS Schedule</a>
-    <a href="composites.html">Composites</a>
+    {%- for item in nav %}
+    <a href="{{ item.href }}"{% if item.current %} aria-current="page"{% endif %}>{{ item.label }}</a>
+    {%- endfor %}
   </nav>
   <div class="langs" id="langs"></div>
 </div></header>
@@ -52,12 +53,14 @@
 
 <footer id="footer"></footer>
 
+<script type="application/json" id="page">{{ page_json }}</script>
 <script type="application/json" id="data">{{ data_json }}</script>
 <script type="application/json" id="form-model">{{ form_json }}</script>
 <script>
 {{ state_js }}
 {{ strings_js }}
 {{ render_js }}
+{{ suggest_js }}
 {{ editor_js }}
 {{ export_js }}
 
@@ -74,6 +77,8 @@ window.addEventListener('beforeunload', e => {
 });
 
 renderAll();
+if (!openFromHash()) window.scrollTo({top: 0});
+window.addEventListener('hashchange', openFromHash);
 probeWriteAccess();
 </script>
 </body>

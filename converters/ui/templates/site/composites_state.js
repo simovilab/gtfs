@@ -185,19 +185,28 @@ function buildModel(){
 
   const views = Object.entries(doc.views || {}).map(([name, view]) => ({name, ...view}));
   const refs = Object.keys(reverse);
+  // Annotation coverage per feed, mirroring composites.py so the live figure
+  // from an unsaved draft and the one the checker prints are the same number.
   const scheduleRefs = refs.filter(r => r.startsWith('schedule:'));
-  const annotated = scheduleRefs.filter(r => (CATALOG[r] || {}).annotated).length;
+  const realtimeRefs = refs.filter(r => r.startsWith('realtime:'));
+  const isAnnotated = r => (CATALOG[r] || {}).annotated;
+  const annotated = scheduleRefs.filter(isAnnotated).length;
+  const rtAnnotated = realtimeRefs.filter(isAnnotated).length;
+  const pct = (n, of) => of ? Math.round(1000 * n / of) / 10 : 0;
 
   return {
     composites, views, derived, reverse, langs: FORM.langs,
     stats: {
       composites: composites.length, views: views.length, refs: refs.length,
       schedule: scheduleRefs.length,
-      realtime: refs.filter(r => r.startsWith('realtime:')).length,
+      realtime: realtimeRefs.length,
       derived: refs.filter(r => r.startsWith('derived:')).length,
       annotated,
-      percent: scheduleRefs.length
-        ? Math.round(1000 * annotated / scheduleRefs.length) / 10 : 0,
+      percent: pct(annotated, scheduleRefs.length),
+      rtAnnotated,
+      rtPercent: pct(rtAnnotated, realtimeRefs.length),
+      displayed: scheduleRefs.length + realtimeRefs.length,
+      displayedAnnotated: annotated + rtAnnotated,
     },
   };
 }

@@ -1,5 +1,10 @@
 /* Rendering. Reads through annotationOf(), so the spec column always shows the
- * repository and the editor column always shows the merged (spec + draft) view. */
+ * repository and the editor column always shows the merged (spec + draft) view.
+ *
+ * Nothing here knows which feed it is drawing. A "table" is a GTFS file on the
+ * Schedule side and a protobuf message on the Realtime side; the per-field
+ * facts the spec column lists arrive as data, built by whichever builder made
+ * the page. */
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -29,9 +34,9 @@ function renderChrome(){
   document.getElementById('covbar').style.width = Math.max(c.percent, 1.5) + '%';
   document.getElementById('search').placeholder = s.search;
   document.getElementById('footer').innerHTML =
-    s.footer + ' ' + esc(DATA.metadata.revision_date || '');
+    s.footer(PAGE) + ' ' + esc(DATA.metadata.revision_date || '');
   document.getElementById('table').innerHTML = tablesSorted().map(tb =>
-    `<option value="${tb.name}"${tb.name===current?' selected':''}>${esc(tb.file)} — ${tableCounts(tb)}/${tb.total} ${esc(s.annotated)}</option>`
+    `<option value="${tb.name}"${tb.name===current?' selected':''}>${esc(tb.title)} — ${tableCounts(tb)}/${tb.total} ${esc(s.annotated)}</option>`
   ).join('');
 }
 
@@ -69,6 +74,11 @@ function optionsHtml(groups){
   ).join('');
 }
 
+/* The one-word summary of an annotation. A Schedule annotation always names a
+ * component; a Realtime field the operator never types has an origin instead,
+ * and that is the more useful thing to show. */
+const badgeOf = a => a.component || a.origin || '';
+
 function stateTag(key){
   const s = t(), st = statusOf(key);
   if (!st) return '';
@@ -87,14 +97,30 @@ function usesHtml(f){
     `<a href="composites.html#${encodeURIComponent(c)}">${esc(c)}</a>`).join(', ') + `</p>`;
 }
 
+/* The spec column's rows. Each builder decides which facts its reference
+ * actually has — Schedule has type and presence, Realtime adds cardinality —
+ * and names them by string key so they stay translatable. */
+function factRows(f){
+  const s = t();
+  return (f.facts || []).filter(x => x.v).map(x =>
+    `<div><dt>${esc(s[x.k] || x.k)}</dt><dd>${esc(x.v)}</dd></div>`).join('');
+}
+
+/* A field whose type is another group — a protobuf message — is a doorway to
+ * it. The link retargets the group selector rather than navigating, so the
+ * draft and any open form survive the jump. */
+function opensHtml(f){
+  if (!f.opens || !DATA.tables.some(tb => tb.name === f.opens)) return '';
+  return `<p class="uses">${esc(t().opens)}: ` +
+    `<a href="#" data-open="${esc(f.opens)}">${esc(f.opens)}</a></p>`;
+}
+
 function specColumn(f){
   const s = t();
   return `<div class="col"><h3>${esc(s.spec)}</h3>
     <p class="desc">${esc(f.description)}</p>
-    <dl>
-      <div><dt>${esc(s.type)}</dt><dd>${esc(f.type)}</dd></div>
-      <div><dt>${esc(s.presence)}</dt><dd>${esc(f.presence)}</dd></div>
-    </dl>
+    <dl>${factRows(f)}</dl>
+    ${opensHtml(f)}
     ${f.conditions.length ? `<p class="optcat">${esc(s.conditions)}</p>
       <ul class="notes">${f.conditions.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>` : ''}
     ${f.notes.length ? `<p class="optcat">${esc(s.notes)}</p>
@@ -115,13 +141,16 @@ function editorColumn(f){
     ${dirty ? `<button class="act" data-revert="${esc(f.key)}">${esc(s.revert)}</button>` : ''}
   </div>`;
 
+  // One row per scalar property the annotation schema declares, in its order,
+  // so a vocabulary that gains a key gains a row.
+  const rows = !a ? '' : FORM.topFields.filter(x => a[x.name]).map(x =>
+    `<div><dt>${esc(s[x.name] || x.name)}</dt><dd>${esc(a[x.name])}</dd></div>`).join('');
+
   const body = a ? `
     ${i18n.help ? `<p class="desc">${esc(i18n.help)}</p>` : ''}
     <dl>
       <div><dt>${esc(s.label)}</dt><dd>${esc(i18n.label || '')}</dd></div>
-      <div><dt>${esc(s.component)}</dt><dd>${esc(a.component)}</dd></div>
-      ${a.group ? `<div><dt>${esc(s.group)}</dt><dd>${esc(a.group)}</dd></div>` : ''}
-      ${a.references ? `<div><dt>${esc(s.references)}</dt><dd>${esc(a.references)}</dd></div>` : ''}
+      ${rows}
     </dl>
     ${Object.keys(a.validation || {}).length
       ? `<p class="optcat">${esc(s.validation)}</p><dl>${validationRows(a.validation)}</dl>` : ''}`
@@ -137,7 +166,7 @@ function fieldHtml(f){
     <span class="fname">${esc(f.name)}</span>
     <span class="tag type">${esc(f.type)}</span>
     ${f.presence ? `<span class="tag req">${esc(f.presence)}</span>` : ''}
-    ${a ? `<span class="tag comp">${esc(a.component)}</span>`
+    ${a ? `<span class="tag comp">${esc(badgeOf(a))}</span>`
         : `<span class="tag gap">${esc(s.nomap)}</span>`}
     ${f.usage && f.usage.length ? `<span class="tag use">${esc(s.displayed)}</span>` : ''}
     ${stateTag(f.key)}
@@ -155,7 +184,7 @@ function renderFields(){
   const host = document.getElementById('fields');
   if (!tb){ host.innerHTML = ''; info.textContent = ''; return; }
 
-  info.textContent = `${tb.file} · ${tb.total} ${s.fields} · ${tableCounts(tb)} ${s.annotated}`
+  info.textContent = `${tb.title} · ${tb.total} ${s.fields} · ${tableCounts(tb)} ${s.annotated}`
     + (tb.presence ? ` · ${tb.presence}` : '');
 
   const shown = tb.fields.filter(f => !q
@@ -184,6 +213,37 @@ function wireFieldButtons(host){
     });
   host.querySelectorAll('[data-revert]').forEach(b =>
     b.onclick = () => { revert(b.dataset.revert); renderAll(); });
+  host.querySelectorAll('[data-open]').forEach(a =>
+    a.onclick = e => {
+      e.preventDefault();
+      if (editing) closeForm(false);
+      current = a.dataset.open;
+      document.getElementById('search').value = '';
+      renderChrome();
+      renderFields();
+      window.scrollTo({top: 0});
+    });
 }
 
 function renderAll(){ renderLangs(); renderChrome(); renderFields(); renderDraftBar(); }
+
+/* Deep links. The composites page links a displayed field straight to the
+ * field that backs it, so `#stops.stop_lat` has to select the right group and
+ * open the right entry — the page is one long list per group, and landing on
+ * the top of the wrong group would be no answer at all. */
+function openFromHash(){
+  const key = decodeURIComponent((location.hash || '').slice(1));
+  const entry = INDEX.get(key);
+  if (!entry) return false;
+  if (editing) closeForm(false);
+  current = entry.table.name;
+  document.getElementById('search').value = '';
+  renderChrome();
+  renderFields();
+  const node = document.querySelector(`.field[data-key="${CSS.escape(key)}"]`);
+  if (node){
+    node.open = true;
+    node.scrollIntoView({block: 'center'});
+  }
+  return true;
+}

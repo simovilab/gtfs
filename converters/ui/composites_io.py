@@ -93,12 +93,17 @@ def _tail(node: Any) -> tuple[Any, Any, int] | None:
 
 
 def _detach_trailing(node: Any) -> Any:
-    """Remove and return the comment block trailing a subtree's last value."""
+    """Remove and return the comment block trailing a subtree's last value.
+
+    Only a real comment counts. ruamel also files the blank line *between* two
+    entries in this slot, as a token whose whole value is newlines; moving that
+    around as if it were a banner overwrites the banner it lands on.
+    """
     if (tail := _tail(node)) is None:
         return None
     container, key, slot = tail
     item = container.ca.items.get(key)
-    if not item or item[slot] is None:
+    if not item or item[slot] is None or "#" not in item[slot].value:
         return None
     token = item[slot]
     # Leave a bare newline so entries stay separated by a blank line.

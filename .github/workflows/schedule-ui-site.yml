@@ -8,6 +8,8 @@ on:
       - 'serializers/realtime/**'
       - 'serializers/ui/**'
       - 'converters/schedule/**'
+      - 'converters/realtime/**'
+      - 'converters/site/**'
       - 'converters/ui/**'
       - '.github/workflows/schedule-ui-site.yml'
   pull_request:
@@ -16,6 +18,8 @@ on:
       - 'serializers/realtime/**'
       - 'serializers/ui/**'
       - 'converters/schedule/**'
+      - 'converters/realtime/**'
+      - 'converters/site/**'
       - 'converters/ui/**'
       - '.github/workflows/schedule-ui-site.yml'
   schedule:
@@ -48,13 +52,20 @@ jobs:
       - name: Report annotation coverage
         id: coverage
         run: |
+          # Without pipefail the exit status would be tee's, so an orphaned
+          # annotation or a dangling cross-feed reference would pass the build.
+          set -o pipefail
           uv run converters/schedule/ui_coverage.py | tee coverage.txt
           uv run converters/schedule/ui_coverage.py --json > coverage.json
+          uv run converters/realtime/ui_coverage.py | tee coverage-realtime.txt
+          uv run converters/realtime/ui_coverage.py --json > coverage-realtime.json
           {
             echo "### Editor annotation coverage"
             echo
             echo '```'
             cat coverage.txt
+            echo
+            cat coverage-realtime.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -73,8 +84,11 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Build the explorer site
+      - name: Build the Schedule explorer
         run: uv run converters/schedule/yaml2site.py
+
+      - name: Build the Realtime explorer
+        run: uv run converters/realtime/realtime2site.py
 
       - name: Build the composites page
         run: uv run converters/ui/composites2site.py

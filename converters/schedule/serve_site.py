@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
-"""Build the explorer site, serve it locally, and let it write annotations back.
+"""Build the explorer pages, serve them locally, and let them write back.
 
-Rebuilds web/dist/index.html and serves it at http://localhost:8777 until
-interrupted with Ctrl+C.
+Rebuilds web/dist/ and serves it at http://localhost:8777 until interrupted
+with Ctrl+C.
 
-Two endpoints sit alongside the static files:
+Four endpoints sit alongside the static files:
 
-    GET  /api/status       does this server accept writes?
-    PUT  /api/annotations  merge a changeset into schedule.ui.yaml
-    PUT  /api/composites   merge a changeset into composites.yaml
+    GET  /api/status                does this server accept writes?
+    PUT  /api/annotations           merge a changeset into schedule.ui.yaml
+    PUT  /api/realtime-annotations  merge a changeset into realtime.ui.yaml
+    PUT  /api/composites            merge a changeset into composites.yaml
 
-The page probes /api/status at load. On GitHub Pages nothing answers, so it
-falls back to exporting a YAML patch to copy by hand; here, the "write to file"
-button appears. Writes go through ui_yaml_io, which keeps the file's comments.
+Each page probes /api/status at load. On GitHub Pages nothing answers, so a
+page falls back to exporting a YAML patch to copy by hand; here, the "write to
+file" button appears. Writes go through ui_yaml_io, which keeps the comments.
 
-The endpoints only ever touch serializers/schedule/schedule.ui.yaml, only
-accept requests from this server's own origin, and only write payloads that
-already validate against schedule.ui.schema.json.
+The two annotation endpoints are one piece of code over two files: which file a
+request writes, and which schema it must satisfy, is decided by the route and
+never by the payload. Every endpoint only ever touches the one file it names,
+only accepts requests from this server's own origin, and only writes payloads
+that already validate against that file's schema.
 
 Usage:
     uv run converters/schedule/serve_site.py
@@ -34,13 +37,28 @@ import webbrowser
 
 import jsonschema
 
-import ui_yaml_io
 import yaml2site
 
 # Same reason as in yaml2site: these converters run as scripts, not a package.
+sys.path.insert(0, str(yaml2site.ROOT / "converters" / "site"))
+sys.path.insert(0, str(yaml2site.ROOT / "converters" / "realtime"))
 sys.path.insert(0, str(yaml2site.ROOT / "converters" / "ui"))
 import composites  # noqa: E402
 import composites2site  # noqa: E402
+import realtime2site  # noqa: E402
+import ui_yaml_io  # noqa: E402
+
+# The two annotation files, by the route that writes each. Adding a feed is an
+# entry here plus its builder, not another copy of the endpoint.
+ANNOTATIONS = {
+    "/api/annotations": yaml2site,
+    "/api/realtime-annotations": realtime2site,
+}
+
+# Every page is rebuilt after any write. An annotation edit changes the badges
+# the composites page shows, and a composite edit changes the usage tags on
+# both explorers, so there is no such thing as a write that touches one page.
+BUILDERS = (yaml2site, realtime2site, composites2site)
 
 DIST_DIR = yaml2site.OUTPUT_PATH.parent
 MAX_BODY = 4 * 1024 * 1024
@@ -48,7 +66,7 @@ LOCAL_HOSTS = ("localhost", "127.0.0.1")
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
-    """Static files, plus the two annotation endpoints."""
+    """Static files, plus the write-back endpoints."""
 
     writable = True
     port = 0
@@ -99,13 +117,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if self.path.rstrip("/") == "/api/status":
             return self._json(200, {
                 "writable": self.writable,
-                "path": str(yaml2site.UI_PATH.relative_to(yaml2site.ROOT)),
+                "paths": {route: str(module.UI_PATH.relative_to(yaml2site.ROOT))
+                          for route, module in ANNOTATIONS.items()},
             })
         return super().do_GET()
 
     def do_PUT(self):  # noqa: N802
         route = self.path.rstrip("/")
-        if route not in ("/api/annotations", "/api/composites"):
+        if route not in (*ANNOTATIONS, "/api/composites"):
             return self._json(404, {"error": "no such endpoint"})
         if not self.writable:
             return self._json(403, {"error": "server started read-only"})
@@ -121,8 +140,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return self._json(400, {"error": "no changes given"})
 
         try:
-            if route == "/api/annotations":
-                counts = write_annotations(changes)
+            if route in ANNOTATIONS:
+                counts = write_annotations(ANNOTATIONS[route], changes)
             else:
                 counts = composites.write(changes)
         except jsonschema.ValidationError as e:
@@ -132,10 +151,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         except Exception as e:  # surfaced to the page rather than swallowed
             return self._json(500, {"error": str(e)})
 
-        # Both pages are rebuilt either way: an annotation edit changes the
-        # component badges the composites page shows, and a composite edit
-        # changes the usage tags on the field explorer.
-        rebuilt = yaml2site.main() == 0 and composites2site.main() == 0
+        rebuilt = all(builder.main() == 0 for builder in BUILDERS)
         return self._json(200, {"counts": counts, "rebuilt": rebuilt})
 
     def handle_one_request(self):
@@ -158,20 +174,25 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         sys.stderr.write(f"  {self.command} {self.path} -> {args[1]}\n")
 
 
-def write_annotations(changes: dict) -> dict[str, int]:
-    """Validate a changeset, then merge it into schedule.ui.yaml.
+def write_annotations(feed, changes: dict) -> dict[str, int]:
+    """Validate a changeset, then merge it into that feed's annotation file.
+
+    `feed` is the builder module, which already knows where its annotations and
+    its schema live — so the route picks the file and the request cannot.
 
     Validation runs on the whole merged document, not just the incoming
     entries, so a change can never leave the file in a state CI would reject.
+    The emission order comes from the schema too, which is what keeps an entry
+    the editor rewrote shaped like the hand-written ones around it.
     """
-    schema = json.loads(yaml2site.SCHEMA_PATH.read_text(encoding="utf-8"))
-    document = ui_yaml_io.load(yaml2site.UI_PATH)
-    counts = ui_yaml_io.apply_changes(document, changes)
+    schema = json.loads(feed.SCHEMA_PATH.read_text(encoding="utf-8"))
+    document = ui_yaml_io.load(feed.UI_PATH)
+    counts = ui_yaml_io.apply_changes(document, changes, ui_yaml_io.key_order(schema))
 
     # json round-trip: validate plain data, not ruamel's comment-carrying nodes.
     jsonschema.validate(json.loads(json.dumps(document)), schema)
 
-    ui_yaml_io.dump(document, yaml2site.UI_PATH)
+    ui_yaml_io.dump(document, feed.UI_PATH)
     return counts
 
 
@@ -187,11 +208,12 @@ def main() -> int:
     if not args.no_build:
         if (code := yaml2site.main()) != 0:
             return code
-        # The composites page is a sibling in the same directory, so the nav
-        # link between the two pages resolves during a local preview too.
-        if composites2site.main() != 0:
-            print("WARNING: composites page not rebuilt; the nav link will "
-                  "serve a stale page or 404", file=sys.stderr)
+        # The other pages are siblings in the same directory, so the nav links
+        # between them resolve during a local preview too.
+        for builder in BUILDERS[1:]:
+            if builder.main() != 0:
+                print(f"WARNING: {builder.__name__} did not rebuild; a nav link "
+                      f"will serve a stale page or 404", file=sys.stderr)
 
     if not (DIST_DIR / "index.html").exists():
         print(f"ERROR: nothing to serve; {DIST_DIR / 'index.html'} is missing", file=sys.stderr)
@@ -206,8 +228,10 @@ def main() -> int:
             url = f"http://localhost:{args.port}/"
             print(f"\nServing {DIST_DIR} at {url}")
             if Handler.writable:
-                print(f"Edits save to {yaml2site.UI_PATH.relative_to(yaml2site.ROOT)} "
-                      f"(--read-only to disable).")
+                for module in ANNOTATIONS.values():
+                    print(f"Edits save to "
+                          f"{module.UI_PATH.relative_to(yaml2site.ROOT)}")
+                print("(--read-only to disable.)")
             print("Press Ctrl+C to stop.\n")
             if not args.no_open:
                 webbrowser.open(url)

@@ -1,9 +1,14 @@
 /* Application state.
  *
+ * Shared by both explorers: the GTFS Schedule page and the GTFS Realtime page
+ * differ only in the data and the vocabulary handed to them, never in code.
+ * PAGE carries what does differ — which files back the page, where edits are
+ * written, which draft key they are stored under.
+ *
  * Two layers, deliberately never merged in storage:
  *
- *   DATA    - built into the page from schedule.yaml + schedule.ui.yaml. Read
- *             only. This is what the repository currently says.
+ *   DATA    - built into the page from the reference plus its annotation file.
+ *             Read only. This is what the repository currently says.
  *   OVERLAY - the reader's unsaved edits, kept in localStorage, keyed the same
  *             way. `null` marks an annotation the reader deleted.
  *
@@ -11,10 +16,12 @@
  * export patch fall out for free: the difference between the two layers *is*
  * the changeset. Merging happens once, at render time.
  */
+const PAGE = JSON.parse(document.getElementById('page').textContent);
 const DATA = JSON.parse(document.getElementById('data').textContent);
 const FORM = JSON.parse(document.getElementById('form-model').textContent);
 
-const DRAFT_KEY = 'gtfs.schedule.ui.draft.v1';
+// Per feed, so a draft on one page is never read as a draft on the other.
+const DRAFT_KEY = PAGE.draftKey;
 
 let OVERLAY = loadDraft();
 let lang = 'es';

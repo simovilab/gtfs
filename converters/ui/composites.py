@@ -31,11 +31,18 @@ import yaml
 import composites_io
 
 ROOT = Path(__file__).resolve().parents[2]
+
+# rt_spec knows how to walk the protobuf message graph, including the two
+# enums that share a name. Imported by path because these converters are run
+# as scripts rather than as a package.
+sys.path.insert(0, str(ROOT / "converters" / "realtime"))
+import rt_spec  # noqa: E402
 COMPOSITES_PATH = ROOT / "serializers" / "ui" / "composites.yaml"
 COMPOSITES_SCHEMA = ROOT / "serializers" / "ui" / "composites.schema.json"
 SCHEDULE_PATH = ROOT / "serializers" / "schedule" / "schedule.yaml"
 REALTIME_PATH = ROOT / "serializers" / "realtime" / "realtime.yaml"
 UI_PATH = ROOT / "serializers" / "schedule" / "schedule.ui.yaml"
+REALTIME_UI_PATH = ROOT / "serializers" / "realtime" / "realtime.ui.yaml"
 
 LANGS = ("es", "en", "pt")
 
@@ -60,45 +67,25 @@ def schedule_index(spec: dict) -> dict[str, dict]:
     return index
 
 
-def realtime_elements(spec: dict) -> dict[str, dict]:
-    """'TripUpdate' -> the message's entry in realtime.yaml."""
-    return {e["name"]: e for e in spec.get("elements", [])}
+def realtime_elements(spec: dict) -> dict:
+    """The realtime.yaml message graph, indexed for walking. See rt_spec."""
+    return rt_spec.index(spec)
 
 
-def resolve_realtime(path: str, elements: dict[str, dict]) -> dict | None:
-    """Walk 'TripUpdate.stop_time_update.departure.time' through the messages.
+def resolve_realtime(path: str, idx: dict) -> dict | None:
+    """Walk 'TripUpdate.stop_time_update.departure.time' to the field it names.
 
     Walking rather than matching a flat name is what keeps arrival.time and
     departure.time distinguishable: both end at StopTimeEvent.time, and a flat
     key could not tell a screen which one it meant.
+
+    What comes back also carries `key`, the '<Message>.<field>' the field is
+    *declared* as. That is how a path here finds its annotation in
+    realtime.ui.yaml, which is keyed on the definition rather than the route to
+    it: both arrival.time and departure.time share one annotation, because
+    what the field means does not depend on which screen reads it.
     """
-    head, *rest = path.split(".")
-    element = elements.get(head)
-    if element is None or element.get("data_type") != "message" or not rest:
-        return None
-
-    field = None
-    for step, segment in enumerate(rest):
-        if element is None or element.get("data_type") != "message":
-            return None
-        field = next((f for f in element.get("fields") or [] if f["name"] == segment), None)
-        if field is None:
-            return None
-        nested = (field.get("type") or {}).get("element") or {}
-        last = step == len(rest) - 1
-        element = elements.get(nested.get("name")) if nested else None
-        if not last and element is None:
-            return None  # more path left, but this field is a scalar
-
-    kind = (field.get("type") or {})
-    return {
-        "message": head,
-        "name": field["name"],
-        "type": (kind.get("element") or kind.get("format") or {}).get("name", ""),
-        "presence": field.get("presence", ""),
-        "cardinality": field.get("cardinality", ""),
-        "description": field.get("description", ""),
-    }
+    return rt_spec.resolve_path(path, idx)
 
 
 # -------------------------------------------------------------- resolving
@@ -141,10 +128,14 @@ def resolve(ref: str, ctx: dict) -> dict:
     elif feed == "realtime":
         field = resolve_realtime(path, ctx["realtime"])
         if field:
+            note = ctx["realtime_annotations"].get(field["key"]) or {}
             out.update(
                 exists=True, type=field["type"], presence=field["presence"],
                 description=field["description"], table=field["message"],
                 name=field["name"], cardinality=field["cardinality"],
+                key=field["key"], origin=note.get("origin"),
+                component=note.get("component"), annotated=bool(note),
+                label={l: (note.get("i18n", {}).get(l) or {}).get("label", "") for l in LANGS},
             )
     return out
 
@@ -197,10 +188,19 @@ def build(doc: dict, ctx: dict) -> dict:
 
     views = [{"name": name, **view} for name, view in doc.get("views", {}).items()]
 
+    # Annotation coverage over what is actually displayed, per feed. A ref is
+    # resolved once in `reverse`, so the flags come back off the resolution
+    # rather than being looked up a second time here.
+    resolved = {s["ref"]: s for c in composites for p in c["props"] for s in p["sources"]}
+    resolved.update({p["resolved"]["ref"]: p["resolved"]
+                     for c in composites for p in c["params"]})
+
     refs = list(reverse)
     schedule_refs = [r for r in refs if r.startswith("schedule:")]
-    annotated = sum(1 for r in schedule_refs
-                    if (ctx["annotations"].get(r.split(":", 1)[1]) is not None))
+    realtime_refs = [r for r in refs if r.startswith("realtime:")]
+    annotated = sum(1 for r in schedule_refs if resolved.get(r, {}).get("annotated"))
+    rt_annotated = sum(1 for r in realtime_refs if resolved.get(r, {}).get("annotated"))
+    displayed = schedule_refs + realtime_refs
 
     return {
         "composites": composites,
@@ -213,10 +213,15 @@ def build(doc: dict, ctx: dict) -> dict:
             "views": len(views),
             "refs": len(refs),
             "schedule": len(schedule_refs),
-            "realtime": sum(1 for r in refs if r.startswith("realtime:")),
+            "realtime": len(realtime_refs),
             "derived": sum(1 for r in refs if r.startswith("derived:")),
             "annotated": annotated,
             "percent": round(100 * annotated / len(schedule_refs), 1) if schedule_refs else 0.0,
+            "rtAnnotated": rt_annotated,
+            "rtPercent": (round(100 * rt_annotated / len(realtime_refs), 1)
+                          if realtime_refs else 0.0),
+            "displayed": len(displayed),
+            "displayedAnnotated": annotated + rt_annotated,
         },
     }
 
@@ -327,14 +332,25 @@ def load() -> dict:
     doc = yaml.safe_load(COMPOSITES_PATH.read_text(encoding="utf-8"))
     jsonschema.validate(doc, json.loads(COMPOSITES_SCHEMA.read_text(encoding="utf-8")))
 
+    return build(doc, context(doc.get("derived_sources", {}))) | {"document": doc}
+
+
+def context(derived: dict) -> dict:
+    """Everything a reference is resolved against, loaded once.
+
+    Both annotation files are here, because a reference is resolved the same
+    way whichever feed it names: to a field, and then to whatever the lab has
+    decided about that field.
+    """
     ui = yaml.safe_load(UI_PATH.read_text(encoding="utf-8")) or {}
-    ctx = {
+    rt_ui = yaml.safe_load(REALTIME_UI_PATH.read_text(encoding="utf-8")) or {}
+    return {
         "schedule": schedule_index(yaml.safe_load(SCHEDULE_PATH.read_text(encoding="utf-8"))),
         "realtime": realtime_elements(yaml.safe_load(REALTIME_PATH.read_text(encoding="utf-8"))),
         "annotations": ui.get("fields", {}),
-        "derived": doc.get("derived_sources", {}),
+        "realtime_annotations": rt_ui.get("fields", {}),
+        "derived": derived,
     }
-    return build(doc, ctx) | {"document": doc}
 
 
 def key_order(schema: dict) -> dict[str, tuple[str, ...]]:
@@ -367,13 +383,7 @@ def write(changes: dict[str, dict]) -> dict[str, int]:
     plain = json.loads(json.dumps(document))
     jsonschema.validate(plain, schema)
 
-    ui = yaml.safe_load(UI_PATH.read_text(encoding="utf-8")) or {}
-    ctx = {
-        "schedule": schedule_index(yaml.safe_load(SCHEDULE_PATH.read_text(encoding="utf-8"))),
-        "realtime": realtime_elements(yaml.safe_load(REALTIME_PATH.read_text(encoding="utf-8"))),
-        "annotations": ui.get("fields", {}),
-        "derived": plain.get("derived_sources", {}),
-    }
+    ctx = context(plain.get("derived_sources", {}))
     errors, _ = check(plain, build(plain, ctx))
     if errors:
         raise ValueError("; ".join(errors))
@@ -383,7 +393,8 @@ def write(changes: dict[str, dict]) -> dict[str, int]:
 
 
 def main() -> int:
-    for path in (COMPOSITES_PATH, COMPOSITES_SCHEMA, SCHEDULE_PATH, REALTIME_PATH, UI_PATH):
+    for path in (COMPOSITES_PATH, COMPOSITES_SCHEMA, SCHEDULE_PATH, REALTIME_PATH,
+                 UI_PATH, REALTIME_UI_PATH):
         if not path.exists():
             print(f"ERROR: missing required file: {path}", file=sys.stderr)
             return 2
@@ -404,10 +415,13 @@ def main() -> int:
           f"{stats['realtime']} realtime, {stats['derived']} derived")
     print(f"{stats['annotated']}/{stats['schedule']} displayed schedule fields "
           f"have an editor annotation ({stats['percent']}%)")
+    print(f"{stats['rtAnnotated']}/{stats['realtime']} displayed realtime fields "
+          f"have an editor annotation ({stats['rtPercent']}%)")
 
     gaps = sorted({
         source["ref"] for composite in model["composites"] for prop in composite["props"]
-        for source in prop["sources"] if source["feed"] == "schedule" and not source["annotated"]
+        for source in prop["sources"]
+        if source["feed"] in ("schedule", "realtime") and not source["annotated"]
     })
     if gaps:
         print(f"\nDisplayed but not annotated ({len(gaps)}):")

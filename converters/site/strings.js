@@ -1,7 +1,14 @@
 /* UI chrome in the three lab languages. Spanish is the default and the only
  * one guaranteed complete; en/pt are here so adding a locale is a data change.
  * Field labels and help text do NOT live here — those come from the
- * annotations' own i18n block. */
+ * annotations' own i18n block.
+ *
+ * Shared by both explorers, the Schedule one and the Realtime one. Anything
+ * that names a file is a function of PAGE rather than a literal, so the
+ * Realtime page never claims to be writing schedule.ui.yaml. Keys that only
+ * one feed uses (origin, cardinality) are still defined for both: an unused
+ * string costs nothing, a missing one renders as `undefined`.
+ */
 const STRINGS = {
   es: {
     subtitle: 'Componentes de edición y reglas de validación por campo',
@@ -10,6 +17,7 @@ const STRINGS = {
     type: 'Tipo', presence: 'Presencia', conditions: 'Condiciones', notes: 'Notas',
     options: 'Opciones', component: 'Componente', group: 'Grupo', references: 'Referencia',
     validation: 'Validación', label: 'Etiqueta', help: 'Ayuda',
+    origin: 'Origen del dato', opens: 'Abre', definition: 'Definición', cardinality: 'Cardinalidad', message: 'Mensaje',
     nomap: 'Aún no mapeado', nomapLong: 'Este campo todavía no tiene componente de edición ni reglas de validación definidas.',
     noresults: 'Ningún campo coincide con la búsqueda.',
     fields: 'campos', annotated: 'anotados', bbox: 'Región',
@@ -24,18 +32,18 @@ const STRINGS = {
     discard: 'Descartar todo', discardAsk: '¿Descartar todos los cambios sin guardar?',
     removeAsk: '¿Quitar la anotación de este campo?',
     yes: 'Sí, continuar',
-    patchTitle: 'Parche para schedule.ui.yaml',
-    patchHelp: 'Pegue estas entradas bajo <code>fields:</code> en <code>serializers/schedule/schedule.ui.yaml</code>. Es un fragmento, no el archivo completo, para que no borre los comentarios ya escritos. Copie y confirme en una rama.',
+    patchTitle: f => `Parche para ${f}`,
+    patchHelp: f => `Pegue estas entradas bajo <code>fields:</code> en <code>${f}</code>. Es un fragmento, no el archivo completo, para que no borre los comentarios ya escritos. Copie y confirme en una rama.`,
     copy: 'Copiar', copied: 'Copiado', close: 'Cerrar',
-    saved: n => `Guardado en schedule.ui.yaml (${n}).`,
+    saved: (f,n) => `Guardado en ${f} (${n}).`,
     saveFailed: 'No se pudo guardar',
-    errComponent: 'Elija un componente.',
+    errRequired: f => `Falta «${f}», que es obligatorio.`,
     errLabel: l => `Falta la etiqueta en «${l}», que es obligatoria.`,
-    errRef: 'El componente foreign_key_select necesita una referencia «archivo.campo».',
+    errWhen: (a,v,b) => `Con «${a}» = «${v}» hace falta «${b}».`,
     errPattern: f => `«${f}» debe tener la forma «archivo.campo».`,
     errDep: (a,b) => `«${a}» solo tiene sentido junto a «${b}».`,
     errValue: r => `La regla «${r}» no tiene valor.`,
-    footer: 'Generado desde <code>serializers/schedule/schedule.yaml</code> (verdad de referencia GTFS) y <code>serializers/schedule/schedule.ui.yaml</code> (anotaciones de edición). Revisión de la especificación:'
+    footer: p => `Generado desde <code>${p.specFile}</code> (verdad de referencia GTFS) y <code>${p.file}</code> (anotaciones de edición). Revisión de la especificación:`
   },
   en: {
     subtitle: 'Per-field editor components and validation rules',
@@ -44,6 +52,7 @@ const STRINGS = {
     type: 'Type', presence: 'Presence', conditions: 'Conditions', notes: 'Notes',
     options: 'Options', component: 'Component', group: 'Group', references: 'References',
     validation: 'Validation', label: 'Label', help: 'Help',
+    origin: 'Data origin', opens: 'Opens', definition: 'Definition', cardinality: 'Cardinality', message: 'Message',
     nomap: 'Not yet mapped', nomapLong: 'This field has no editor component or validation rules defined yet.',
     noresults: 'No field matches the search.',
     fields: 'fields', annotated: 'annotated', bbox: 'Region',
@@ -58,18 +67,18 @@ const STRINGS = {
     discard: 'Discard all', discardAsk: 'Discard all unsaved changes?',
     removeAsk: 'Remove the annotation for this field?',
     yes: 'Yes, continue',
-    patchTitle: 'Patch for schedule.ui.yaml',
-    patchHelp: 'Paste these entries under <code>fields:</code> in <code>serializers/schedule/schedule.ui.yaml</code>. It is a fragment, not the whole file, so it cannot wipe the comments already written there. Copy it and commit on a branch.',
+    patchTitle: f => `Patch for ${f}`,
+    patchHelp: f => `Paste these entries under <code>fields:</code> in <code>${f}</code>. It is a fragment, not the whole file, so it cannot wipe the comments already written there. Copy it and commit on a branch.`,
     copy: 'Copy', copied: 'Copied', close: 'Close',
-    saved: n => `Written to schedule.ui.yaml (${n}).`,
+    saved: (f,n) => `Written to ${f} (${n}).`,
     saveFailed: 'Could not save',
-    errComponent: 'Choose a component.',
+    errRequired: f => `“${f}” is required and missing.`,
     errLabel: l => `Missing the label for “${l}”, which is required.`,
-    errRef: 'The foreign_key_select component needs a “file.field” reference.',
+    errWhen: (a,v,b) => `With “${a}” = “${v}”, “${b}” is required.`,
     errPattern: f => `“${f}” must look like “file.field”.`,
     errDep: (a,b) => `“${a}” only makes sense together with “${b}”.`,
     errValue: r => `Rule “${r}” has no value.`,
-    footer: 'Generated from <code>serializers/schedule/schedule.yaml</code> (GTFS ground truth) and <code>serializers/schedule/schedule.ui.yaml</code> (editor annotations). Spec revision:'
+    footer: p => `Generated from <code>${p.specFile}</code> (GTFS ground truth) and <code>${p.file}</code> (editor annotations). Spec revision:`
   },
   pt: {
     subtitle: 'Componentes de edição e regras de validação por campo',
@@ -78,6 +87,7 @@ const STRINGS = {
     type: 'Tipo', presence: 'Presença', conditions: 'Condições', notes: 'Notas',
     options: 'Opções', component: 'Componente', group: 'Grupo', references: 'Referência',
     validation: 'Validação', label: 'Rótulo', help: 'Ajuda',
+    origin: 'Origem do dado', opens: 'Abre', definition: 'Definição', cardinality: 'Cardinalidade', message: 'Mensagem',
     nomap: 'Ainda não mapeado', nomapLong: 'Este campo ainda não tem componente de edição nem regras de validação definidas.',
     noresults: 'Nenhum campo corresponde à busca.',
     fields: 'campos', annotated: 'anotados', bbox: 'Região',
@@ -92,18 +102,18 @@ const STRINGS = {
     discard: 'Descartar tudo', discardAsk: 'Descartar todas as alterações não salvas?',
     removeAsk: 'Remover a anotação deste campo?',
     yes: 'Sim, continuar',
-    patchTitle: 'Patch para schedule.ui.yaml',
-    patchHelp: 'Cole estas entradas sob <code>fields:</code> em <code>serializers/schedule/schedule.ui.yaml</code>. É um fragmento, não o arquivo inteiro, para não apagar os comentários já escritos. Copie e faça commit em um branch.',
+    patchTitle: f => `Patch para ${f}`,
+    patchHelp: f => `Cole estas entradas sob <code>fields:</code> em <code>${f}</code>. É um fragmento, não o arquivo inteiro, para não apagar os comentários já escritos. Copie e faça commit em um branch.`,
     copy: 'Copiar', copied: 'Copiado', close: 'Fechar',
-    saved: n => `Gravado em schedule.ui.yaml (${n}).`,
+    saved: (f,n) => `Gravado em ${f} (${n}).`,
     saveFailed: 'Não foi possível salvar',
-    errComponent: 'Escolha um componente.',
+    errRequired: f => `Falta “${f}”, que é obrigatório.`,
     errLabel: l => `Falta o rótulo em “${l}”, que é obrigatório.`,
-    errRef: 'O componente foreign_key_select precisa de uma referência “arquivo.campo”.',
+    errWhen: (a,v,b) => `Com “${a}” = “${v}”, “${b}” é obrigatório.`,
     errPattern: f => `“${f}” deve ter a forma “arquivo.campo”.`,
     errDep: (a,b) => `“${a}” só faz sentido junto de “${b}”.`,
     errValue: r => `A regra “${r}” está sem valor.`,
-    footer: 'Gerado a partir de <code>serializers/schedule/schedule.yaml</code> (referência GTFS) e <code>serializers/schedule/schedule.ui.yaml</code> (anotações de edição). Revisão da especificação:'
+    footer: p => `Gerado a partir de <code>${p.specFile}</code> (referência GTFS) e <code>${p.file}</code> (anotações de edição). Revisão da especificação:`
   }
 };
 

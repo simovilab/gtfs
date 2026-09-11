@@ -37,10 +37,14 @@ import composites_form
 ROOT = Path(__file__).resolve().parents[2]
 TEMPLATE_DIR = ROOT / "converters" / "ui" / "templates"
 ASSET_DIR = TEMPLATE_DIR / "site"
-# The shared stylesheet lives with the field explorer and is included first;
-# composites.css only adds what this page needs on top of it.
-SHARED_CSS = ROOT / "converters" / "schedule" / "templates" / "site" / "style.css"
 OUTPUT_PATH = ROOT / "web" / "dist" / "composites.html"
+
+# The shared stylesheet and the nav both live with the explorers, which is what
+# keeps this page looking like them and linking to all of them.
+sys.path.insert(0, str(ROOT / "converters" / "site"))
+import explorer  # noqa: E402
+
+SHARED_CSS = explorer.SITE_DIR / "style.css"
 
 
 def embed(payload: dict) -> str:
@@ -103,8 +107,10 @@ def main() -> int:
     spec = yaml.safe_load(model.SCHEDULE_PATH.read_text(encoding="utf-8"))
     realtime = yaml.safe_load(model.REALTIME_PATH.read_text(encoding="utf-8"))
     ui = yaml.safe_load(model.UI_PATH.read_text(encoding="utf-8")) or {}
+    rt_ui = yaml.safe_load(model.REALTIME_UI_PATH.read_text(encoding="utf-8")) or {}
     browser = composites_form.build(model.COMPOSITES_SCHEMA, spec, realtime,
-                                    ui.get("fields", {}), document)
+                                    ui.get("fields", {}), rt_ui.get("fields", {}),
+                                    document)
 
     env = Environment(
         loader=FileSystemLoader(TEMPLATE_DIR),
@@ -113,6 +119,7 @@ def main() -> int:
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(
         env.get_template("composites.html.jinja").render(
+            nav=explorer.nav("composites"),
             doc_json=embed(document),
             catalog_json=embed(browser["catalog"]),
             form_json=embed(browser["form"]),
