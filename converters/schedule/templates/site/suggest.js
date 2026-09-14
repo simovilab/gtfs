@@ -24,7 +24,7 @@ function suggest(f, table){
 
   if (f.foreign_key){
     component = 'foreign_key_select';
-    references = f.foreign_key.replace('.txt', '');
+    references = [].concat(f.foreign_key)[0].replace('.txt', '');
   } else if (type.includes('enum')){
     component = 'select';
     validation.enum_from_spec = true;

@@ -1,84 +1,190 @@
-"""Convert GTFS YAML specification to DBML using Jinja2 templates."""
+"""Convert GTFS YAML specification to DBML using Jinja2 templates.
+
+The DBML is a diagram of the spec: it keeps every relationship the spec
+describes, including ones a database could not enforce as a foreign key
+(alternative targets, non-unique targets). Those carry a note saying so.
+"""
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Iterable, List, Set, Tuple
 
 import yaml
 from jinja2 import Environment, FileSystemLoader
 
+BASE_DIR = Path(__file__).resolve().parents[2]
+TEMPLATE_DIR = BASE_DIR / "converters" / "schedule" / "templates"
+
+# GTFS field type (lowercase) -> DBML column type. Matched exactly, else by the
+# longest prefix (so "text or url or email" maps via "text").
+TYPE_MAP: Dict[str, str] = {
+    # textual
+    "text": "string",
+    "string": "string",
+    "url": "string",
+    "email": "string",
+    "phone number": "string",
+    "language code": "string",
+    "currency code": "string",
+    "timezone": "string",
+    "color": "string",
+    "id": "string",
+    "unique id": "string",
+    "foreign id": "string",
+    "enum": "string",
+    # numeric
+    "integer": "int",
+    "float": "float",
+    "non-negative integer": "int",
+    "non-negative float": "float",
+    "non-zero integer": "int",
+    "non-zero float": "float",
+    "non-null integer": "int",
+    "positive integer": "int",
+    "positive float": "float",
+    "latitude": "float",
+    "longitude": "float",
+    "currency amount": "float",
+    # temporal. GTFS "Time" may exceed 24:00:00 for service past midnight, so it
+    # is a duration from the start of the service day, not a time of day.
+    "date": "date",
+    "time": "interval",
+    "local time": "time",
+    "datetime": "datetime",
+    "timestamp": "datetime",
+}
+
+
+def _type_key(field_type: str) -> str | None:
+    t = (field_type or "").strip().lower()
+    if t in TYPE_MAP:
+        return t
+    prefixes = [key for key in TYPE_MAP if t.startswith(key)]
+    return max(prefixes, key=len) if prefixes else None
+
+
+def is_known_type(field_type: str) -> bool:
+    return _type_key(field_type) is not None
+
 
 def map_type(field_type: str) -> str:
-    """Map GTFS/YAML field types to DBML types.
+    """Map a GTFS/YAML field type to a DBML type; unknown types become string."""
+    key = _type_key(field_type)
+    return TYPE_MAP[key] if key else "string"
 
-    Falls back to string for unknown types to keep generation robust.
+
+def _flatten(value: Any) -> str:
+    """Collapse lists (YAML `notes`), HTML breaks and newlines into one line of text."""
+    if isinstance(value, list):
+        value = " ".join(str(v) for v in value if v)
+    value = re.sub(r"<\s*(br|hr)\s*/?\s*>", " ", str(value), flags=re.I)
+    return " ".join(value.split())
+
+
+def escape_note(value: Any) -> str:
+    """Escape text for a double-quoted DBML string."""
+    return _flatten(value).replace("\\", "\\\\").replace('"', '\\"')
+
+
+def escape_single(value: Any) -> str:
+    """Escape text for a single-quoted DBML string."""
+    return _flatten(value).replace("\\", "\\\\").replace("'", "\\'")
+
+
+def flatten_options(options: List[Any] | None) -> List[Dict[str, str]]:
+    """Normalize enum options to unique {value, description} pairs.
+
+    Categorized options ({category, values: [...]}) repeat the same values per
+    category; DBML enum values must be unique, so descriptions are merged.
     """
-    if not field_type:
-        return "string"
-
-    t = field_type.strip().lower()
-
-    mapping = {
-        # textual
-        "text": "string",
-        "string": "string",
-        "url": "string",
-        "email": "string",
-        "phone number": "string",
-        "language code": "string",
-        "currency code": "string",
-        "timezone": "string",
-        "color": "string",
-        "id": "string",
-        "unique id": "string",
-        "foreign id": "string",
-        "enum": "string",
-        # numeric
-        "integer": "int",
-        "float": "float",
-        "non-negative integer": "int",
-        "non-negative float": "float",
-        "non-zero integer": "int",
-        "non-zero float": "float",
-        "positive integer": "int",
-        "positive float": "float",
-        "latitude": "float",
-        "longitude": "float",
-        "currency amount": "float",
-        # temporal
-        "date": "date",
-        "time": "time",
-        "local time": "time",
-        "datetime": "datetime",
-        "timestamp": "datetime",
-    }
-
-    for key, dbml in mapping.items():
-        if t == key or t.startswith(key):
-            return dbml
-
-    return "string"
+    merged: Dict[str, List[str]] = {}
+    for option in options or []:
+        if not isinstance(option, dict):
+            continue
+        if "values" in option:
+            prefix = f"{option['category']}: " if option.get("category") else ""
+            pairs = [(v.get("value"), prefix + str(v.get("description", ""))) for v in option["values"]]
+        else:
+            pairs = [(option.get("value"), str(option.get("description", "")))]
+        for value, desc in pairs:
+            if value is None or value == "":
+                continue
+            merged.setdefault(str(value), []).append(desc)
+    return [
+        {"value": escape_note(v), "description": escape_single(" ".join(d))}
+        for v, d in merged.items()
+    ]
 
 
-def escape_note(value: str) -> str:
-    return value.replace('"', '\\"')
+def flatten_fields(fields: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Flatten nested (GeoJSON) field trees into table columns.
+
+    Containers (features, properties) are descended into, `type` discriminators
+    are dropped, and `geometry` becomes one serialized column.
+    """
+    if not any(f.get("children") for f in fields):
+        return fields
+    flat: List[Dict[str, Any]] = []
+    for f in fields:
+        if f.get("name") == "geometry":
+            flat.append({**{k: v for k, v in f.items() if k != "children"}, "type": "Text"})
+        elif f.get("children"):
+            flat.extend(flatten_fields(f["children"]))
+        elif f.get("name") != "type":
+            flat.append(f)
+    return flat
+
+
+def fk_targets(fk: Any) -> List[str]:
+    if not fk:
+        return []
+    return [str(t).replace(".txt", "").replace(".geojson", "") for t in (fk if isinstance(fk, list) else [fk])]
 
 
 def normalize_table_name(file_name: str) -> str:
-    """Turn a GTFS file name into a DB table name.
-
-    Examples:
-      - "agency.txt" -> "agency"
-      - "locations.geojson" -> "locations"
-    """
-    base = file_name
+    """Turn a GTFS file name into a DB table name ("agency.txt" -> "agency")."""
     for ext in (".txt", ".geojson"):
-        if base.endswith(ext):
-            base = base[: -len(ext)]
-            break
-    return base
+        if file_name.endswith(ext):
+            return file_name[: -len(ext)]
+    return file_name
+
+
+def entry_name(entry: Dict[str, Any]) -> str:
+    return str(entry.get("name") or entry.get("file") or "unknown")
+
+
+def primary_key_columns(entry: Dict[str, Any], fields: List[Dict[str, Any]]) -> List[str]:
+    """Primary key as a column list; YAML allows a string, a list, "*" (all fields) or "none"."""
+    pk = entry.get("primary_key")
+    if pk == "*":
+        return [str(f.get("name")) for f in fields]
+    if isinstance(pk, str) and pk.lower() != "none":
+        return [pk]
+    if isinstance(pk, list):
+        return list(pk)
+    return []
+
+
+def unique_key_columns(entries: Iterable[Dict[str, Any]]) -> Set[str]:
+    """"table.column" for every table whose primary key is a single column."""
+    keys = set()
+    for entry in entries:
+        cols = primary_key_columns(entry, flatten_fields(entry.get("fields", [])))
+        if len(cols) == 1:
+            keys.add(f"{normalize_table_name(entry_name(entry))}.{cols[0]}")
+    return keys
+
+
+def ref_caveat(targets: List[str], unique_cols: Set[str]) -> str:
+    """Explain a reference the diagram draws but a database could not enforce."""
+    if len(targets) > 1:
+        return f"References one of {', '.join(targets)} (alternative targets, not a single foreign key)."
+    if targets and targets[0] not in unique_cols:
+        return f"References {targets[0]}, which is not a unique key (logical reference, not a foreign key)."
+    return ""
 
 
 def load_yaml(path: Path) -> Dict[str, Any]:
@@ -86,144 +192,84 @@ def load_yaml(path: Path) -> Dict[str, Any]:
         return yaml.safe_load(f)
 
 
+def build_column(
+    field: Dict[str, Any],
+    table_name: str,
+    primary_keys: List[str],
+    unique_cols: Set[str],
+    enums: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Build one DBML column, registering its enum in `enums` if it has one."""
+    fname = field.get("name", "field")
+    ftype_raw = str(field.get("type", "text"))
+    presence = (field.get("presence") or "").strip().lower()
+
+    dbml_type = map_type(ftype_raw)
+    enum_values = flatten_options(field.get("options")) if ftype_raw.strip().lower() == "enum" else []
+    if enum_values:
+        enum_name = f"{table_name}_{fname}_options"
+        if all(e["name"] != enum_name for e in enums):
+            enums.append({"name": enum_name, "options": enum_values})
+        dbml_type = f"gtfs.{enum_name}"
+
+    attrs: List[str] = []
+    # Required -> not null; conditionals are not enforced.
+    if presence.startswith("required"):
+        attrs.append("not null")
+    # Single-column PK inline; composite PKs go in the indexes block
+    if len(primary_keys) == 1 and fname in primary_keys:
+        attrs.append("pk")
+    if "default" in field:
+        default_val = field["default"]
+        attrs.append(f"default: '{escape_single(default_val)}'" if isinstance(default_val, str) else f"default: {default_val}")
+
+    targets = fk_targets(field.get("foreign_key"))
+    attrs.extend(f"ref: > gtfs.{target}" for target in targets)
+
+    note = escape_note([field.get("description") or "", _flatten(field.get("notes") or ""), ref_caveat(targets, unique_cols)])
+    if note:
+        attrs.append(f'note: "{note}"')
+
+    return {"name": fname, "type": dbml_type, "attrs": attrs}
+
+
 def build_tables(
     data: Dict[str, Any],
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """Transform YAML data to structures for DBML generation.
+    """Transform YAML data to (enums, tables) structures for the DBML template."""
+    data = data or {}
+    files = data.get("field_definitions", {}).get("files") or []
+    entries = [{"name": k, **(v or {})} for k, v in files.items()] if isinstance(files, dict) else list(files)
+    descriptions = {
+        df["name"]: df["description"]
+        for df in data.get("dataset_files", {}).get("files", [])
+        if df.get("name") and df.get("description")
+    }
+    unique_cols = unique_key_columns(entries)
 
-    Returns (enums, tables) where enums are DBML enum definitions and tables are table definitions.
-    """
-    fd = (data or {}).get("field_definitions", {})
-    files = fd.get("files")
-
-    if not files:
-        return [], []
-
-    # Build a map of file names to their dataset_files descriptions
-    dataset_files = (data or {}).get("dataset_files", {})
-    dataset_files_list = dataset_files.get("files", [])
-    file_descriptions = {}
-    for df in dataset_files_list:
-        df_name = df.get("name")
-        df_desc = df.get("description")
-        if df_name and df_desc:
-            file_descriptions[df_name] = df_desc
-
-    # Support both list and mapping forms
-    if isinstance(files, dict):
-        iterable = (
-            {"name": k, **(v or {})}
-            for k, v in files.items()  # type: ignore[operator]
-        )
-    else:
-        iterable = files
-
-    tables: List[Dict[str, Any]] = []
     enums: List[Dict[str, Any]] = []
-    seen_enum_names = set()
-
-    for file_entry in iterable:
-        file_name = file_entry.get("name") or file_entry.get("file") or "unknown"
-        table_name = normalize_table_name(str(file_name))
-        fields = file_entry.get("fields", [])
-
-        # Get primary key definition from YAML (supports both string and array)
-        primary_key_def = file_entry.get("primary_key")
-        if isinstance(primary_key_def, str):
-            primary_keys = [primary_key_def]
-        elif isinstance(primary_key_def, list):
-            primary_keys = primary_key_def
-        else:
-            primary_keys = []
-
-        columns: List[Dict[str, Any]] = []
-        for field in fields:
-            fname = field.get("name", "field")
-            ftype_raw = str(field.get("type", "text"))
-            ftype_lower = ftype_raw.strip().lower()
-            presence = (field.get("presence") or "").strip().lower()
-            description = field.get("description") or ""
-            notes = field.get("notes")
-            options = field.get("options")
-
-            # Check if this is an enum field with options
-            if ftype_lower == "enum" and options:
-                enum_name = f"{table_name}_{fname}_options"
-
-                # Avoid duplicate enum definitions
-                if enum_name not in seen_enum_names:
-                    seen_enum_names.add(enum_name)
-
-                    # Build enum values
-                    enum_values = []
-                    for option in options:
-                        if isinstance(option, dict):
-                            value = option.get("value", "")
-                            description_opt = option.get("description", "")
-                            if value:
-                                enum_values.append(
-                                    {
-                                        "value": str(value),
-                                        "description": str(description_opt),
-                                    }
-                                )
-
-                    if enum_values:
-                        enums.append({"name": enum_name, "options": enum_values})
-
-                # Use the enum type instead of mapping to string
-                dbml_type = f"gtfs.{enum_name}"
-            else:
-                dbml_type = map_type(ftype_raw)
-
-            attrs: List[str] = []
-
-            # Required -> not null. We avoid enforcing for conditionals to stay conservative.
-            if presence.startswith("required"):
-                attrs.append("not null")
-
-            # Primary key: check if field is in the primary_keys list
-            is_pk = fname in primary_keys
-            if is_pk:
-                attrs.append("pk")
-
-            # Default values (quote strings)
-            if "default" in field:
-                default_val = field["default"]
-                if isinstance(default_val, str):
-                    attrs.append(f"default: '{default_val}'")
-                else:
-                    attrs.append(f"default: {default_val}")
-
-            # Foreign key reference
-            if "foreign_key" in field:
-                fk = field["foreign_key"]
-                attrs.append(f"ref: > gtfs.{fk}")
-
-            # Compose note from description + notes
-            note_parts = []
-            if description:
-                note_parts.append(str(description))
-            if notes:
-                note_parts.append(str(notes))
-            if note_parts:
-                attrs.append(f'note: "{escape_note(" ".join(note_parts))}"')
-
-            columns.append(
-                {
-                    "name": fname,
-                    "type": dbml_type,
-                    "attrs": attrs,
-                }
-            )
-
-        # Get table description from dataset_files mapping
-        table_description = file_descriptions.get(file_name, "")
+    tables: List[Dict[str, Any]] = []
+    for entry in entries:
+        file_name = entry_name(entry)
+        table_name = normalize_table_name(file_name)
+        fields = flatten_fields(entry.get("fields", []))
+        primary_keys = primary_key_columns(entry, fields)
         tables.append(
-            {"name": table_name, "columns": columns, "description": table_description}
+            {
+                "name": table_name,
+                "columns": [build_column(f, table_name, primary_keys, unique_cols, enums) for f in fields],
+                "description": escape_single(descriptions.get(file_name, "")),
+                "composite_pk": primary_keys if len(primary_keys) > 1 else [],
+            }
         )
-
     return enums, tables
+
+
+def render_dbml(data: Dict[str, Any]) -> str:
+    enums, tables = build_tables(data)
+    env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), trim_blocks=True, lstrip_blocks=True)
+    template = env.get_template("schedule.dbml.jinja")
+    return template.render(metadata=data.get("metadata", {}), enums=enums, tables=tables)
 
 
 def generate_schedule_dbml(overwrite: bool = True) -> Path:
@@ -231,27 +277,13 @@ def generate_schedule_dbml(overwrite: bool = True) -> Path:
 
     Returns the path to the generated file.
     """
-    base_dir = Path(__file__).resolve().parents[2]
-    yaml_path = base_dir / "serializers" / "schedule" / "schedule.yaml"
-    template_dir = base_dir / "converters" / "schedule" / "templates"
-    output_dir = base_dir / "models" / "schedule" / "dbml"
+    yaml_path = BASE_DIR / "serializers" / "schedule" / "schedule.yaml"
+    output_dir = BASE_DIR / "models" / "schedule" / "dbml"
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / "schedule.dbml"
-    if not overwrite:
-        output_path = output_dir / "schedule.generated.dbml"
+    output_path = output_dir / ("schedule.dbml" if overwrite else "schedule.generated.dbml")
 
-    data = load_yaml(yaml_path)
-    metadata = data.get("metadata", {})
-    enums, tables = build_tables(data)
-
-    env = Environment(
-        loader=FileSystemLoader(template_dir), trim_blocks=True, lstrip_blocks=True
-    )
-    template = env.get_template("schedule.dbml.jinja")
-
-    rendered = template.render(metadata=metadata, enums=enums, tables=tables)
     with open(output_path, "w", encoding="utf-8") as f:
-        f.write(rendered)
+        f.write(render_dbml(load_yaml(yaml_path)))
 
     print(f"Generated {output_path}")
     return output_path
