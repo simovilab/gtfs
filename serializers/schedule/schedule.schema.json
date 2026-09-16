@@ -416,8 +416,11 @@
           "description": "Example value or usage"
         },
         "foreign_key": {
-          "type": "string",
-          "description": "Foreign key reference (e.g., stops.stop_id)"
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" }, "minItems": 2 }
+          ],
+          "description": "Foreign key reference (e.g., stops.stop_id), or a list when the spec allows alternative targets"
         },
         "conditions": {
           "type": "array",

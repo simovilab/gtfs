@@ -1,5 +1,5 @@
 // Auto-generated from YAML field definitions
-// Source: serializers/schedule.yaml
+// Source: serializers/schedule/schedule.yaml
 
 Project gtfs_schedule {
 Note: 'This document defines the format and structure of the files that comprise a GTFS dataset.'
@@ -17,6 +17,12 @@ enum gtfs.stops_location_type_options {
  "2" [note: 'Entrance/Exit. A location where passengers can enter or exit a station from the street. If an entrance/exit belongs to multiple stations, it may be linked by pathways to both, but the data provider must pick one of them as parent.']
  "3" [note: 'Generic Node. A location within a station, not matching any other location_type, that may be used to link together pathways define in pathways.txt.']
  "4" [note: 'Boarding Area. A specific location on a platform, where passengers can board and/or alight vehicles.']
+}
+
+enum gtfs.stops_wheelchair_boarding_options {
+ "0 or empty" [note: 'For parentless stops: No accessibility information for the stop. For child stops: Stop will inherit its wheelchair_boarding behavior from the parent station, if specified in the parent. For station entrances/exits: Station entrance will inherit its wheelchair_boarding behavior from the parent station, if specified for the parent.']
+ "1" [note: 'For parentless stops: Some vehicles at this stop can be boarded by a rider in a wheelchair. For child stops: There exists some accessible path from outside the station to the specific stop/platform. For station entrances/exits: Station entrance is wheelchair accessible.']
+ "2" [note: 'For parentless stops: Wheelchair boarding is not possible at this stop. For child stops: There exists no accessible path from outside the station to the specific stop/platform. For station entrances/exits: No accessible path from station entrance to stops/platforms.']
 }
 
 enum gtfs.stops_stop_access_options {
@@ -98,7 +104,7 @@ enum gtfs.trips_direction_id_options {
 }
 
 enum gtfs.trips_wheelchair_accessible_options {
- "0 or empty" [note: 'No wheelchair accessibility information for the trip.']
+ "0 or empty" [note: 'No accessibility information for the trip.']
  "1" [note: 'Vehicle being used on this particular trip can accommodate at least one rider in a wheelchair.']
  "2" [note: 'No riders in wheelchairs can be accommodated on this trip.']
 }
@@ -113,6 +119,144 @@ enum gtfs.trips_cars_allowed_options {
  "0 or empty" [note: 'No car information for the trip.']
  "1" [note: 'Vehicle being used on this particular trip can accommodate at least one car.']
  "2" [note: 'No cars are allowed on this trip.']
+}
+
+enum gtfs.stop_times_pickup_type_options {
+ "0 or empty" [note: 'Regularly scheduled pickup.']
+ "1" [note: 'No pickup available.']
+ "2" [note: 'Must phone agency to arrange pickup.']
+ "3" [note: 'Must coordinate with driver to arrange pickup.']
+}
+
+enum gtfs.stop_times_drop_off_type_options {
+ "0 or empty" [note: 'Regularly scheduled drop off.']
+ "1" [note: 'No drop off available.']
+ "2" [note: 'Must phone agency to arrange drop off.']
+ "3" [note: 'Must coordinate with driver to arrange drop off.']
+}
+
+enum gtfs.stop_times_continuous_pickup_options {
+ "0" [note: 'Continuous stopping pickup.']
+ "1 or empty" [note: 'No continuous stopping pickup.']
+ "2" [note: 'Must phone agency to arrange continuous stopping pickup.']
+ "3" [note: 'Must coordinate with driver to arrange continuous stopping pickup.']
+}
+
+enum gtfs.stop_times_continuous_drop_off_options {
+ "0" [note: 'Continuous stopping drop off.']
+ "1 or empty" [note: 'No continuous stopping drop off.']
+ "2" [note: 'Must phone agency to arrange continuous stopping drop off.']
+ "3" [note: 'Must coordinate with driver to arrange continuous stopping drop off.']
+}
+
+enum gtfs.stop_times_timepoint_options {
+ "0" [note: 'Times are considered approximate.']
+ "1" [note: 'Times are considered exact.']
+}
+
+enum gtfs.calendar_dates_exception_type_options {
+ "1" [note: 'Service has been added for the specified date.']
+ "2" [note: 'Service has been removed for the specified date.']
+}
+
+enum gtfs.fare_attributes_payment_method_options {
+ "0" [note: 'Fare is paid on board.']
+ "1" [note: 'Fare must be paid before boarding.']
+}
+
+enum gtfs.fare_attributes_transfers_options {
+ "0" [note: 'No transfers permitted on this fare.']
+ "1" [note: 'Riders may transfer once.']
+ "2" [note: 'Riders may transfer twice.']
+ "empty" [note: 'Unlimited transfers are permitted.']
+}
+
+enum gtfs.rider_categories_is_default_fare_category_options {
+ "0 or empty" [note: 'Category is not considered the default.']
+ "1" [note: 'Category is considered the default one.']
+}
+
+enum gtfs.fare_media_fare_media_type_options {
+ "0" [note: 'None. Used when there is no fare media involved in purchasing or validating a fare product, such as paying cash to a driver or conductor with no physical ticket provided.']
+ "1" [note: 'Physical paper ticket that allows a passenger to take either a certain number of pre-purchased trips or unlimited trips within a fixed period of time.']
+ "2" [note: 'Physical transit card that has stored tickets, passes or monetary value.']
+ "3" [note: 'cEMV (contactless Europay, Mastercard and Visa) as an open-loop token container for account-based ticketing.']
+ "4" [note: 'Mobile app that has stored virtual transit cards, tickets, passes, or monetary value.']
+}
+
+enum gtfs.fare_transfer_rules_duration_limit_type_options {
+ "0" [note: 'Between the departure fare validation of the first leg in transfer sub-journey and the arrival fare validation of the last leg in transfer sub-journey.']
+ "1" [note: 'Between the departure fare validation of the first leg in transfer sub-journey and the departure fare validation of the last leg in transfer sub-journey.']
+ "2" [note: 'Between the arrival fare validation of the first leg in transfer sub-journey and the departure fare validation of the last leg in transfer sub-journey.']
+ "3" [note: 'Between the arrival fare validation of the first leg in transfer sub-journey and the arrival fare validation of the last leg in transfer sub-journey.']
+}
+
+enum gtfs.fare_transfer_rules_fare_transfer_type_options {
+ "0" [note: 'From-leg fare_leg_rules.fare_product_id plus fare_transfer_rules.fare_product_id; A + AB.']
+ "1" [note: 'From-leg fare_leg_rules.fare_product_id plus fare_transfer_rules.fare_product_id plus to-leg fare_leg_rules.fare_product_id; A + AB + B.']
+ "2" [note: 'fare_transfer_rules.fare_product_id; AB.']
+}
+
+enum gtfs.frequencies_exact_times_options {
+ "0 or empty" [note: 'Frequency-based trips.']
+ "1" [note: 'Schedule-based trips with the exact same headway throughout the day. end_time must be greater than the last desired trip start_time but less than the last desired trip start_time + headway_secs.']
+}
+
+enum gtfs.transfers_transfer_type_options {
+ "0 or empty" [note: 'Recommended transfer point between routes.']
+ "1" [note: 'Timed transfer point between two routes. The departing vehicle is expected to wait for the arriving one and leave sufficient time for a rider to transfer between routes.']
+ "2" [note: 'Transfer requires a minimum amount of time between arrival and departure to ensure a connection. The time required to transfer is specified by min_transfer_time.']
+ "3" [note: 'Transfers are not possible between routes at the location.']
+ "4" [note: 'Passengers can transfer from one trip to another by staying onboard the same vehicle (in-seat transfer).']
+ "5" [note: 'In-seat transfers are not allowed between sequential trips. The passenger must alight from the vehicle and re-board.']
+}
+
+enum gtfs.pathways_pathway_mode_options {
+ "1" [note: 'Walkway.']
+ "2" [note: 'Stairs.']
+ "3" [note: 'Moving sidewalk/travelator.']
+ "4" [note: 'Escalator.']
+ "5" [note: 'Elevator.']
+ "6" [note: 'Fare gate (or payment gate): A pathway that crosses into an area of the station where proof of payment is required. Fare gates may separate paid areas of the station from unpaid ones, or separate different payment areas within the same station from each other.']
+ "7" [note: 'Exit gate: A pathway exiting a paid area into an unpaid area where proof of payment is not required to cross.']
+}
+
+enum gtfs.pathways_is_bidirectional_options {
+ "0" [note: 'Unidirectional pathway that can only be used from from_stop_id to to_stop_id.']
+ "1" [note: 'Bidirectional pathway that can be used in both directions. Exit gates (pathway_mode=7) must not be bidirectional.']
+}
+
+enum gtfs.booking_rules_booking_type_options {
+ "0" [note: 'Real time booking.']
+ "1" [note: 'Up to same-day booking with advance notice.']
+ "2" [note: 'Up to prior day(s) booking.']
+}
+
+enum gtfs.translations_table_name_options {
+ "agency" [note: 'agency.txt.']
+ "stops" [note: 'stops.txt.']
+ "routes" [note: 'routes.txt.']
+ "trips" [note: 'trips.txt.']
+ "stop_times" [note: 'stop_times.txt.']
+ "pathways" [note: 'pathways.txt.']
+ "levels" [note: 'levels.txt.']
+ "feed_info" [note: 'feed_info.txt.']
+ "attributions" [note: 'attributions.txt.']
+}
+
+enum gtfs.attributions_is_producer_options {
+ "0 or empty" [note: 'Organization does not have this role.']
+ "1" [note: 'Organization does have this role.']
+}
+
+enum gtfs.attributions_is_operator_options {
+ "0 or empty" [note: 'Organization does not have this role.']
+ "1" [note: 'Organization does have this role.']
+}
+
+enum gtfs.attributions_is_authority_options {
+ "0 or empty" [note: 'Organization does not have this role.']
+ "1" [note: 'Organization does have this role.']
 }
 
 
@@ -130,7 +274,7 @@ Note: 'Transit agencies with service represented in this dataset.'
 }
 
 Table gtfs.stops {
-stop_id string [not null, pk, note: "Identifies a location: stop/platform, station, entrance/exit, generic node or boarding area (see location_type)."]
+stop_id string [not null, pk, note: "Identifies a location: stop/platform, station, entrance/exit, generic node or boarding area (see location_type). ID must be unique across all stops.stop_id, locations.geojson id, and location_groups.location_group_id values. Multiple routes may use the same stop_id."]
 stop_code string [note: "Short text or a number that identifies the location for riders. These codes are often used in phone-based transit information systems or printed on signage to make it easier for riders to get information for a particular location. The stop_code may be the same as stop_id if it is public facing. This field should be left empty for locations without a code presented to riders."]
 stop_name string [note: "Name of the location. The stop_name should match the agency's rider-facing name for the location as printed on a timetable, published online, or represented on signage. For translations into other languages, use translations.txt. When the location is a boarding area (location_type=4), the stop_name should contains the name of the boarding area as displayed by the agency. It could be just one letter (like on some European intercity railway stations), or text like \"Wheelchair boarding area\" (NYC's Subway) or \"Head of short trains\" (Paris' RER)."]
 tts_stop_name string [note: "Readable version of the stop_name. See \"Text-to-speech field\" in the Term Definitions for more."]
@@ -143,7 +287,7 @@ location_type gtfs.stops_location_type_options [note: "Location type."]
 parent_station string [ref: > gtfs.stops.stop_id, note: "Defines hierarchy between the different locations defined in stops.txt. It contains the ID of the parent location, as followed: Stop/platform (location_type=0): the parent_station field contains the ID of a station. Station (location_type=1): this field must be empty. Entrance/exit (location_type=2) or generic node (location_type=3): the parent_station field contains the ID of a station (location_type=1). Boarding Area (location_type=4): the parent_station field contains ID of a platform."]
 stop_timezone string [note: "Timezone of the location. If the location has a parent station, it inherits the parent station's timezone instead of applying its own. Stations and parentless stops with empty stop_timezone inherit the timezone specified by agency.agency_timezone. The times provided in stop_times.txt are in the timezone specified by agency.agency_timezone, not stop_timezone. This ensures that the time values in a trip always increase over the course of a trip, regardless of which timezones the trip crosses."]
 wheelchair_boarding gtfs.stops_wheelchair_boarding_options [note: "Indicates whether wheelchair boardings are possible from the location."]
-level_id string [note: "Level of the location. The same level may be used by multiple unlinked stations."]
+level_id string [ref: > gtfs.levels.level_id, note: "Level of the location. The same level may be used by multiple unlinked stations."]
 platform_code string [note: "Platform identifier for a platform stop (a stop belonging to a station). This should be just the platform identifier (eg. \"G\" or \"3\"). Words like \"platform\" or \"track\" (or the feed's language-specific equivalent) should not be included. This allows feed consumers to more easily internationalize and localize the platform identifier into other languages."]
 stop_access gtfs.stops_stop_access_options [note: "Indicates how the stop is accessed for a particular station. When stop_access is empty, the access for the specified stop or platform is considered undefined."]
 Note: 'Stops where vehicles pick up or drop off riders. Also defines stations and station entrances.'
@@ -168,11 +312,14 @@ Note: 'Transit routes. A route is a group of trips that are displayed to riders 
 }
 
 Table gtfs.shapes {
-shape_id string [not null, pk, note: "Identifies a shape."]
+shape_id string [not null, note: "Identifies a shape."]
 shape_pt_lat float [not null, note: "Latitude of a shape point. Each record in shapes.txt represents a shape point used to define the shape."]
 shape_pt_lon float [not null, note: "Longitude of a shape point."]
-shape_pt_sequence int [not null, pk, note: "Sequence in which the shape points connect to form the shape. Values must increase along the trip but do not need to be consecutive."]
+shape_pt_sequence int [not null, note: "Sequence in which the shape points connect to form the shape. Values must increase along the trip but do not need to be consecutive."]
 shape_dist_traveled float [note: "Actual distance traveled along the shape from the first shape point to the point specified in this record. Used by trip planners to show the correct portion of the shape on a map. Values must increase along with shape_pt_sequence; they must not be used to show reverse travel along a route. Distance units must be consistent with those used in stop_times.txt. Recommended for routes that have looping or inlining (the vehicle crosses or travels over the same portion of alignment in one trip). If a vehicle retraces or crosses the route alignment at points in the course of a trip, shape_dist_traveled is important to clarify how portions of the points in shapes.txt line up correspond with records in stop_times.txt."]
+indexes {
+ (shape_id, shape_pt_sequence) [pk]
+}
 Note: 'Rules for mapping vehicle travel paths, sometimes referred to as route alignments.'
 }
 
@@ -192,16 +339,316 @@ Note: 'Service dates specified using a weekly schedule with start and end dates.
 
 Table gtfs.trips {
 route_id string [not null, ref: > gtfs.routes.route_id, note: "Identifies a route."]
-service_id string [not null, ref: > gtfs.calendar.service_id, note: "Identifies a set of dates when service is available for one or more routes."]
+service_id string [not null, ref: > gtfs.calendar.service_id, ref: > gtfs.calendar_dates.service_id, note: "Identifies a set of dates when service is available for one or more routes. References one of calendar.service_id, calendar_dates.service_id (alternative targets, not a single foreign key)."]
 trip_id string [not null, pk, note: "Identifies a trip."]
-trip_headsign string [note: "Text that appears on signage identifying the trip's destination to riders."]
-trip_short_name string [note: "Public-facing text used to identify the trip to riders, for instance, to identify train numbers for commuter rail trips."]
-direction_id gtfs.trips_direction_id_options [note: "Indicates the direction of travel for a trip."]
-block_id string [note: "Identifies the block to which the trip belongs."]
-shape_id string [ref: > gtfs.shapes.shape_id, note: "Identifies a geospatial shape describing the vehicle travel path for a trip."]
+trip_headsign string [note: "Text that appears on signage identifying the trip's destination to riders. This field is recommended for all services with headsign text displayed on the vehicle which may be used to distinguish amongst trips in a route. If the headsign changes during a trip, values for trip_headsign may be overridden by defining values in stop_times.stop_headsign for specific stop_times along the trip."]
+trip_short_name string [note: "Public-facing text used to identify the trip to riders, for instance, to identify train numbers for commuter rail trips. If riders do not commonly rely on trip names, trip_short_name should be empty. A trip_short_name value, if provided, should uniquely identify a trip within a service day; it should not be used for destination names or limited/express designations."]
+direction_id gtfs.trips_direction_id_options [note: "Indicates the direction of travel for a trip. This field should not be used in routing; it provides a way to separate trips by direction when publishing time tables."]
+block_id string [note: "Identifies the block to which the trip belongs. A block consists of a single trip or many sequential trips made using the same vehicle, defined by shared service days and block_id. A block_id may have trips with different service days, making distinct blocks. To provide in-seat transfers information, transfers of transfer_type 4 should be provided instead."]
+shape_id string [ref: > gtfs.shapes.shape_id, note: "Identifies a geospatial shape describing the vehicle travel path for a trip. References shapes.shape_id, which is not a unique key (logical reference, not a foreign key)."]
 wheelchair_accessible gtfs.trips_wheelchair_accessible_options [note: "Indicates wheelchair accessibility."]
 bikes_allowed gtfs.trips_bikes_allowed_options [note: "Indicates whether bikes are allowed."]
 cars_allowed gtfs.trips_cars_allowed_options [note: "Indicates whether cars are allowed."]
+safe_duration_factor float [note: "Multiplier applied to travel time estimates calculated for on-demand trips. See \"Calculating on-demand trip time estimates with safe duration fields\" for guidance on how to use this and the safe_duration_offset fields."]
+safe_duration_offset float [note: "Fixed offset value in seconds applied to travel time estimates calculated for on-demand trips. See \"Calculating on-demand trip time estimates with safe duration fields\" for guidance on how to use this and the safe_duration_factor fields."]
 Note: 'Trips for each route. A trip is a sequence of two or more stops that occur during a specific time period.'
+}
+
+Table gtfs.stop_times {
+trip_id string [not null, ref: > gtfs.trips.trip_id, note: "Identifies a trip."]
+arrival_time interval [note: "Arrival time at the stop (defined by stop_times.stop_id) for a specific trip (defined by stop_times.trip_id) in the time zone specified by agency.agency_timezone, not stops.stop_timezone. If there are not separate times for arrival and departure at a stop, arrival_time and departure_time should be the same. For times occurring after midnight on the service day, enter the time as a value greater than 24:00:00 in HH:MM:SS. If exact arrival and departure times (timepoint=1) are not available, estimated or interpolated arrival and departure times (timepoint=0) should be provided."]
+departure_time interval [note: "Departure time from the stop (defined by stop_times.stop_id) for a specific trip (defined by stop_times.trip_id) in the time zone specified by agency.agency_timezone, not stops.stop_timezone. If there are not separate times for arrival and departure at a stop, arrival_time and departure_time should be the same. For times occurring after midnight on the service day, enter the time as a value greater than 24:00:00 in HH:MM:SS. If exact arrival and departure times (timepoint=1) are not available, estimated or interpolated arrival and departure times (timepoint=0) should be provided."]
+stop_id string [ref: > gtfs.stops.stop_id, note: "Identifies the serviced stop. All stops serviced during a trip must have a record in stop_times.txt. Referenced locations must be stops/platforms, i.e. their stops.location_type value must be 0 or empty. A stop may be serviced multiple times in the same trip, and multiple trips and routes may service the same stop. On-demand service using stops should be referenced in the sequence in which service is available at those stops. A data consumer should assume that travel is possible from one stop or location to any stop or location later in the trip, provided that the pickup/drop_off_type of each stop_time and the time constraints of each start/end_pickup_drop_off_window do not forbid it."]
+location_group_id string [ref: > gtfs.location_groups.location_group_id, note: "Identifies the serviced location group that indicates groups of stops where riders may request pickup or drop off. All location groups serviced during a trip must have a record in stop_times.txt. Multiple trips and routes may service the same location group. On-demand service using location groups should be referenced in the sequence in which service is available at those location groups. A data consumer should assume that travel is possible from one stop or location to any stop or location later in the trip, provided that the pickup/drop_off_type of each stop_time and the time constraints of each start/end_pickup_drop_off_window do not forbid it."]
+location_id string [ref: > gtfs.locations.id, note: "Identifies the GeoJSON location that corresponds to serviced zone where riders may request pickup or drop off. All GeoJSON locations serviced during a trip must have a record in stop_times.txt. Multiple trips and routes may service the same GeoJSON location. On-demand service within locations should be referenced in the sequence in which service is available in those locations. A data consumer should assume that travel is possible from one stop or location to any stop or location later in the trip, provided that the pickup/drop_off_type of each stop_time and the time constraints of each start/end_pickup_drop_off_window do not forbid it."]
+stop_sequence int [not null, note: "Order of stops, location groups, or GeoJSON locations for a particular trip. The values must increase along the trip but do not need to be consecutive. Travel within the same location group or GeoJSON location requires two records in stop_times.txt with the same location_group_id or location_id."]
+stop_headsign string [note: "Text that appears on signage identifying the trip's destination to riders. This field overrides the default trips.trip_headsign when the headsign changes between stops. If the headsign is displayed for an entire trip, trips.trip_headsign should be used instead. A stop_headsign value specified for one stop_time does not apply to subsequent stop_times in the same trip. If you want to override the trip_headsign for multiple stop_times in the same trip, the stop_headsign value must be repeated in each stop_time row."]
+start_pickup_drop_off_window interval [note: "Time that on-demand service becomes available in a GeoJSON location, location group, or stop."]
+end_pickup_drop_off_window interval [note: "Time that on-demand service ends in a GeoJSON location, location group, or stop."]
+pickup_type gtfs.stop_times_pickup_type_options [note: "Indicates pickup method."]
+drop_off_type gtfs.stop_times_drop_off_type_options [note: "Indicates drop off method."]
+continuous_pickup gtfs.stop_times_continuous_pickup_options [note: "Indicates that the rider can board the transit vehicle at any point along the vehicle’s travel path as described by shapes.txt, from this stop_time to the next stop_time in the trip's stop_sequence. If this field is populated, it overrides any continuous pickup behavior defined in routes.txt. If this field is empty, the stop_time inherits any continuous pickup behavior defined in routes.txt."]
+continuous_drop_off gtfs.stop_times_continuous_drop_off_options [note: "Indicates that the rider can alight from the transit vehicle at any point along the vehicle’s travel path as described by shapes.txt, from this stop_time to the next stop_time in the trip's stop_sequence. If this field is populated, it overrides any continuous drop-off behavior defined in routes.txt. If this field is empty, the stop_time inherits any continuous drop-off behavior defined in routes.txt."]
+shape_dist_traveled float [note: "Actual distance traveled along the associated shape, from the first stop to the stop specified in this record. This field specifies how much of the shape to draw between any two stops during a trip. Must be in the same units used in shapes.txt. Values used for shape_dist_traveled must increase along with stop_sequence; they must not be used to show reverse travel along a route. Recommended for routes that have looping or inlining (the vehicle crosses or travels over the same portion of alignment in one trip). See shapes.shape_dist_traveled."]
+timepoint gtfs.stop_times_timepoint_options [note: "Indicates if arrival and departure times for a stop are strictly adhered to by the vehicle or if they are instead approximate and/or interpolated times. This field allows a GTFS producer to provide interpolated stop-times, while indicating that the times are approximate. All records of stop_times.txt with defined arrival or departure times should have timepoint values populated. If no timepoint values are provided, all times are considered exact."]
+pickup_booking_rule_id string [ref: > gtfs.booking_rules.booking_rule_id, note: "Identifies the boarding booking rule at this stop time. Recommended when pickup_type=2."]
+drop_off_booking_rule_id string [ref: > gtfs.booking_rules.booking_rule_id, note: "Identifies the alighting booking rule at this stop time. Recommended when drop_off_type=2."]
+indexes {
+ (trip_id, stop_sequence) [pk]
+}
+Note: 'Times that a vehicle arrives at and departs from stops for each trip.'
+}
+
+Table gtfs.calendar_dates {
+service_id string [not null, ref: > gtfs.calendar.service_id, note: "Identifies a set of dates when a service exception occurs for one or more routes. Each (service_id, date) pair may only appear once in calendar_dates.txt if using calendar.txt and calendar_dates.txt in conjunction. If a service_id value appears in both calendar.txt and calendar_dates.txt, the information in calendar_dates.txt modifies the service information specified in calendar.txt."]
+date date [not null, note: "Date when service exception occurs."]
+exception_type gtfs.calendar_dates_exception_type_options [not null, note: "Indicates whether service is available on the date specified in the date field. *Example:* Suppose a route has one set of trips available on holidays and another set of trips available on all other days. One service_id could correspond to the regular service schedule and another service_id could correspond to the holiday schedule. For a particular holiday, the calendar_dates.txt file could be used to add the holiday to the holiday service_id and to remove the holiday from the regular service_id schedule."]
+indexes {
+ (service_id, date) [pk]
+}
+Note: 'Exceptions for the services defined in the calendar.txt.'
+}
+
+Table gtfs.fare_attributes {
+fare_id string [not null, pk, note: "Identifies a fare class."]
+price float [not null, note: "Fare price, in the unit specified by currency_type."]
+currency_type string [not null, note: "Currency used to pay the fare."]
+payment_method gtfs.fare_attributes_payment_method_options [not null, note: "Indicates when the fare must be paid."]
+transfers gtfs.fare_attributes_transfers_options [not null, note: "Indicates the number of transfers permitted on this fare."]
+agency_id string [ref: > gtfs.agency.agency_id, note: "Identifies the relevant agency for a fare."]
+transfer_duration int [note: "Length of time in seconds before a transfer expires. When transfers=0 this field may be used to indicate how long a ticket is valid for or it may be left empty."]
+Note: 'Fare information for a transit agency\'s routes.'
+}
+
+Table gtfs.fare_rules {
+fare_id string [not null, ref: > gtfs.fare_attributes.fare_id, note: "Identifies a fare class."]
+route_id string [ref: > gtfs.routes.route_id, note: "Identifies a route associated with the fare class. If several routes with the same fare attributes exist, create a record in fare_rules.txt for each route. *Example:* If fare class \"b\" is valid on route \"TSW\" and \"TSE\", fare_rules.txt would contain records: fare_id,route_id / b,TSW / b,TSE."]
+origin_id string [ref: > gtfs.stops.zone_id, note: "Identifies an origin zone. If a fare class has multiple origin zones, create a record in fare_rules.txt for each origin_id. *Example:* If fare class \"b\" is valid for all travel originating from either zone \"2\" or zone \"8\", fare_rules.txt would contain: fare_id,...,origin_id / b,...,2 / b,...,8. References stops.zone_id, which is not a unique key (logical reference, not a foreign key)."]
+destination_id string [ref: > gtfs.stops.zone_id, note: "Identifies a destination zone. If a fare class has multiple destination zones, create a record in fare_rules.txt for each destination_id. *Example:* The origin_id and destination_id fields can be used together to specify that fare class \"b\" is valid for travel between zones 3 and 4, and between zones 3 and 5: fare_id,...,origin_id,destination_id / b,...,3,4 / b,...,3,5. References stops.zone_id, which is not a unique key (logical reference, not a foreign key)."]
+contains_id string [ref: > gtfs.stops.zone_id, note: "Identifies the zones that a rider will enter while using a given fare class. Used in some systems to calculate correct fare class. *Example:* If fare class \"c\" is associated with all travel on the GRT route that passes through zones 5, 6, and 7, fare_rules.txt would contain records for contains_id 5, 6, and 7. Because all contains_id zones must be matched for the fare to apply, an itinerary that passes through zones 5 and 6 but not zone 7 would not have fare class \"c\". References stops.zone_id, which is not a unique key (logical reference, not a foreign key)."]
+indexes {
+ (fare_id, route_id, origin_id, destination_id, contains_id) [pk]
+}
+Note: 'Rules to apply fares for itineraries.'
+}
+
+Table gtfs.timeframes {
+timeframe_group_id string [not null, note: "Identifies a timeframe or set of timeframes."]
+start_time time [note: "Defines the beginning of a timeframe. The interval includes the start time. Values greater than 24:00:00 are forbidden. An empty value in start_time is considered 00:00:00."]
+end_time time [note: "Defines the end of a timeframe. The interval does not include the end time. Values greater than 24:00:00 are forbidden. An empty value in end_time is considered 24:00:00."]
+service_id string [not null, ref: > gtfs.calendar.service_id, ref: > gtfs.calendar_dates.service_id, note: "Identifies a set of dates that a timeframe is in effect. References one of calendar.service_id, calendar_dates.service_id (alternative targets, not a single foreign key)."]
+indexes {
+ (timeframe_group_id, start_time, end_time, service_id) [pk]
+}
+Note: 'Date and time periods to use in fare rules for fares that depend on date and time factors.'
+}
+
+Table gtfs.rider_categories {
+rider_category_id string [not null, pk, note: "Identifies a rider category."]
+rider_category_name string [not null, note: "Rider category name as displayed to the rider."]
+is_default_fare_category gtfs.rider_categories_is_default_fare_category_options [not null, note: "Specifies if an entry in rider_categories.txt should be considered the default category (i.e. the main category that should be displayed to riders). For example, Adult fare, Regular fare, etc. When multiple rider categories are eligible for a single fare product specified by a fare_product_id, there must be exactly one eligible rider category indicated as the default rider category (is_default_fare_category=1)."]
+eligibility_url string [note: "URL of a web page, usually from the operating agency, that provides detailed information about a specific rider category and/or describes its eligibility criteria."]
+Note: 'Defines categories of riders (e.g. elderly, student).'
+}
+
+Table gtfs.fare_media {
+fare_media_id string [not null, pk, note: "Identifies a fare media."]
+fare_media_name string [note: "Name of the fare media. For fare media which are transit cards (fare_media_type=2) or mobile apps (fare_media_type=4), fare_media_name should be included and should match the rider-facing name used by the organizations delivering them."]
+fare_media_type gtfs.fare_media_fare_media_type_options [not null, note: "The type of fare media."]
+Note: 'To describe the fare media that can be employed to use fare products.'
+}
+
+Table gtfs.fare_products {
+fare_product_id string [not null, note: "Identifies a fare product or set of fare products. Multiple records sharing the same fare_product_id are permitted as long as they contain different fare_media_id values or rider_category_id values."]
+fare_product_name string [note: "The name of the fare product as displayed to riders."]
+rider_category_id string [ref: > gtfs.rider_categories.rider_category_id, note: "Identifies a rider category eligible for the fare product. If fare_products.rider_category_id is empty, the fare product is eligible for any rider_category_id. When multiple rider categories are eligible for a single fare product specified by a fare_product_id, there must be only one of these rider categories indicated as the default rider category (is_default_fare_category=1)."]
+fare_media_id string [ref: > gtfs.fare_media.fare_media_id, note: "Identifies a fare media that can be employed to use the fare product during the trip. When fare_media_id is empty, it is considered that the fare media is unknown."]
+amount float [not null, note: "The cost of the fare product. May be negative to represent transfer discounts. May be zero to represent a fare product that is free. The currency amount must contain the number of decimal places specified by the norm ISO 4217 for the accompanying Currency code. *Example:* If the fare is 2 US Dollars, the amount is 2.00 instead of 2."]
+currency string [not null, note: "The currency of the cost of the fare product."]
+indexes {
+ (fare_product_id, rider_category_id, fare_media_id) [pk]
+}
+Note: 'To describe the different types of tickets or fares that can be purchased by riders.'
+}
+
+Table gtfs.fare_leg_rules {
+leg_group_id string [note: "Identifies a group of entries in fare_leg_rules.txt. Used to describe fare transfer rules between fare_transfer_rules.from_leg_group_id and fare_transfer_rules.to_leg_group_id. Multiple entries may belong to the same leg_group_id. The same entry (not including leg_group_id) must not belong to multiple leg_group_id values."]
+network_id string [ref: > gtfs.routes.network_id, ref: > gtfs.networks.network_id, note: "Identifies a route network that applies for the fare leg rule. If rule_priority does not exist and there are no matching network_id values, empty network_id entries will be matched by default and correspond to all networks defined in routes.txt or networks.txt excluding the ones listed under fare_leg_rules.network_id. If rule_priority exists, an empty network_id indicates the route network of the leg does not affect the matching of this rule. When matching against an effective fare leg of multiple legs, each leg must have the same network_id. References one of routes.network_id, networks.network_id (alternative targets, not a single foreign key)."]
+from_area_id string [ref: > gtfs.areas.area_id, note: "Identifies a departure area. If rule_priority does not exist and there are no matching from_area_id values, empty from_area_id entries will be matched by default and correspond to all areas defined in areas.area_id excluding the ones listed under fare_leg_rules.from_area_id. If rule_priority exists, an empty from_area_id indicates the departure area does not affect the matching of this rule. When matching against an effective fare leg of multiple legs, the first leg is used for determining the departure area."]
+to_area_id string [ref: > gtfs.areas.area_id, note: "Identifies an arrival area. If rule_priority does not exist and there are no matching to_area_id values, empty to_area_id entries will be matched by default and correspond to all areas defined in areas.area_id excluding the ones listed under fare_leg_rules.to_area_id. If rule_priority exists, an empty to_area_id indicates the arrival area does not affect the matching of this rule. When matching against an effective fare leg of multiple legs, the last leg is used for determining the arrival area."]
+from_timeframe_group_id string [ref: > gtfs.timeframes.timeframe_group_id, note: "Defines the timeframe for the fare validation event at the start of the fare leg. The \"start time\" of the fare leg is the time at which the event is scheduled to occur. For example, the time could be the scheduled departure time of a bus at the start of a fare leg where the rider boards and validates their fare. The start time is computed in local time as determined by the Local Time Semantics of timeframes.txt, using the stop or station of the fare leg's departure event for timezone resolution when appropriate. For a fare leg rule that specifies a from_timeframe_group_id, the rule matches a leg if there exists a record in timeframes.txt where: (1) timeframe_group_id equals from_timeframe_group_id, (2) the set of days identified by service_id contains the current day of the fare leg's start time, and (3) the time-of-day of the fare leg's start time is greater than or equal to timeframes.start_time and less than timeframes.end_time. An empty from_timeframe_group_id indicates that the start time of the leg does not affect the matching of this rule. When matching against an effective fare leg of multiple legs, the first leg is used for determining the starting fare validation event. References timeframes.timeframe_group_id, which is not a unique key (logical reference, not a foreign key)."]
+to_timeframe_group_id string [ref: > gtfs.timeframes.timeframe_group_id, note: "Defines the timeframe for the fare validation event at the end of the fare leg. The \"end time\" of the fare leg is the time at which the event is scheduled to occur. For example, the time could be the scheduled arrival time of a bus at the end of a fare leg where the rider gets off and validates their fare. The end time is computed in local time as determined by the Local Time Semantics of timeframes.txt, using the stop or station of the fare leg's arrival event for timezone resolution when appropriate. For a fare leg rule that specifies a to_timeframe_group_id, the rule matches a leg if there exists a record in timeframes.txt where: (1) timeframe_group_id equals to_timeframe_group_id, (2) the set of days identified by service_id contains the current day of the fare leg's end time, and (3) the time-of-day of the fare leg's end time is greater than or equal to timeframes.start_time and less than timeframes.end_time. An empty to_timeframe_group_id indicates that the end time of the leg does not affect the matching of this rule. When matching against an effective fare leg of multiple legs, the last leg is used for determining the ending fare validation event. References timeframes.timeframe_group_id, which is not a unique key (logical reference, not a foreign key)."]
+fare_product_id string [not null, ref: > gtfs.fare_products.fare_product_id, note: "The fare product required to travel the leg. References fare_products.fare_product_id, which is not a unique key (logical reference, not a foreign key)."]
+rule_priority int [note: "Defines the order of priority in which matching rules are applied to legs, allowing certain rules to take precedence over others. When multiple entries match, the rule or set of rules with the highest value for rule_priority will be selected. An empty value for rule_priority is treated as zero."]
+indexes {
+ (network_id, from_area_id, to_area_id, from_timeframe_group_id, to_timeframe_group_id, fare_product_id) [pk]
+}
+Note: 'Fare rules for individual legs of travel.'
+}
+
+Table gtfs.fare_leg_join_rules {
+from_network_id string [not null, ref: > gtfs.routes.network_id, ref: > gtfs.networks.network_id, note: "Matches a pre-transfer leg that uses the specified route network. If specified, the same to_network_id must also be specified. References one of routes.network_id, networks.network_id (alternative targets, not a single foreign key)."]
+to_network_id string [not null, ref: > gtfs.routes.network_id, ref: > gtfs.networks.network_id, note: "Matches a post-transfer leg that uses the specified route network. If specified, the same from_network_id must also be specified. References one of routes.network_id, networks.network_id (alternative targets, not a single foreign key)."]
+from_stop_id string [ref: > gtfs.stops.stop_id, note: "Matches a pre-transfer leg that ends at the specified stop (location_type=0 or empty) or station (location_type=1)."]
+to_stop_id string [ref: > gtfs.stops.stop_id, note: "Matches a post-transfer leg that starts at the specified stop (location_type=0 or empty) or station (location_type=1)."]
+indexes {
+ (from_network_id, to_network_id, from_stop_id, to_stop_id) [pk]
+}
+Note: 'Rules for defining two or more legs should be considered as a single effective fare leg for the purposes of matching against rules in fare_leg_rules.txt'
+}
+
+Table gtfs.fare_transfer_rules {
+from_leg_group_id string [ref: > gtfs.fare_leg_rules.leg_group_id, note: "Identifies a group of pre-transfer fare leg rules. If there are no matching from_leg_group_id values to the leg_group_id being filtered, empty from_leg_group_id entries will be matched by default and correspond to all leg groups defined under fare_leg_rules.leg_group_id excluding the ones listed under fare_transfer_rules.from_leg_group_id. References fare_leg_rules.leg_group_id, which is not a unique key (logical reference, not a foreign key)."]
+to_leg_group_id string [ref: > gtfs.fare_leg_rules.leg_group_id, note: "Identifies a group of post-transfer fare leg rules. If there are no matching to_leg_group_id values to the leg_group_id being filtered, empty to_leg_group_id entries will be matched by default and correspond to all leg groups defined under fare_leg_rules.leg_group_id excluding the ones listed under fare_transfer_rules.to_leg_group_id. References fare_leg_rules.leg_group_id, which is not a unique key (logical reference, not a foreign key)."]
+transfer_count int [note: "Defines how many consecutive transfers the transfer rule may be applied to. Valid options are -1 (no limit) or 1 or more (defines how many transfers the rule may span). If a sub-journey matches multiple records with different transfer_count values, the rule with the minimum transfer_count that is greater than or equal to the current transfer count of the sub-journey is selected."]
+duration_limit int [note: "Defines the duration limit of the transfer, expressed in integer increments of seconds. If there is no duration limit, duration_limit must be empty."]
+duration_limit_type gtfs.fare_transfer_rules_duration_limit_type_options [note: "Defines the relative start and end of duration_limit. When a transfer rule with the same from_leg_group_id and to_leg_group_id is matched multiple times consecutively within a multi-leg journey, the duration_limit specified by the rule should be measured starting from the first matched leg."]
+fare_transfer_type gtfs.fare_transfer_rules_fare_transfer_type_options [not null, note: "Indicates the cost processing method of transferring between legs in a journey."]
+fare_product_id string [ref: > gtfs.fare_products.fare_product_id, note: "The fare product required to transfer between two fare legs. If empty, the cost of the transfer rule is 0. References fare_products.fare_product_id, which is not a unique key (logical reference, not a foreign key)."]
+indexes {
+ (from_leg_group_id, to_leg_group_id, fare_product_id, transfer_count, duration_limit) [pk]
+}
+Note: 'Fare rules for transfers between legs of travel.'
+}
+
+Table gtfs.areas {
+area_id string [not null, pk, note: "Identifies an area. Must be unique in areas.txt."]
+area_name string [note: "The name of the area as displayed to the rider."]
+Note: 'Area grouping of locations.'
+}
+
+Table gtfs.stop_areas {
+area_id string [not null, ref: > gtfs.areas.area_id, note: "Identifies an area to which one or multiple stop_id values belong. The same stop_id may be defined in many area_id values."]
+stop_id string [not null, ref: > gtfs.stops.stop_id, note: "Identifies a stop. If a station (location_type=1) is defined in this field, all of its platforms are part of the same area unless platforms are assigned to other areas."]
+indexes {
+ (area_id, stop_id) [pk]
+}
+Note: 'Rules to assign stops to areas.'
+}
+
+Table gtfs.networks {
+network_id string [not null, pk, note: "Identifies a network. Must be unique in networks.txt."]
+network_name string [note: "The name of the network that applies for fare leg rules, as used by the local agency and its riders."]
+Note: 'Network grouping of routes.'
+}
+
+Table gtfs.route_networks {
+network_id string [not null, ref: > gtfs.networks.network_id, note: "Identifies a network to which one or multiple route_id values belong. A route_id can only be defined in one network_id."]
+route_id string [not null, pk, ref: > gtfs.routes.route_id, note: "Identifies a route."]
+Note: 'Rules to assign routes to networks.'
+}
+
+Table gtfs.frequencies {
+trip_id string [not null, ref: > gtfs.trips.trip_id, note: "Identifies a trip to which the specified headway of service applies."]
+start_time interval [not null, note: "Time at which the first vehicle departs from the first stop of the trip with the specified headway."]
+end_time interval [not null, note: "Time at which service changes to a different headway (or ceases) at the first stop in the trip."]
+headway_secs int [not null, note: "Time, in seconds, between departures from the same stop for the trip, during the time interval specified by start_time and end_time. Multiple headways may be defined for the same trip, but must not overlap. New headways may start at the exact time the previous headway ends."]
+exact_times gtfs.frequencies_exact_times_options [note: "Indicates the type of service for a trip."]
+indexes {
+ (trip_id, start_time) [pk]
+}
+Note: 'Headway (time between trips) for headway-based service or a compressed representation of fixed-schedule service.'
+}
+
+Table gtfs.transfers {
+from_stop_id string [ref: > gtfs.stops.stop_id, note: "Identifies a stop (location_type=0) or a station (location_type=1) where a connection between routes begins. If this field refers to a station, the transfer rule applies to all its child stops. It must refer to a stop (location_type=0) if transfer_type is 4 or 5."]
+to_stop_id string [ref: > gtfs.stops.stop_id, note: "Identifies a stop (location_type=0) or a station (location_type=1) where a connection between routes ends. If this field refers to a station, the transfer rule applies to all its child stops. It must refer to a stop (location_type=0) if transfer_type is 4 or 5."]
+from_route_id string [ref: > gtfs.routes.route_id, note: "Identifies a route where a connection begins. If from_route_id is defined, the transfer will apply to the arriving trip on the route for the given from_stop_id. If both from_trip_id and from_route_id are defined, the trip_id must belong to the route_id, and from_trip_id will take precedence."]
+to_route_id string [ref: > gtfs.routes.route_id, note: "Identifies a route where a connection ends. If to_route_id is defined, the transfer will apply to the departing trip on the route for the given to_stop_id. If both to_trip_id and to_route_id are defined, the trip_id must belong to the route_id, and to_trip_id will take precedence."]
+from_trip_id string [ref: > gtfs.trips.trip_id, note: "Identifies a trip where a connection between routes begins. If from_trip_id is defined, the transfer will apply to the arriving trip for the given from_stop_id. If both from_trip_id and from_route_id are defined, the trip_id must belong to the route_id, and from_trip_id will take precedence."]
+to_trip_id string [ref: > gtfs.trips.trip_id, note: "Identifies a trip where a connection between routes ends. If to_trip_id is defined, the transfer will apply to the departing trip for the given to_stop_id. If both to_trip_id and to_route_id are defined, the trip_id must belong to the route_id, and to_trip_id will take precedence."]
+transfer_type gtfs.transfers_transfer_type_options [not null, note: "Indicates the type of connection for the specified (from_stop_id, to_stop_id) pair."]
+min_transfer_time int [note: "Amount of time, in seconds, that must be available to permit a transfer between routes at the specified stops. The min_transfer_time should be sufficient to permit a typical rider to move between the two stops, including buffer time to allow for schedule variance on each route."]
+indexes {
+ (from_stop_id, to_stop_id, from_trip_id, to_trip_id, from_route_id, to_route_id) [pk]
+}
+Note: 'Rules for making connections at transfer points between routes.'
+}
+
+Table gtfs.pathways {
+pathway_id string [not null, pk, note: "Identifies a pathway. Must be unique in the dataset. Different pathways may have the same from_stop_id and to_stop_id values. Example: Two escalators side-by-side in opposite directions, or a stair set and elevator going from the same place to the same place."]
+from_stop_id string [not null, ref: > gtfs.stops.stop_id, note: "Location at which the pathway begins. Must identify a platform (location_type=0 or empty), entrance/exit (location_type=2), generic node (location_type=3) or boarding area (location_type=4). Values that identify stations (location_type=1), or stops with stop_access=1, are forbidden."]
+to_stop_id string [not null, ref: > gtfs.stops.stop_id, note: "Location at which the pathway ends. Must identify a platform (location_type=0 or empty), entrance/exit (location_type=2), generic node (location_type=3) or boarding area (location_type=4). Values that identify stations (location_type=1), or stops with stop_access=1, are forbidden."]
+pathway_mode gtfs.pathways_pathway_mode_options [not null, note: "Type of pathway between the specified (from_stop_id, to_stop_id) pair."]
+is_bidirectional gtfs.pathways_is_bidirectional_options [not null, note: "Indicates the direction that the pathway can be taken."]
+length float [note: "Horizontal length in meters of the pathway from the origin location to the destination location. Recommended for walkways (pathway_mode=1), fare gates (pathway_mode=6) and exit gates (pathway_mode=7)."]
+traversal_time int [note: "Average time in seconds needed to walk through the pathway from the origin location to the destination location. Recommended for moving sidewalks (pathway_mode=3), escalators (pathway_mode=4) and elevators (pathway_mode=5)."]
+stair_count int [note: "Number of stairs of the pathway. A positive value implies walking up; a negative value implies walking down. Recommended for stairs (pathway_mode=2). If only an estimated stair count can be provided, approximate 15 stairs for 1 floor."]
+max_slope float [note: "Maximum slope ratio of the pathway. Valid options are 0 or empty for no slope, or a float ratio (positive for upwards, negative for downwards). Should only be used with walkways (pathway_mode=1) and moving sidewalks (pathway_mode=3). Example: 0.083 (8.3%) is the maximum slope ratio for hand-propelled wheelchairs in the US."]
+min_width float [note: "Minimum width of the pathway in meters. Recommended if the minimum width is less than 1 meter."]
+signposted_as string [note: "Public facing text from physical signage that is visible to riders. The text should appear exactly how it is printed on the signs. May be used to provide text directions to riders, such as \"follow signs to\". When the physical signage is multilingual, this field may be populated and translated following the example of stops.stop_name in feed_info.feed_lang."]
+reversed_signposted_as string [note: "Same as signposted_as, but when the pathway is used from the to_stop_id to the from_stop_id."]
+Note: 'Pathways linking together locations within stations.'
+}
+
+Table gtfs.levels {
+level_id string [not null, pk, note: "Identifies a level in a station."]
+level_index float [not null, note: "Numeric index of the level that indicates its relative position. Ground level should have index 0, with levels above ground indicated by positive indices and levels below ground by negative indices."]
+level_name string [note: "Name of the level as seen by the rider inside the building or station. Example: Take the elevator to \"Mezzanine\" or \"Platform\" or \"-1\"."]
+Note: 'Levels within stations.'
+}
+
+Table gtfs.location_groups {
+location_group_id string [not null, pk, note: "Identifies a location group. ID must be unique across all stops.stop_id, locations.geojson id, and location_groups.location_group_id values. A location group is a group of stops that together indicate locations where a rider may request pickup or drop off."]
+location_group_name string [note: "The name of the location group as displayed to the rider."]
+Note: 'A group of stops that together indicate locations where a rider may request pickup or drop off.'
+}
+
+Table gtfs.location_group_stops {
+location_group_id string [not null, ref: > gtfs.location_groups.location_group_id, note: "Identifies a location group to which one or multiple stop_id values belong. The same stop_id may be defined in many location_group_id values."]
+stop_id string [not null, ref: > gtfs.stops.stop_id, note: "Identifies a stop belonging to the location group."]
+indexes {
+ (location_group_id, stop_id) [pk]
+}
+Note: 'Rules to assign stops to location groups.'
+}
+
+Table gtfs.locations {
+id string [not null, pk, note: "Identifies a location. ID must be unique across all stops.stop_id, locations.geojson id, and location_groups.location_group_id values."]
+stop_name string [note: "Indicates the name of the location as displayed to riders."]
+stop_desc string [note: "Meaningful description of the location to help orient riders."]
+geometry string [not null, note: "Geometry of the location."]
+Note: 'Zones for rider pickup or drop-off requests by on-demand services, represented as GeoJSON polygons.'
+}
+
+Table gtfs.booking_rules {
+booking_rule_id string [not null, pk, note: "Identifies a rule."]
+booking_type gtfs.booking_rules_booking_type_options [not null, note: "Indicates how far in advance booking can be made."]
+prior_notice_duration_min int [note: "Minimum number of minutes before travel to make the request."]
+prior_notice_duration_max int [note: "Maximum number of minutes before travel to make the booking request."]
+prior_notice_last_day int [note: "Last day before travel to make the booking request. Example: Ride must be booked 1 day in advance before 5PM will be encoded as prior_notice_last_day=1."]
+prior_notice_last_time interval [note: "Last time on the last day before travel to make the booking request. Example: Ride must be booked 1 day in advance before 5PM will be encoded as prior_notice_last_time=17:00:00."]
+prior_notice_start_day int [note: "Earliest day before travel to make the booking request. Example: Ride can be booked at the earliest one week in advance at midnight will be encoded as prior_notice_start_day=7."]
+prior_notice_start_time interval [note: "Earliest time on the earliest day before travel to make the booking request. Example: Ride can be booked at the earliest one week in advance at midnight will be encoded as prior_notice_start_time=00:00:00."]
+prior_notice_service_id string [ref: > gtfs.calendar.service_id, note: "Indicates the service days on which prior_notice_last_day or prior_notice_start_day are counted. Example: If empty, prior_notice_start_day=2 will be two calendar days in advance. If defined as a service_id containing only business days, prior_notice_start_day=2 will be two business days in advance."]
+message string [note: "Message to riders utilizing service at a stop_time when booking on-demand pickup and drop off."]
+pickup_message string [note: "Functions in the same way as message but used when riders have on-demand pickup only."]
+drop_off_message string [note: "Functions in the same way as message but used when riders have on-demand drop off only."]
+phone_number string [note: "Phone number to call to make the booking request."]
+info_url string [note: "URL providing information about the booking rule."]
+booking_url string [note: "URL to an online interface or app where the booking request can be made."]
+Note: 'Booking information for rider-requested services.'
+}
+
+Table gtfs.translations {
+table_name gtfs.translations_table_name_options [not null, note: "Defines the table that contains the field to be translated. Any file added to GTFS will have a table_name value equivalent to the file name, not including the .txt file extension."]
+field_name string [not null, note: "Name of the field to be translated. Fields with type Text may be translated; URL, Email, and Phone number may be translated to provide resources in the correct language. Other types should not be translated."]
+language string [not null, note: "Language of translation. If the language is the same as in feed_info.feed_lang, the original value of the field is assumed to be the default value to use in languages without specific translations (if default_lang does not specify otherwise)."]
+translation string [not null, note: "Translated value."]
+record_id string [note: "Defines the record that corresponds to the field to be translated. The value must be the first or only field of a table's primary key as defined in the reference."]
+record_sub_id string [note: "Secondary ID of the table when the table does not have a unique ID, as defined in the reference."]
+field_value string [note: "Defines the value which should be translated instead of identifying a specific record. The translation is applied when the field identified by table_name and field_name contains the exact same value defined in field_value. If only a subset of the value matches field_value, the translation is not applied. If two translation rules match the same record (one with field_value and one with record_id), the rule with record_id takes precedence."]
+indexes {
+ (table_name, field_name, language, record_id, record_sub_id, field_value) [pk]
+}
+Note: 'Translations of customer-facing dataset values.'
+}
+
+Table gtfs.feed_info {
+feed_publisher_name string [not null, note: "Full name of the organization that publishes the dataset."]
+feed_publisher_url string [not null, note: "URL of the dataset publishing organization's website."]
+feed_lang string [not null, note: "Default language used for the text in this dataset. The translations.txt file can be used if the text needs to be translated into languages other than the default one. The default language may be multilingual for datasets with the original text in multiple languages; in such cases, feed_lang should contain mul and translations should be provided for each language used in the dataset. If all original text is in the same language, then mul should not be used."]
+default_lang string [note: "Defines the language that should be used when the data consumer does not know the language of the rider."]
+feed_start_date date [note: "The dataset provides complete and reliable schedule information for service in the period from the beginning of the feed_start_date day to the end of the feed_end_date day. Both days may be left empty if unavailable. The feed_end_date date must not precede the feed_start_date date if both are given. It is recommended that dataset providers give schedule data outside this period to advise of likely future service, but dataset consumers should treat it mindful of its non-authoritative status. If feed_start_date or feed_end_date extend beyond the active calendar dates defined in calendar.txt and calendar_dates.txt, the dataset asserts there is no service for dates within the feed range but not included in the active calendar dates."]
+feed_end_date date [note: "End date for the feed period described by feed_start_date."]
+feed_version string [note: "String that indicates the current version of the GTFS dataset."]
+feed_contact_email string [note: "Email address for communication regarding the GTFS dataset and data publishing practices. feed_contact_email is a technical contact for GTFS-consuming applications. Provide customer service contact information through agency.txt. It is recommended that at least one of feed_contact_email or feed_contact_url are provided."]
+feed_contact_url string [note: "URL for contact information regarding the GTFS dataset and data publishing practices. feed_contact_url is a technical contact for GTFS-consuming applications. Provide customer service contact information through agency.txt. It is recommended that at least one of feed_contact_url or feed_contact_email are provided."]
+Note: 'Dataset metadata, including publisher, version, and expiration information.'
+}
+
+Table gtfs.attributions {
+attribution_id string [pk, note: "Identifies an attribution for the dataset or a subset of it."]
+agency_id string [ref: > gtfs.agency.agency_id, note: "Agency to which the attribution applies. If one agency_id, route_id, or trip_id attribution is defined, the other ones must be empty. If none is specified, the attribution applies to the whole dataset."]
+route_id string [ref: > gtfs.routes.route_id, note: "Functions in the same way as agency_id except the attribution applies to a route."]
+trip_id string [ref: > gtfs.trips.trip_id, note: "Functions in the same way as agency_id except the attribution applies to a trip."]
+organization_name string [not null, note: "Name of the organization that the dataset is attributed to."]
+is_producer gtfs.attributions_is_producer_options [note: "The role of the organization is producer. At least one of is_producer, is_operator, or is_authority should be set to 1."]
+is_operator gtfs.attributions_is_operator_options [note: "Functions in the same way as is_producer except the role of the organization is operator."]
+is_authority gtfs.attributions_is_authority_options [note: "Functions in the same way as is_producer except the role of the organization is authority."]
+attribution_url string [note: "URL of the organization."]
+attribution_email string [note: "Email of the organization."]
+attribution_phone string [note: "Phone number of the organization."]
+Note: 'Dataset attributions.'
 }
 
