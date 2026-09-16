@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 Convert schedule.yaml to schedule.json with pretty formatting.
-- Input: serializers/schedule.yaml
-- Output: serializers/schedule.json (overwrites)
+- Input: serializers/schedule/schedule.yaml
+- Output: serializers/schedule/schedule.json (overwrites)
 Requirements: PyYAML
 """
 
@@ -17,9 +17,9 @@ except Exception:
     print("ERROR: PyYAML is required. Install with: uv add pyyaml", file=sys.stderr)
     sys.exit(1)
 
-ROOT = Path(__file__).resolve().parent.parent
-YAML_PATH = ROOT / "serializers/schedule.yaml"
-JSON_PATH = ROOT / "serializers/schedule.json"
+ROOT = Path(__file__).resolve().parents[2]
+YAML_PATH = ROOT / "serializers/schedule/schedule.yaml"
+JSON_PATH = ROOT / "serializers/schedule/schedule.json"
 
 
 def main() -> int:
