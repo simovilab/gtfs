@@ -2,7 +2,7 @@
 // Source: serializers/schedule/schedule.yaml
 
 Project gtfs_schedule {
-Note: '{{ metadata.description }}'
+Note: '{{ metadata.description | replace("'", "\\'") }}'
 }
 
 {% for enum in enums %}
@@ -22,6 +22,11 @@ Table gtfs.{{ table.name }} {
 endif %}
 
 {% endfor %}
+{% if table.composite_pk %}
+indexes {
+ ({{ table.composite_pk | join(', ') }}) [pk]
+}
+{% endif %}
 Note: '{{ table.description }}'
 }
 
