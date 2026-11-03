@@ -1,4 +1,5 @@
 @prefix gtfs: <http://gtfs.simovi.org/schedule#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix dct: <http://purl.org/dc/terms/> .
@@ -124,9 +125,28 @@ gtfs:Field a owl:Class .
 
 {% for field in file.fields %}
 gtfs:{{ field.name }} a gtfs:Field ;
-    gtfs:fieldType gtfs:{{ field.type | pascal }} ;
+    gtfs:fieldType {% for t in field.type | types %}gtfs:{{ t | pascal }}{{ ", " if not loop.last }}{% endfor %} ;
     gtfs:presence gtfs:{{ field.presence | pascal }} ;
     skos:definition """{{ field.description | ttl }}""" .
 
 {% endfor %}
 {% endfor %}
+# -----------------
+# Object Properties
+# -----------------
+
+# Relations between classes derived from foreign keys in the spec.
+# Property names are defined in serializers/schedule/relations.yaml.
+
+{% for prop in object_properties %}
+gtfs:{{ prop.name }} a owl:ObjectProperty ;
+    rdfs:label "{{ prop.label | ttl }}"@en ;
+    rdfs:domain gtfs:{{ prop.domain }} ;
+    rdfs:range gtfs:{{ prop.range }} ;
+    owl:inverseOf gtfs:{{ prop.inverse }} ;
+    skos:note "Derived from the foreign key {{ prop.source | ttl }}." .
+
+{% endfor %}
+# -------------------
+# Datatype Properties
+# -------------------

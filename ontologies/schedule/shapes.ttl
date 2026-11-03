@@ -1,0 +1,2609 @@
+@prefix gtfs: <http://gtfs.simovi.org/schedule#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ---------------------------------------------------------------------------
+# SHACL shapes for the GTFS Schedule ontology.
+#
+# GENERATED FILE - do not edit by hand.
+# Built by converters/schedule/yaml2shacl.py from:
+#   serializers/schedule/schedule.yaml   (fields, presence, options, rules)
+#   serializers/schedule/fieldtypes.yaml (constraints per field type)
+# ---------------------------------------------------------------------------
+
+# ==========
+# agency.txt
+# ==========
+
+gtfs:AgencyShape a sh:NodeShape ;
+    sh:targetClass gtfs:Agency ;
+    # agency_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:agency_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required when the dataset contains data for multiple transit agencies. Recommended otherwise."""
+    ] ;
+
+    sh:description """Dataset-scoped rule (not enforced in SHACL core, phase 2): agency_id required when: The dataset contains data for multiple transit agencies.""" ;
+
+    # agency_name (Required)
+    sh:property [
+        sh:path gtfs:agency_name ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # agency_url (Required)
+    sh:property [
+        sh:path gtfs:agency_url ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description """Required"""
+    ] ;
+
+    # agency_timezone (Required)
+    sh:property [
+        sh:path gtfs:agency_timezone ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # agency_lang (Optional)
+    sh:property [
+        sh:path gtfs:agency_lang ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*$" ;
+        sh:description """Optional"""
+    ] ;
+
+    # agency_phone (Optional)
+    sh:property [
+        sh:path gtfs:agency_phone ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # agency_fare_url (Optional)
+    sh:property [
+        sh:path gtfs:agency_fare_url ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description """Optional"""
+    ] ;
+
+    # agency_email (Optional)
+    sh:property [
+        sh:path gtfs:agency_email ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" ;
+        sh:description """Optional"""
+    ] ;
+
+    # cemv_support (Optional)
+    sh:property [
+        sh:path gtfs:cemv_support ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 ) ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# stops.txt
+# ==========
+
+gtfs:StopShape a sh:NodeShape ;
+    sh:targetClass gtfs:Stop ;
+    # stop_id (Required)
+    sh:property [
+        sh:path gtfs:stop_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # stop_code (Optional)
+    sh:property [
+        sh:path gtfs:stop_code ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # stop_name (Conditionally Required)
+    sh:property [
+        sh:path gtfs:stop_name ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required for locations which are stops (location_type=0), stations (location_type=1) or entrances/exits (location_type=2). Optional for locations which are generic nodes (location_type=3) or boarding areas (location_type=4)."""
+    ] ;
+
+    # rule: stop_name: required when location_type in [0, 1, 2]
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_type ; sh:minCount 1 ; sh:not [ sh:in ( 0 1 2 ) ] ] ]
+        [ sh:property [ sh:path gtfs:stop_name ; sh:minCount 1 ] ]
+    ) ;
+
+    # tts_stop_name (Optional)
+    sh:property [
+        sh:path gtfs:tts_stop_name ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # stop_desc (Optional)
+    sh:property [
+        sh:path gtfs:stop_desc ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # stop_lat (Conditionally Required)
+    sh:property [
+        sh:path gtfs:stop_lat ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive -90.0 ;
+        sh:maxInclusive 90.0 ;
+        sh:description """Conditionally Required. Required for locations which are stops (location_type=0), stations (location_type=1) or entrances/exits (location_type=2). Optional for locations which are generic nodes (location_type=3) or boarding areas (location_type=4)."""
+    ] ;
+
+    # rule: stop_lat: required when location_type in [0, 1, 2]
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_type ; sh:minCount 1 ; sh:not [ sh:in ( 0 1 2 ) ] ] ]
+        [ sh:property [ sh:path gtfs:stop_lat ; sh:minCount 1 ] ]
+    ) ;
+
+    # stop_lon (Conditionally Required)
+    sh:property [
+        sh:path gtfs:stop_lon ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive -180.0 ;
+        sh:maxInclusive 180.0 ;
+        sh:description """Conditionally Required. Required for locations which are stops (location_type=0), stations (location_type=1) or entrances/exits (location_type=2). Optional for locations which are generic nodes (location_type=3) or boarding areas (location_type=4)."""
+    ] ;
+
+    # rule: stop_lon: required when location_type in [0, 1, 2]
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_type ; sh:minCount 1 ; sh:not [ sh:in ( 0 1 2 ) ] ] ]
+        [ sh:property [ sh:path gtfs:stop_lon ; sh:minCount 1 ] ]
+    ) ;
+
+    # zone_id (Optional)
+    sh:property [
+        sh:path gtfs:zone_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # stop_url (Optional)
+    sh:property [
+        sh:path gtfs:stop_url ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description """Optional"""
+    ] ;
+
+    # location_type (Optional)
+    sh:property [
+        sh:path gtfs:location_type ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 3 4 ) ;
+        sh:description """Optional"""
+    ] ;
+
+    # parent_station (Conditionally Required)
+    sh:property [
+        sh:path gtfs:parent_station ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required for locations which are entrances (location_type=2), generic nodes (location_type=3) or boarding areas (location_type=4). Optional for stops/platforms (location_type=0). Forbidden for stations (location_type=1)."""
+    ] ;
+
+    # rule: parent_station: required when location_type in [2, 3, 4]
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_type ; sh:not [ sh:in ( 2 3 4 ) ] ] ]
+        [ sh:property [ sh:path gtfs:parent_station ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: parent_station: forbidden when location_type in [1]
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_type ; sh:not [ sh:in ( 1 ) ] ] ]
+        [ sh:property [ sh:path gtfs:parent_station ; sh:maxCount 0 ] ]
+    ) ;
+
+    # stop_timezone (Optional)
+    sh:property [
+        sh:path gtfs:stop_timezone ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # wheelchair_boarding (Optional)
+    sh:property [
+        sh:path gtfs:wheelchair_boarding ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 0 1 2 0 1 2 ) ;
+        sh:description """Optional"""
+    ] ;
+
+    # level_id (Optional)
+    sh:property [
+        sh:path gtfs:level_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # platform_code (Optional)
+    sh:property [
+        sh:path gtfs:platform_code ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # stop_access (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:stop_access ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 ) ;
+        sh:description """Conditionally Forbidden. Forbidden for locations which are stations (location_type=1), entrances (location_type=2), generic nodes (location_type=3) or boarding areas (location_type=4). Forbidden if parent_station is empty. Optional otherwise."""
+    ] ;
+
+    # rule: stop_access: forbidden when location_type in [1, 2, 3, 4]
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_type ; sh:not [ sh:in ( 1 2 3 4 ) ] ] ]
+        [ sh:property [ sh:path gtfs:stop_access ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: stop_access: forbidden when parent_station is empty
+    sh:or (
+        [ sh:property [ sh:path gtfs:parent_station ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:stop_access ; sh:maxCount 0 ] ]
+    ) .
+
+# ==========
+# routes.txt
+# ==========
+
+gtfs:RouteShape a sh:NodeShape ;
+    sh:targetClass gtfs:Route ;
+    # route_id (Required)
+    sh:property [
+        sh:path gtfs:route_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # agency_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:agency_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if multiple agencies are defined in agency.txt. Recommended otherwise."""
+    ] ;
+
+    sh:description """Dataset-scoped rule (not enforced in SHACL core, phase 2): agency_id required when: Multiple agencies are defined in agency.txt.""" ;
+
+    # route_short_name (Conditionally Required)
+    sh:property [
+        sh:path gtfs:route_short_name ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if routes.route_long_name is empty. Recommended if there is a brief service designation. This should be the commonly-known passenger name of the service, and should be no longer than 12 characters."""
+    ] ;
+
+    # rule: route_short_name: required when route_long_name is empty
+    sh:or (
+        [ sh:property [ sh:path gtfs:route_long_name ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:route_short_name ; sh:minCount 1 ] ]
+    ) ;
+
+    # route_long_name (Conditionally Required)
+    sh:property [
+        sh:path gtfs:route_long_name ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if routes.route_short_name is empty. Optional otherwise."""
+    ] ;
+
+    # rule: route_long_name: required when route_short_name is empty
+    sh:or (
+        [ sh:property [ sh:path gtfs:route_short_name ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:route_long_name ; sh:minCount 1 ] ]
+    ) ;
+
+    # route_desc (Optional)
+    sh:property [
+        sh:path gtfs:route_desc ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # route_type (Required)
+    sh:property [
+        sh:path gtfs:route_type ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 3 4 5 6 7 11 12 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # route_url (Optional)
+    sh:property [
+        sh:path gtfs:route_url ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description """Optional"""
+    ] ;
+
+    # route_color (Optional)
+    sh:property [
+        sh:path gtfs:route_color ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[0-9A-Fa-f]{6}$" ;
+        sh:description """Optional"""
+    ] ;
+
+    # route_text_color (Optional)
+    sh:property [
+        sh:path gtfs:route_text_color ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[0-9A-Fa-f]{6}$" ;
+        sh:description """Optional"""
+    ] ;
+
+    # route_sort_order (Optional)
+    sh:property [
+        sh:path gtfs:route_sort_order ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+        sh:description """Optional"""
+    ] ;
+
+    # continuous_pickup (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:continuous_pickup ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 3 ) ;
+        sh:description """Conditionally Forbidden. Any value other than 1 or empty is Forbidden if stop_times.start_pickup_drop_off_window or stop_times.end_pickup_drop_off_window are defined for any trip of this route. Optional otherwise."""
+    ] ;
+
+    sh:description """Dataset-scoped rule (not enforced in SHACL core, phase 2): continuous_pickup forbidden when: stop_times.start_pickup_drop_off_window or stop_times.end_pickup_drop_off_window are defined for any trip of this route.""" ;
+
+    # continuous_drop_off (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:continuous_drop_off ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 3 ) ;
+        sh:description """Conditionally Forbidden. Any value other than 1 or empty is Forbidden if stop_times.start_pickup_drop_off_window or stop_times.end_pickup_drop_off_window are defined for any trip of this route. Optional otherwise."""
+    ] ;
+
+    sh:description """Dataset-scoped rule (not enforced in SHACL core, phase 2): continuous_drop_off forbidden when: stop_times.start_pickup_drop_off_window or stop_times.end_pickup_drop_off_window are defined for any trip of this route.""" ;
+
+    # network_id (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:network_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Forbidden. Forbidden if the route_networks.txt or networks.txt file exists. Optional otherwise."""
+    ] ;
+
+    sh:description """Dataset-scoped rule (not enforced in SHACL core, phase 2): network_id forbidden when: The route_networks.txt or networks.txt file exists.""" ;
+
+    # cemv_support (Optional)
+    sh:property [
+        sh:path gtfs:cemv_support ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 ) ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# shapes.txt
+# ==========
+
+gtfs:ShapeShape a sh:NodeShape ;
+    sh:targetClass gtfs:Shape ;
+    # shape_id (Required)
+    sh:property [
+        sh:path gtfs:shape_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # shape_pt_lat (Required)
+    sh:property [
+        sh:path gtfs:shape_pt_lat ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive -90.0 ;
+        sh:maxInclusive 90.0 ;
+        sh:description """Required"""
+    ] ;
+
+    # shape_pt_lon (Required)
+    sh:property [
+        sh:path gtfs:shape_pt_lon ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive -180.0 ;
+        sh:maxInclusive 180.0 ;
+        sh:description """Required"""
+    ] ;
+
+    # shape_pt_sequence (Required)
+    sh:property [
+        sh:path gtfs:shape_pt_sequence ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+        sh:description """Required"""
+    ] ;
+
+    # shape_dist_traveled (Optional)
+    sh:property [
+        sh:path gtfs:shape_dist_traveled ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# calendar.txt
+# ==========
+
+gtfs:CalendarShape a sh:NodeShape ;
+    sh:targetClass gtfs:Calendar ;
+    # service_id (Required)
+    sh:property [
+        sh:path gtfs:service_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # monday (Required)
+    sh:property [
+        sh:path gtfs:monday ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 1 0 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # tuesday (Required)
+    sh:property [
+        sh:path gtfs:tuesday ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 1 0 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # wednesday (Required)
+    sh:property [
+        sh:path gtfs:wednesday ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 1 0 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # thursday (Required)
+    sh:property [
+        sh:path gtfs:thursday ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 1 0 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # friday (Required)
+    sh:property [
+        sh:path gtfs:friday ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 1 0 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # saturday (Required)
+    sh:property [
+        sh:path gtfs:saturday ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 1 0 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # sunday (Required)
+    sh:property [
+        sh:path gtfs:sunday ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 1 0 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # start_date (Required)
+    sh:property [
+        sh:path gtfs:start_date ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{8}$" ;
+        sh:description """Required"""
+    ] ;
+
+    # end_date (Required)
+    sh:property [
+        sh:path gtfs:end_date ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{8}$" ;
+        sh:description """Required"""
+    ] .
+
+# ==========
+# trips.txt
+# ==========
+
+gtfs:TripShape a sh:NodeShape ;
+    sh:targetClass gtfs:Trip ;
+    # route_id (Required)
+    sh:property [
+        sh:path gtfs:route_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # service_id (Required)
+    sh:property [
+        sh:path gtfs:service_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # trip_id (Required)
+    sh:property [
+        sh:path gtfs:trip_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # trip_headsign (Optional)
+    sh:property [
+        sh:path gtfs:trip_headsign ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # trip_short_name (Optional)
+    sh:property [
+        sh:path gtfs:trip_short_name ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # direction_id (Optional)
+    sh:property [
+        sh:path gtfs:direction_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 ) ;
+        sh:description """Optional"""
+    ] ;
+
+    # block_id (Optional)
+    sh:property [
+        sh:path gtfs:block_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # shape_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:shape_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if the trip has continuous pickup or drop-off behavior defined either in routes.txt or in stop_times.txt. Optional otherwise."""
+    ] ;
+
+    sh:description """Dataset-scoped rule (not enforced in SHACL core, phase 2): shape_id required when: The trip has continuous pickup or drop-off behavior defined either in routes.txt or in stop_times.txt.""" ;
+
+    # wheelchair_accessible (Optional)
+    sh:property [
+        sh:path gtfs:wheelchair_accessible ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 ) ;
+        sh:description """Optional"""
+    ] ;
+
+    # bikes_allowed (Optional)
+    sh:property [
+        sh:path gtfs:bikes_allowed ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 ) ;
+        sh:description """Optional"""
+    ] ;
+
+    # cars_allowed (Optional)
+    sh:property [
+        sh:path gtfs:cars_allowed ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 ) ;
+        sh:description """Optional"""
+    ] ;
+
+    # safe_duration_factor (Optional)
+    sh:property [
+        sh:path gtfs:safe_duration_factor ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:description """Optional"""
+    ] ;
+
+    # safe_duration_offset (Optional)
+    sh:property [
+        sh:path gtfs:safe_duration_offset ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# stop_times.txt
+# ==========
+
+gtfs:StopTimeShape a sh:NodeShape ;
+    sh:targetClass gtfs:StopTime ;
+    # trip_id (Required)
+    sh:property [
+        sh:path gtfs:trip_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # arrival_time (Conditionally Required)
+    sh:property [
+        sh:path gtfs:arrival_time ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{1,3}:[0-5]\\d:[0-5]\\d$" ;
+        sh:description """Conditionally Required. Required for the first and last stop in a trip (defined by stop_times.stop_sequence). Required for timepoint=1. Forbidden when start_pickup_drop_off_window or end_pickup_drop_off_window are defined. Optional otherwise."""
+    ] ;
+
+    sh:description """Dataset-scoped rule (not enforced in SHACL core, phase 2): arrival_time required when: First and last stop of a trip (defined by stop_times.stop_sequence).""" ;
+
+    # rule: arrival_time: required when timepoint in [1]
+    sh:or (
+        [ sh:property [ sh:path gtfs:timepoint ; sh:not [ sh:in ( 1 ) ] ] ]
+        [ sh:property [ sh:path gtfs:arrival_time ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: arrival_time: forbidden when start_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:arrival_time ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: arrival_time: forbidden when end_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:arrival_time ; sh:maxCount 0 ] ]
+    ) ;
+
+    # departure_time (Conditionally Required)
+    sh:property [
+        sh:path gtfs:departure_time ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{1,3}:[0-5]\\d:[0-5]\\d$" ;
+        sh:description """Conditionally Required. Required for timepoint=1. Forbidden when start_pickup_drop_off_window or end_pickup_drop_off_window are defined. Optional otherwise."""
+    ] ;
+
+    # rule: departure_time: required when timepoint in [1]
+    sh:or (
+        [ sh:property [ sh:path gtfs:timepoint ; sh:not [ sh:in ( 1 ) ] ] ]
+        [ sh:property [ sh:path gtfs:departure_time ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: departure_time: forbidden when start_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:departure_time ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: departure_time: forbidden when end_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:departure_time ; sh:maxCount 0 ] ]
+    ) ;
+
+    # stop_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:stop_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if stop_times.location_group_id AND stop_times.location_id are NOT defined. Forbidden if stop_times.location_group_id or stop_times.location_id are defined."""
+    ] ;
+
+    # rule: stop_id: required when location_group_id is empty and location_id is empty
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_group_id ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:location_id ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:stop_id ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: stop_id: forbidden when location_group_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_group_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:stop_id ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: stop_id: forbidden when location_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:stop_id ; sh:maxCount 0 ] ]
+    ) ;
+
+    # location_group_id (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:location_group_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Forbidden. Forbidden if stop_times.stop_id or stop_times.location_id are defined."""
+    ] ;
+
+    # rule: location_group_id: forbidden when stop_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:stop_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:location_group_id ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: location_group_id: forbidden when location_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:location_group_id ; sh:maxCount 0 ] ]
+    ) ;
+
+    # location_id (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:location_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Forbidden. Forbidden if stop_times.stop_id or stop_times.location_group_id are defined."""
+    ] ;
+
+    # rule: location_id: forbidden when stop_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:stop_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:location_id ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: location_id: forbidden when location_group_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_group_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:location_id ; sh:maxCount 0 ] ]
+    ) ;
+
+    # stop_sequence (Required)
+    sh:property [
+        sh:path gtfs:stop_sequence ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+        sh:description """Required"""
+    ] ;
+
+    # stop_headsign (Optional)
+    sh:property [
+        sh:path gtfs:stop_headsign ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # start_pickup_drop_off_window (Conditionally Required)
+    sh:property [
+        sh:path gtfs:start_pickup_drop_off_window ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{1,3}:[0-5]\\d:[0-5]\\d$" ;
+        sh:description """Conditionally Required. Required if stop_times.location_group_id or stop_times.location_id is defined. Required if end_pickup_drop_off_window is defined. Forbidden if arrival_time or departure_time is defined. Optional otherwise."""
+    ] ;
+
+    # rule: start_pickup_drop_off_window: required when location_group_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_group_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: start_pickup_drop_off_window: required when location_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: start_pickup_drop_off_window: required when end_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: start_pickup_drop_off_window: forbidden when arrival_time is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:arrival_time ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: start_pickup_drop_off_window: forbidden when departure_time is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:departure_time ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:maxCount 0 ] ]
+    ) ;
+
+    # end_pickup_drop_off_window (Conditionally Required)
+    sh:property [
+        sh:path gtfs:end_pickup_drop_off_window ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{1,3}:[0-5]\\d:[0-5]\\d$" ;
+        sh:description """Conditionally Required. Required if stop_times.location_group_id or stop_times.location_id is defined. Required if start_pickup_drop_off_window is defined. Forbidden if arrival_time or departure_time is defined. Optional otherwise."""
+    ] ;
+
+    # rule: end_pickup_drop_off_window: required when location_group_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_group_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: end_pickup_drop_off_window: required when location_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:location_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: end_pickup_drop_off_window: required when start_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: end_pickup_drop_off_window: forbidden when arrival_time is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:arrival_time ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: end_pickup_drop_off_window: forbidden when departure_time is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:departure_time ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:maxCount 0 ] ]
+    ) ;
+
+    # pickup_type (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:pickup_type ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 3 ) ;
+        sh:description """Conditionally Forbidden. pickup_type=0 forbidden if start_pickup_drop_off_window or end_pickup_drop_off_window are defined. pickup_type=3 forbidden if start_pickup_drop_off_window or end_pickup_drop_off_window are defined. Optional otherwise."""
+    ] ;
+
+    # rule: pickup_type: forbidden when start_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:pickup_type ; sh:not [ sh:in ( 0 3 ) ] ] ]
+    ) ;
+
+    # rule: pickup_type: forbidden when end_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:pickup_type ; sh:not [ sh:in ( 0 3 ) ] ] ]
+    ) ;
+
+    # drop_off_type (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:drop_off_type ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 3 ) ;
+        sh:description """Conditionally Forbidden. drop_off_type=0 forbidden if start_pickup_drop_off_window or end_pickup_drop_off_window are defined. Optional otherwise."""
+    ] ;
+
+    # rule: drop_off_type: forbidden when start_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:drop_off_type ; sh:not [ sh:in ( 0 ) ] ] ]
+    ) ;
+
+    # rule: drop_off_type: forbidden when end_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:drop_off_type ; sh:not [ sh:in ( 0 ) ] ] ]
+    ) ;
+
+    # continuous_pickup (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:continuous_pickup ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 3 ) ;
+        sh:description """Conditionally Forbidden. Any value other than 1 or empty is Forbidden if start_pickup_drop_off_window or end_pickup_drop_off_window are defined. Optional otherwise."""
+    ] ;
+
+    # rule: continuous_pickup: forbidden when start_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:continuous_pickup ; sh:in ( 1 ) ] ]
+    ) ;
+
+    # rule: continuous_pickup: forbidden when end_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:continuous_pickup ; sh:in ( 1 ) ] ]
+    ) ;
+
+    # continuous_drop_off (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:continuous_drop_off ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 3 ) ;
+        sh:description """Conditionally Forbidden. Any value other than 1 or empty is Forbidden if start_pickup_drop_off_window or end_pickup_drop_off_window are defined. Optional otherwise."""
+    ] ;
+
+    # rule: continuous_drop_off: forbidden when start_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:start_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:continuous_drop_off ; sh:in ( 1 ) ] ]
+    ) ;
+
+    # rule: continuous_drop_off: forbidden when end_pickup_drop_off_window is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:end_pickup_drop_off_window ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:continuous_drop_off ; sh:in ( 1 ) ] ]
+    ) ;
+
+    # shape_dist_traveled (Optional)
+    sh:property [
+        sh:path gtfs:shape_dist_traveled ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+        sh:description """Optional"""
+    ] ;
+
+    # timepoint (Optional)
+    sh:property [
+        sh:path gtfs:timepoint ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 ) ;
+        sh:description """Optional"""
+    ] ;
+
+    # pickup_booking_rule_id (Optional)
+    sh:property [
+        sh:path gtfs:pickup_booking_rule_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # drop_off_booking_rule_id (Optional)
+    sh:property [
+        sh:path gtfs:drop_off_booking_rule_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# calendar_dates.txt
+# ==========
+
+gtfs:CalendarDateShape a sh:NodeShape ;
+    sh:targetClass gtfs:CalendarDate ;
+    # service_id (Required)
+    sh:property [
+        sh:path gtfs:service_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # date (Required)
+    sh:property [
+        sh:path gtfs:date ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{8}$" ;
+        sh:description """Required"""
+    ] ;
+
+    # exception_type (Required)
+    sh:property [
+        sh:path gtfs:exception_type ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 1 2 ) ;
+        sh:description """Required"""
+    ] .
+
+# ==========
+# fare_attributes.txt
+# ==========
+
+gtfs:FareAttributeShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareAttribute ;
+    # fare_id (Required)
+    sh:property [
+        sh:path gtfs:fare_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # price (Required)
+    sh:property [
+        sh:path gtfs:price ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+        sh:description """Required"""
+    ] ;
+
+    # currency_type (Required)
+    sh:property [
+        sh:path gtfs:currency_type ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[A-Z]{3}$" ;
+        sh:description """Required"""
+    ] ;
+
+    # payment_method (Required)
+    sh:property [
+        sh:path gtfs:payment_method ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # transfers (Required)
+    sh:property [
+        sh:path gtfs:transfers ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:in ( 0 1 2 "empty" ) ;
+        sh:description """Required"""
+    ] ;
+
+    # agency_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:agency_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if multiple agencies are defined in agency.txt. Recommended otherwise."""
+    ] ;
+
+    sh:description """Dataset-scoped rule (not enforced in SHACL core, phase 2): agency_id required when: Multiple agencies are defined in agency.txt.""" ;
+
+    # transfer_duration (Optional)
+    sh:property [
+        sh:path gtfs:transfer_duration ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# fare_rules.txt
+# ==========
+
+gtfs:FareRuleShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareRule ;
+    # fare_id (Required)
+    sh:property [
+        sh:path gtfs:fare_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # route_id (Optional)
+    sh:property [
+        sh:path gtfs:route_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # origin_id (Optional)
+    sh:property [
+        sh:path gtfs:origin_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # destination_id (Optional)
+    sh:property [
+        sh:path gtfs:destination_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # contains_id (Optional)
+    sh:property [
+        sh:path gtfs:contains_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# timeframes.txt
+# ==========
+
+gtfs:TimeframeShape a sh:NodeShape ;
+    sh:targetClass gtfs:Timeframe ;
+    # timeframe_group_id (Required)
+    sh:property [
+        sh:path gtfs:timeframe_group_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # start_time (Conditionally Required)
+    sh:property [
+        sh:path gtfs:start_time ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^([01]?\\d|2[0-3]):[0-5]\\d:[0-5]\\d$" ;
+        sh:description """Conditionally Required. Required if timeframes.end_time is defined. Forbidden otherwise."""
+    ] ;
+
+    # rule: start_time: required when end_time is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:end_time ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:start_time ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: start_time: forbidden when end_time is empty
+    sh:or (
+        [ sh:property [ sh:path gtfs:end_time ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:start_time ; sh:maxCount 0 ] ]
+    ) ;
+
+    # end_time (Conditionally Required)
+    sh:property [
+        sh:path gtfs:end_time ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^([01]?\\d|2[0-3]):[0-5]\\d:[0-5]\\d$" ;
+        sh:description """Conditionally Required. Required if timeframes.start_time is defined. Forbidden otherwise."""
+    ] ;
+
+    # rule: end_time: required when start_time is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:start_time ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:end_time ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: end_time: forbidden when start_time is empty
+    sh:or (
+        [ sh:property [ sh:path gtfs:start_time ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:end_time ; sh:maxCount 0 ] ]
+    ) ;
+
+    # service_id (Required)
+    sh:property [
+        sh:path gtfs:service_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] .
+
+# ==========
+# rider_categories.txt
+# ==========
+
+gtfs:RiderCategoryShape a sh:NodeShape ;
+    sh:targetClass gtfs:RiderCategory ;
+    # rider_category_id (Required)
+    sh:property [
+        sh:path gtfs:rider_category_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # rider_category_name (Required)
+    sh:property [
+        sh:path gtfs:rider_category_name ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # is_default_fare_category (Required)
+    sh:property [
+        sh:path gtfs:is_default_fare_category ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # eligibility_url (Optional)
+    sh:property [
+        sh:path gtfs:eligibility_url ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# fare_media.txt
+# ==========
+
+gtfs:FareMediaShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareMedia ;
+    # fare_media_id (Required)
+    sh:property [
+        sh:path gtfs:fare_media_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # fare_media_name (Optional)
+    sh:property [
+        sh:path gtfs:fare_media_name ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # fare_media_type (Required)
+    sh:property [
+        sh:path gtfs:fare_media_type ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 3 4 ) ;
+        sh:description """Required"""
+    ] .
+
+# ==========
+# fare_products.txt
+# ==========
+
+gtfs:FareProductShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareProduct ;
+    # fare_product_id (Required)
+    sh:property [
+        sh:path gtfs:fare_product_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # fare_product_name (Optional)
+    sh:property [
+        sh:path gtfs:fare_product_name ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # rider_category_id (Optional)
+    sh:property [
+        sh:path gtfs:rider_category_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # fare_media_id (Optional)
+    sh:property [
+        sh:path gtfs:fare_media_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # amount (Required)
+    sh:property [
+        sh:path gtfs:amount ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:description """Required"""
+    ] ;
+
+    # currency (Required)
+    sh:property [
+        sh:path gtfs:currency ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[A-Z]{3}$" ;
+        sh:description """Required"""
+    ] .
+
+# ==========
+# fare_leg_rules.txt
+# ==========
+
+gtfs:FareLegRuleShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareLegRule ;
+    # leg_group_id (Optional)
+    sh:property [
+        sh:path gtfs:leg_group_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # network_id (Optional)
+    sh:property [
+        sh:path gtfs:network_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # from_area_id (Optional)
+    sh:property [
+        sh:path gtfs:from_area_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # to_area_id (Optional)
+    sh:property [
+        sh:path gtfs:to_area_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # from_timeframe_group_id (Optional)
+    sh:property [
+        sh:path gtfs:from_timeframe_group_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # to_timeframe_group_id (Optional)
+    sh:property [
+        sh:path gtfs:to_timeframe_group_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # fare_product_id (Required)
+    sh:property [
+        sh:path gtfs:fare_product_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # rule_priority (Optional)
+    sh:property [
+        sh:path gtfs:rule_priority ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# fare_leg_join_rules.txt
+# ==========
+
+gtfs:FareLegJoinRuleShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareLegJoinRule ;
+    # from_network_id (Required)
+    sh:property [
+        sh:path gtfs:from_network_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # to_network_id (Required)
+    sh:property [
+        sh:path gtfs:to_network_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # from_stop_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:from_stop_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if to_stop_id is defined. Optional otherwise."""
+    ] ;
+
+    # rule: from_stop_id: required when to_stop_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:to_stop_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:from_stop_id ; sh:minCount 1 ] ]
+    ) ;
+
+    # to_stop_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:to_stop_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if from_stop_id is defined. Optional otherwise."""
+    ] ;
+
+    # rule: to_stop_id: required when from_stop_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:from_stop_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:to_stop_id ; sh:minCount 1 ] ]
+    ) .
+
+# ==========
+# fare_transfer_rules.txt
+# ==========
+
+gtfs:FareTransferRuleShape a sh:NodeShape ;
+    sh:targetClass gtfs:FareTransferRule ;
+    # from_leg_group_id (Optional)
+    sh:property [
+        sh:path gtfs:from_leg_group_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # to_leg_group_id (Optional)
+    sh:property [
+        sh:path gtfs:to_leg_group_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # transfer_count (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:transfer_count ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:not [ sh:hasValue 0 ] ;
+        sh:description """Conditionally Forbidden. Forbidden if fare_transfer_rules.from_leg_group_id does not equal fare_transfer_rules.to_leg_group_id. Required if fare_transfer_rules.from_leg_group_id equals fare_transfer_rules.to_leg_group_id."""
+    ] ;
+
+    # rule: transfer_count: forbidden when from_leg_group_id != to_leg_group_id
+    sh:or (
+        [ sh:property [ sh:path gtfs:from_leg_group_id ; sh:equals gtfs:to_leg_group_id ] ]
+        [ sh:property [ sh:path gtfs:transfer_count ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: transfer_count: required when from_leg_group_id = to_leg_group_id
+    sh:or (
+        [ sh:property [ sh:path gtfs:from_leg_group_id ; sh:disjoint gtfs:to_leg_group_id ] ]
+        [ sh:property [ sh:path gtfs:transfer_count ; sh:minCount 1 ] ]
+    ) ;
+
+    # duration_limit (Optional)
+    sh:property [
+        sh:path gtfs:duration_limit ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minExclusive 0 ;
+        sh:description """Optional"""
+    ] ;
+
+    # duration_limit_type (Conditionally Required)
+    sh:property [
+        sh:path gtfs:duration_limit_type ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 3 ) ;
+        sh:description """Conditionally Required. Required if fare_transfer_rules.duration_limit is defined. Forbidden if fare_transfer_rules.duration_limit is empty."""
+    ] ;
+
+    # rule: duration_limit_type: required when duration_limit is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:duration_limit ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:duration_limit_type ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: duration_limit_type: forbidden when duration_limit is empty
+    sh:or (
+        [ sh:property [ sh:path gtfs:duration_limit ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:duration_limit_type ; sh:maxCount 0 ] ]
+    ) ;
+
+    # fare_transfer_type (Required)
+    sh:property [
+        sh:path gtfs:fare_transfer_type ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # fare_product_id (Optional)
+    sh:property [
+        sh:path gtfs:fare_product_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# areas.txt
+# ==========
+
+gtfs:AreaShape a sh:NodeShape ;
+    sh:targetClass gtfs:Area ;
+    # area_id (Required)
+    sh:property [
+        sh:path gtfs:area_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # area_name (Optional)
+    sh:property [
+        sh:path gtfs:area_name ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# stop_areas.txt
+# ==========
+
+gtfs:StopAreaShape a sh:NodeShape ;
+    sh:targetClass gtfs:StopArea ;
+    # area_id (Required)
+    sh:property [
+        sh:path gtfs:area_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # stop_id (Required)
+    sh:property [
+        sh:path gtfs:stop_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] .
+
+# ==========
+# networks.txt
+# ==========
+
+gtfs:NetworkShape a sh:NodeShape ;
+    sh:targetClass gtfs:Network ;
+    # network_id (Required)
+    sh:property [
+        sh:path gtfs:network_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # network_name (Optional)
+    sh:property [
+        sh:path gtfs:network_name ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# route_networks.txt
+# ==========
+
+gtfs:RouteNetworkShape a sh:NodeShape ;
+    sh:targetClass gtfs:RouteNetwork ;
+    # network_id (Required)
+    sh:property [
+        sh:path gtfs:network_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # route_id (Required)
+    sh:property [
+        sh:path gtfs:route_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] .
+
+# ==========
+# frequencies.txt
+# ==========
+
+gtfs:FrequencyShape a sh:NodeShape ;
+    sh:targetClass gtfs:Frequency ;
+    # trip_id (Required)
+    sh:property [
+        sh:path gtfs:trip_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # start_time (Required)
+    sh:property [
+        sh:path gtfs:start_time ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{1,3}:[0-5]\\d:[0-5]\\d$" ;
+        sh:description """Required"""
+    ] ;
+
+    # end_time (Required)
+    sh:property [
+        sh:path gtfs:end_time ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{1,3}:[0-5]\\d:[0-5]\\d$" ;
+        sh:description """Required"""
+    ] ;
+
+    # headway_secs (Required)
+    sh:property [
+        sh:path gtfs:headway_secs ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minExclusive 0 ;
+        sh:description """Required"""
+    ] ;
+
+    # exact_times (Optional)
+    sh:property [
+        sh:path gtfs:exact_times ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 ) ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# transfers.txt
+# ==========
+
+gtfs:TransferShape a sh:NodeShape ;
+    sh:targetClass gtfs:Transfer ;
+    # from_stop_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:from_stop_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if transfer_type is empty, 0, 1, 2, or 3. Optional if transfer_type is 4 or 5."""
+    ] ;
+
+    # rule: from_stop_id: required when transfer_type in [0, 1, 2, 3]
+    sh:or (
+        [ sh:property [ sh:path gtfs:transfer_type ; sh:minCount 1 ; sh:not [ sh:in ( 0 1 2 3 ) ] ] ]
+        [ sh:property [ sh:path gtfs:from_stop_id ; sh:minCount 1 ] ]
+    ) ;
+
+    # to_stop_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:to_stop_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if transfer_type is empty, 0, 1, 2, or 3. Optional if transfer_type is 4 or 5."""
+    ] ;
+
+    # rule: to_stop_id: required when transfer_type in [0, 1, 2, 3]
+    sh:or (
+        [ sh:property [ sh:path gtfs:transfer_type ; sh:minCount 1 ; sh:not [ sh:in ( 0 1 2 3 ) ] ] ]
+        [ sh:property [ sh:path gtfs:to_stop_id ; sh:minCount 1 ] ]
+    ) ;
+
+    # from_route_id (Optional)
+    sh:property [
+        sh:path gtfs:from_route_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # to_route_id (Optional)
+    sh:property [
+        sh:path gtfs:to_route_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # from_trip_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:from_trip_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if transfer_type is 4 or 5. Optional otherwise."""
+    ] ;
+
+    # rule: from_trip_id: required when transfer_type in [4, 5]
+    sh:or (
+        [ sh:property [ sh:path gtfs:transfer_type ; sh:not [ sh:in ( 4 5 ) ] ] ]
+        [ sh:property [ sh:path gtfs:from_trip_id ; sh:minCount 1 ] ]
+    ) ;
+
+    # to_trip_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:to_trip_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Required if transfer_type is 4 or 5. Optional otherwise."""
+    ] ;
+
+    # rule: to_trip_id: required when transfer_type in [4, 5]
+    sh:or (
+        [ sh:property [ sh:path gtfs:transfer_type ; sh:not [ sh:in ( 4 5 ) ] ] ]
+        [ sh:property [ sh:path gtfs:to_trip_id ; sh:minCount 1 ] ]
+    ) ;
+
+    # transfer_type (Required)
+    sh:property [
+        sh:path gtfs:transfer_type ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 3 4 5 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # min_transfer_time (Conditionally Required)
+    sh:property [
+        sh:path gtfs:min_transfer_time ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+        sh:description """Conditionally Required. Required if transfer_type is 2. Optional otherwise."""
+    ] ;
+
+    # rule: min_transfer_time: required when transfer_type in [2]
+    sh:or (
+        [ sh:property [ sh:path gtfs:transfer_type ; sh:not [ sh:in ( 2 ) ] ] ]
+        [ sh:property [ sh:path gtfs:min_transfer_time ; sh:minCount 1 ] ]
+    ) .
+
+# ==========
+# pathways.txt
+# ==========
+
+gtfs:PathwayShape a sh:NodeShape ;
+    sh:targetClass gtfs:Pathway ;
+    # pathway_id (Required)
+    sh:property [
+        sh:path gtfs:pathway_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # from_stop_id (Required)
+    sh:property [
+        sh:path gtfs:from_stop_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # to_stop_id (Required)
+    sh:property [
+        sh:path gtfs:to_stop_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # pathway_mode (Required)
+    sh:property [
+        sh:path gtfs:pathway_mode ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 1 2 3 4 5 6 7 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # is_bidirectional (Required)
+    sh:property [
+        sh:path gtfs:is_bidirectional ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # length (Optional)
+    sh:property [
+        sh:path gtfs:length ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.0 ;
+        sh:description """Optional"""
+    ] ;
+
+    # traversal_time (Optional)
+    sh:property [
+        sh:path gtfs:traversal_time ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minExclusive 0 ;
+        sh:description """Optional"""
+    ] ;
+
+    # stair_count (Optional)
+    sh:property [
+        sh:path gtfs:stair_count ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:not [ sh:hasValue 0 ] ;
+        sh:description """Optional"""
+    ] ;
+
+    # max_slope (Optional)
+    sh:property [
+        sh:path gtfs:max_slope ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:description """Optional"""
+    ] ;
+
+    # min_width (Optional)
+    sh:property [
+        sh:path gtfs:min_width ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minExclusive 0.0 ;
+        sh:description """Optional"""
+    ] ;
+
+    # signposted_as (Optional)
+    sh:property [
+        sh:path gtfs:signposted_as ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # reversed_signposted_as (Optional)
+    sh:property [
+        sh:path gtfs:reversed_signposted_as ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# levels.txt
+# ==========
+
+gtfs:LevelShape a sh:NodeShape ;
+    sh:targetClass gtfs:Level ;
+    # level_id (Required)
+    sh:property [
+        sh:path gtfs:level_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # level_index (Required)
+    sh:property [
+        sh:path gtfs:level_index ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:description """Required"""
+    ] ;
+
+    # level_name (Optional)
+    sh:property [
+        sh:path gtfs:level_name ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# location_groups.txt
+# ==========
+
+gtfs:LocationGroupShape a sh:NodeShape ;
+    sh:targetClass gtfs:LocationGroup ;
+    # location_group_id (Required)
+    sh:property [
+        sh:path gtfs:location_group_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # location_group_name (Optional)
+    sh:property [
+        sh:path gtfs:location_group_name ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# location_group_stops.txt
+# ==========
+
+gtfs:LocationGroupStopShape a sh:NodeShape ;
+    sh:targetClass gtfs:LocationGroupStop ;
+    # location_group_id (Required)
+    sh:property [
+        sh:path gtfs:location_group_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # stop_id (Required)
+    sh:property [
+        sh:path gtfs:stop_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] .
+
+# ==========
+# locations.geojson
+# ==========
+
+gtfs:LocationShape a sh:NodeShape ;
+    sh:targetClass gtfs:Location ;
+    # type (Required)
+    sh:property [
+        sh:path gtfs:type ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # features (Required)
+    sh:property [
+        sh:path gtfs:features ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:description """Required"""
+    ] .
+
+# ==========
+# booking_rules.txt
+# ==========
+
+gtfs:BookingRuleShape a sh:NodeShape ;
+    sh:targetClass gtfs:BookingRule ;
+    # booking_rule_id (Required)
+    sh:property [
+        sh:path gtfs:booking_rule_id ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # booking_type (Required)
+    sh:property [
+        sh:path gtfs:booking_type ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 2 ) ;
+        sh:description """Required"""
+    ] ;
+
+    # prior_notice_duration_min (Conditionally Required)
+    sh:property [
+        sh:path gtfs:prior_notice_duration_min ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:description """Conditionally Required. Required for booking_type=1. Forbidden otherwise."""
+    ] ;
+
+    # rule: prior_notice_duration_min: required when booking_type in [1]
+    sh:or (
+        [ sh:property [ sh:path gtfs:booking_type ; sh:not [ sh:in ( 1 ) ] ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_duration_min ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: prior_notice_duration_min: forbidden when booking_type in [0, 2]
+    sh:or (
+        [ sh:property [ sh:path gtfs:booking_type ; sh:not [ sh:in ( 0 2 ) ] ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_duration_min ; sh:maxCount 0 ] ]
+    ) ;
+
+    # prior_notice_duration_max (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:prior_notice_duration_max ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:description """Conditionally Forbidden. Forbidden for booking_type=0 and booking_type=2. Optional for booking_type=1."""
+    ] ;
+
+    # rule: prior_notice_duration_max: forbidden when booking_type in [0, 2]
+    sh:or (
+        [ sh:property [ sh:path gtfs:booking_type ; sh:not [ sh:in ( 0 2 ) ] ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_duration_max ; sh:maxCount 0 ] ]
+    ) ;
+
+    # prior_notice_last_day (Conditionally Required)
+    sh:property [
+        sh:path gtfs:prior_notice_last_day ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:description """Conditionally Required. Required for booking_type=2. Forbidden otherwise."""
+    ] ;
+
+    # rule: prior_notice_last_day: required when booking_type in [2]
+    sh:or (
+        [ sh:property [ sh:path gtfs:booking_type ; sh:not [ sh:in ( 2 ) ] ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_last_day ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: prior_notice_last_day: forbidden when booking_type in [0, 1]
+    sh:or (
+        [ sh:property [ sh:path gtfs:booking_type ; sh:not [ sh:in ( 0 1 ) ] ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_last_day ; sh:maxCount 0 ] ]
+    ) ;
+
+    # prior_notice_last_time (Conditionally Required)
+    sh:property [
+        sh:path gtfs:prior_notice_last_time ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{1,3}:[0-5]\\d:[0-5]\\d$" ;
+        sh:description """Conditionally Required. Required if prior_notice_last_day is defined. Forbidden otherwise."""
+    ] ;
+
+    # rule: prior_notice_last_time: required when prior_notice_last_day is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:prior_notice_last_day ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_last_time ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: prior_notice_last_time: forbidden when prior_notice_last_day is empty
+    sh:or (
+        [ sh:property [ sh:path gtfs:prior_notice_last_day ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_last_time ; sh:maxCount 0 ] ]
+    ) ;
+
+    # prior_notice_start_day (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:prior_notice_start_day ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:description """Conditionally Forbidden. Forbidden for booking_type=0. Forbidden for booking_type=1 if prior_notice_duration_max is defined. Optional otherwise."""
+    ] ;
+
+    # rule: prior_notice_start_day: forbidden when booking_type in [0]
+    sh:or (
+        [ sh:property [ sh:path gtfs:booking_type ; sh:not [ sh:in ( 0 ) ] ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_start_day ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: prior_notice_start_day: forbidden when booking_type in [1] and prior_notice_duration_max is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:booking_type ; sh:not [ sh:in ( 1 ) ] ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_duration_max ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_start_day ; sh:maxCount 0 ] ]
+    ) ;
+
+    # prior_notice_start_time (Conditionally Required)
+    sh:property [
+        sh:path gtfs:prior_notice_start_time ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{1,3}:[0-5]\\d:[0-5]\\d$" ;
+        sh:description """Conditionally Required. Required if prior_notice_start_day is defined. Forbidden otherwise."""
+    ] ;
+
+    # rule: prior_notice_start_time: required when prior_notice_start_day is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:prior_notice_start_day ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_start_time ; sh:minCount 1 ] ]
+    ) ;
+
+    # rule: prior_notice_start_time: forbidden when prior_notice_start_day is empty
+    sh:or (
+        [ sh:property [ sh:path gtfs:prior_notice_start_day ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_start_time ; sh:maxCount 0 ] ]
+    ) ;
+
+    # prior_notice_service_id (Conditionally Forbidden)
+    sh:property [
+        sh:path gtfs:prior_notice_service_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Forbidden. Optional if booking_type=2. Forbidden otherwise."""
+    ] ;
+
+    # rule: prior_notice_service_id: forbidden when booking_type in [0, 1]
+    sh:or (
+        [ sh:property [ sh:path gtfs:booking_type ; sh:not [ sh:in ( 0 1 ) ] ] ]
+        [ sh:property [ sh:path gtfs:prior_notice_service_id ; sh:maxCount 0 ] ]
+    ) ;
+
+    # message (Optional)
+    sh:property [
+        sh:path gtfs:message ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # pickup_message (Optional)
+    sh:property [
+        sh:path gtfs:pickup_message ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # drop_off_message (Optional)
+    sh:property [
+        sh:path gtfs:drop_off_message ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # phone_number (Optional)
+    sh:property [
+        sh:path gtfs:phone_number ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # info_url (Optional)
+    sh:property [
+        sh:path gtfs:info_url ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description """Optional"""
+    ] ;
+
+    # booking_url (Optional)
+    sh:property [
+        sh:path gtfs:booking_url ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# translations.txt
+# ==========
+
+gtfs:TranslationShape a sh:NodeShape ;
+    sh:targetClass gtfs:Translation ;
+    # table_name (Required)
+    sh:property [
+        sh:path gtfs:table_name ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:in ( "agency" "stops" "routes" "trips" "stop_times" "pathways" "levels" "feed_info" "attributions" ) ;
+        sh:description """Required"""
+    ] ;
+
+    # field_name (Required)
+    sh:property [
+        sh:path gtfs:field_name ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # language (Required)
+    sh:property [
+        sh:path gtfs:language ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*$" ;
+        sh:description """Required"""
+    ] ;
+
+    # translation (Required)
+    sh:property [
+        sh:path gtfs:translation ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:or ( [ sh:datatype xsd:string ] [ sh:nodeKind sh:IRI ] [ sh:datatype xsd:string ; sh:pattern "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" ] [ sh:datatype xsd:string ] ) ;
+        sh:description """Required"""
+    ] ;
+
+    # record_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:record_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Forbidden if table_name is feed_info. Forbidden if field_value is defined. Required if field_value is empty."""
+    ] ;
+
+    # rule: record_id: forbidden when table_name in ['feed_info']
+    sh:or (
+        [ sh:property [ sh:path gtfs:table_name ; sh:not [ sh:in ( "feed_info" ) ] ] ]
+        [ sh:property [ sh:path gtfs:record_id ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: record_id: forbidden when field_value is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:field_value ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:record_id ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: record_id: required when field_value is empty
+    sh:or (
+        [ sh:property [ sh:path gtfs:field_value ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:record_id ; sh:minCount 1 ] ]
+    ) ;
+
+    # record_sub_id (Conditionally Required)
+    sh:property [
+        sh:path gtfs:record_sub_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Conditionally Required. Forbidden if table_name is feed_info. Forbidden if field_value is defined. Required if table_name=stop_times and record_id is defined."""
+    ] ;
+
+    # rule: record_sub_id: forbidden when table_name in ['feed_info']
+    sh:or (
+        [ sh:property [ sh:path gtfs:table_name ; sh:not [ sh:in ( "feed_info" ) ] ] ]
+        [ sh:property [ sh:path gtfs:record_sub_id ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: record_sub_id: forbidden when field_value is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:field_value ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:record_sub_id ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: record_sub_id: required when table_name in ['stop_times'] and record_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:table_name ; sh:not [ sh:in ( "stop_times" ) ] ] ]
+        [ sh:property [ sh:path gtfs:record_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:record_sub_id ; sh:minCount 1 ] ]
+    ) ;
+
+    # field_value (Conditionally Required)
+    sh:property [
+        sh:path gtfs:field_value ;
+        sh:maxCount 1 ;
+        sh:or ( [ sh:datatype xsd:string ] [ sh:nodeKind sh:IRI ] [ sh:datatype xsd:string ; sh:pattern "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" ] [ sh:datatype xsd:string ] ) ;
+        sh:description """Conditionally Required. Forbidden if table_name is feed_info. Forbidden if record_id is defined. Required if record_id is empty."""
+    ] ;
+
+    # rule: field_value: forbidden when table_name in ['feed_info']
+    sh:or (
+        [ sh:property [ sh:path gtfs:table_name ; sh:not [ sh:in ( "feed_info" ) ] ] ]
+        [ sh:property [ sh:path gtfs:field_value ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: field_value: forbidden when record_id is defined
+    sh:or (
+        [ sh:property [ sh:path gtfs:record_id ; sh:maxCount 0 ] ]
+        [ sh:property [ sh:path gtfs:field_value ; sh:maxCount 0 ] ]
+    ) ;
+
+    # rule: field_value: required when record_id is empty
+    sh:or (
+        [ sh:property [ sh:path gtfs:record_id ; sh:minCount 1 ] ]
+        [ sh:property [ sh:path gtfs:field_value ; sh:minCount 1 ] ]
+    ) .
+
+# ==========
+# feed_info.txt
+# ==========
+
+gtfs:FeedInfoShape a sh:NodeShape ;
+    sh:targetClass gtfs:FeedInfo ;
+    # feed_publisher_name (Required)
+    sh:property [
+        sh:path gtfs:feed_publisher_name ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # feed_publisher_url (Required)
+    sh:property [
+        sh:path gtfs:feed_publisher_url ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description """Required"""
+    ] ;
+
+    # feed_lang (Required)
+    sh:property [
+        sh:path gtfs:feed_lang ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*$" ;
+        sh:description """Required"""
+    ] ;
+
+    # default_lang (Optional)
+    sh:property [
+        sh:path gtfs:default_lang ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*$" ;
+        sh:description """Optional"""
+    ] ;
+
+    # feed_start_date (Recommended)
+    sh:property [
+        sh:path gtfs:feed_start_date ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{8}$" ;
+        sh:description """Recommended"""
+    ] ;
+
+    # feed_end_date (Recommended)
+    sh:property [
+        sh:path gtfs:feed_end_date ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^\\d{8}$" ;
+        sh:description """Recommended"""
+    ] ;
+
+    # feed_version (Recommended)
+    sh:property [
+        sh:path gtfs:feed_version ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Recommended"""
+    ] ;
+
+    # feed_contact_email (Optional)
+    sh:property [
+        sh:path gtfs:feed_contact_email ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" ;
+        sh:description """Optional"""
+    ] ;
+
+    # feed_contact_url (Optional)
+    sh:property [
+        sh:path gtfs:feed_contact_url ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description """Optional"""
+    ] .
+
+# ==========
+# attributions.txt
+# ==========
+
+gtfs:AttributionShape a sh:NodeShape ;
+    sh:targetClass gtfs:Attribution ;
+    # attribution_id (Optional)
+    sh:property [
+        sh:path gtfs:attribution_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # agency_id (Optional)
+    sh:property [
+        sh:path gtfs:agency_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # route_id (Optional)
+    sh:property [
+        sh:path gtfs:route_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # trip_id (Optional)
+    sh:property [
+        sh:path gtfs:trip_id ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] ;
+
+    # organization_name (Required)
+    sh:property [
+        sh:path gtfs:organization_name ;
+        sh:maxCount 1 ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Required"""
+    ] ;
+
+    # is_producer (Optional)
+    sh:property [
+        sh:path gtfs:is_producer ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 ) ;
+        sh:description """Optional"""
+    ] ;
+
+    # is_operator (Optional)
+    sh:property [
+        sh:path gtfs:is_operator ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 ) ;
+        sh:description """Optional"""
+    ] ;
+
+    # is_authority (Optional)
+    sh:property [
+        sh:path gtfs:is_authority ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:in ( 0 1 ) ;
+        sh:description """Optional"""
+    ] ;
+
+    # attribution_url (Optional)
+    sh:property [
+        sh:path gtfs:attribution_url ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:description """Optional"""
+    ] ;
+
+    # attribution_email (Optional)
+    sh:property [
+        sh:path gtfs:attribution_email ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" ;
+        sh:description """Optional"""
+    ] ;
+
+    # attribution_phone (Optional)
+    sh:property [
+        sh:path gtfs:attribution_phone ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:description """Optional"""
+    ] .

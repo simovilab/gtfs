@@ -1,0 +1,403 @@
+# ----------------------------------------------------------------------------
+# GTFS Schedule ontology relations (source of truth)
+#
+# Object property names for the relations between GTFS classes (tables),
+# derived from fields of type "Foreign ID" in schedule.yaml.
+#
+# These names are NOT part of the official GTFS reference: they are defined
+# with expert criteria for this ontology and are meant to be edited here.
+#
+# Each entry maps one foreign key reference to a pair of object properties:
+#   file:       file that contains the foreign key field
+#   field:      the foreign key field name
+#   references: the referenced file.field (one entry per target when the
+#               foreign key has several alternative targets)
+#   forward:    property from the class holding the foreign key (domain)
+#               to the referenced class (range)
+#   inverse:    property in the opposite direction (owl:inverseOf forward)
+# ----------------------------------------------------------------------------
+
+relations:
+  # stops.txt
+  - file: stops.txt
+    field: parent_station
+    references: stops.stop_id
+    forward: hasParentStation
+    inverse: isParentStationOf
+  - file: stops.txt
+    field: level_id
+    references: levels.level_id
+    forward: isOnLevel
+    inverse: isLevelOf
+
+  # routes.txt
+  - file: routes.txt
+    field: agency_id
+    references: agency.agency_id
+    forward: isOperatedByAgency
+    inverse: operatesRoute
+
+  # trips.txt
+  - file: trips.txt
+    field: route_id
+    references: routes.route_id
+    forward: belongsToRoute
+    inverse: hasTrip
+  - file: trips.txt
+    field: service_id
+    references: calendar.service_id
+    forward: runsOnCalendar
+    inverse: isCalendarOfTrip
+  - file: trips.txt
+    field: service_id
+    references: calendar_dates.service_id
+    forward: runsOnCalendarDate
+    inverse: isCalendarDateOfTrip
+  - file: trips.txt
+    field: shape_id
+    references: shapes.shape_id
+    forward: hasShape
+    inverse: isShapeOf
+
+  # stop_times.txt
+  - file: stop_times.txt
+    field: trip_id
+    references: trips.trip_id
+    forward: belongsToTrip
+    inverse: hasStopTime
+  - file: stop_times.txt
+    field: stop_id
+    references: stops.stop_id
+    forward: atStop
+    inverse: isStopOf
+  - file: stop_times.txt
+    field: location_group_id
+    references: location_groups.location_group_id
+    forward: atLocationGroup
+    inverse: isLocationGroupOf
+  - file: stop_times.txt
+    field: location_id
+    references: locations.id
+    forward: atLocation
+    inverse: isLocationOf
+  - file: stop_times.txt
+    field: pickup_booking_rule_id
+    references: booking_rules.booking_rule_id
+    forward: hasPickupBookingRule
+    inverse: isPickupBookingRuleFor
+  - file: stop_times.txt
+    field: drop_off_booking_rule_id
+    references: booking_rules.booking_rule_id
+    forward: hasDropOffBookingRule
+    inverse: isDropOffBookingRuleFor
+
+  # calendar_dates.txt
+  - file: calendar_dates.txt
+    field: service_id
+    references: calendar.service_id
+    forward: amendsCalendar
+    inverse: hasCalendarException
+
+  # fare_attributes.txt
+  - file: fare_attributes.txt
+    field: agency_id
+    references: agency.agency_id
+    forward: belongsToAgency
+    inverse: hasFareAttribute
+
+  # fare_rules.txt
+  - file: fare_rules.txt
+    field: fare_id
+    references: fare_attributes.fare_id
+    forward: usesFareAttribute
+    inverse: hasFareRule
+  - file: fare_rules.txt
+    field: route_id
+    references: routes.route_id
+    forward: appliesToRoute
+    inverse: isRouteOfFareRule
+  - file: fare_rules.txt
+    field: origin_id
+    references: stops.zone_id
+    forward: hasOriginZone
+    inverse: isOriginZoneOf
+  - file: fare_rules.txt
+    field: destination_id
+    references: stops.zone_id
+    forward: hasDestinationZone
+    inverse: isDestinationZoneOf
+  - file: fare_rules.txt
+    field: contains_id
+    references: stops.zone_id
+    forward: containsZone
+    inverse: isZoneContainedIn
+
+  # timeframes.txt
+  - file: timeframes.txt
+    field: service_id
+    references: calendar.service_id
+    forward: isActiveOnCalendar
+    inverse: isCalendarOfTimeframe
+  - file: timeframes.txt
+    field: service_id
+    references: calendar_dates.service_id
+    forward: isActiveOnCalendarDate
+    inverse: isCalendarDateOfTimeframe
+
+  # fare_products.txt
+  - file: fare_products.txt
+    field: rider_category_id
+    references: rider_categories.rider_category_id
+    forward: isForRiderCategory
+    inverse: isRiderCategoryOf
+  - file: fare_products.txt
+    field: fare_media_id
+    references: fare_media.fare_media_id
+    forward: usesFareMedia
+    inverse: isFareMediaOf
+
+  # fare_leg_rules.txt
+  - file: fare_leg_rules.txt
+    field: network_id
+    references: routes.network_id
+    forward: appliesToRouteNetwork
+    inverse: isRouteNetworkOfFareLegRule
+  - file: fare_leg_rules.txt
+    field: network_id
+    references: networks.network_id
+    forward: appliesToNetwork
+    inverse: isNetworkOfFareLegRule
+  - file: fare_leg_rules.txt
+    field: from_area_id
+    references: areas.area_id
+    forward: departsFromArea
+    inverse: isDepartureAreaOf
+  - file: fare_leg_rules.txt
+    field: to_area_id
+    references: areas.area_id
+    forward: arrivesAtArea
+    inverse: isArrivalAreaOf
+  - file: fare_leg_rules.txt
+    field: from_timeframe_group_id
+    references: timeframes.timeframe_group_id
+    forward: startsInTimeframe
+    inverse: isStartTimeframeOf
+  - file: fare_leg_rules.txt
+    field: to_timeframe_group_id
+    references: timeframes.timeframe_group_id
+    forward: endsInTimeframe
+    inverse: isEndTimeframeOf
+  - file: fare_leg_rules.txt
+    field: fare_product_id
+    references: fare_products.fare_product_id
+    forward: offersFareProduct
+    inverse: isFareProductOf
+
+  # fare_leg_join_rules.txt
+  - file: fare_leg_join_rules.txt
+    field: from_network_id
+    references: routes.network_id
+    forward: joinsFromRouteNetwork
+    inverse: isFromRouteNetworkOf
+  - file: fare_leg_join_rules.txt
+    field: from_network_id
+    references: networks.network_id
+    forward: joinsFromNetwork
+    inverse: isFromNetworkOf
+  - file: fare_leg_join_rules.txt
+    field: to_network_id
+    references: routes.network_id
+    forward: joinsToRouteNetwork
+    inverse: isToRouteNetworkOf
+  - file: fare_leg_join_rules.txt
+    field: to_network_id
+    references: networks.network_id
+    forward: joinsToNetwork
+    inverse: isToNetworkOf
+  - file: fare_leg_join_rules.txt
+    field: from_stop_id
+    references: stops.stop_id
+    forward: joinsFromStop
+    inverse: isJoinOriginStopOf
+  - file: fare_leg_join_rules.txt
+    field: to_stop_id
+    references: stops.stop_id
+    forward: joinsToStop
+    inverse: isJoinDestinationStopOf
+
+  # fare_transfer_rules.txt
+  - file: fare_transfer_rules.txt
+    field: from_leg_group_id
+    references: fare_leg_rules.leg_group_id
+    forward: transfersFromLegGroup
+    inverse: isTransferOriginLegGroupOf
+  - file: fare_transfer_rules.txt
+    field: to_leg_group_id
+    references: fare_leg_rules.leg_group_id
+    forward: transfersToLegGroup
+    inverse: isTransferDestinationLegGroupOf
+  - file: fare_transfer_rules.txt
+    field: fare_product_id
+    references: fare_products.fare_product_id
+    forward: appliesFareProduct
+    inverse: isFareProductOfTransferRule
+
+  # stop_areas.txt
+  - file: stop_areas.txt
+    field: area_id
+    references: areas.area_id
+    forward: assignsToArea
+    inverse: hasStopAssignment
+  - file: stop_areas.txt
+    field: stop_id
+    references: stops.stop_id
+    forward: assignsStop
+    inverse: hasAreaAssignment
+
+  # route_networks.txt
+  - file: route_networks.txt
+    field: network_id
+    references: networks.network_id
+    forward: assignsToNetwork
+    inverse: hasRouteAssignment
+  - file: route_networks.txt
+    field: route_id
+    references: routes.route_id
+    forward: assignsRoute
+    inverse: hasNetworkAssignment
+
+  # frequencies.txt
+  - file: frequencies.txt
+    field: trip_id
+    references: trips.trip_id
+    forward: appliesToTrip
+    inverse: hasFrequency
+
+  # transfers.txt
+  - file: transfers.txt
+    field: from_stop_id
+    references: stops.stop_id
+    forward: transfersFromStop
+    inverse: isTransferOriginStopOf
+  - file: transfers.txt
+    field: to_stop_id
+    references: stops.stop_id
+    forward: transfersToStop
+    inverse: isTransferDestinationStopOf
+  - file: transfers.txt
+    field: from_route_id
+    references: routes.route_id
+    forward: transfersFromRoute
+    inverse: isTransferOriginRouteOf
+  - file: transfers.txt
+    field: to_route_id
+    references: routes.route_id
+    forward: transfersToRoute
+    inverse: isTransferDestinationRouteOf
+  - file: transfers.txt
+    field: from_trip_id
+    references: trips.trip_id
+    forward: transfersFromTrip
+    inverse: isTransferOriginTripOf
+  - file: transfers.txt
+    field: to_trip_id
+    references: trips.trip_id
+    forward: transfersToTrip
+    inverse: isTransferDestinationTripOf
+
+  # pathways.txt
+  - file: pathways.txt
+    field: from_stop_id
+    references: stops.stop_id
+    forward: beginsAtStop
+    inverse: isPathwayOriginOf
+  - file: pathways.txt
+    field: to_stop_id
+    references: stops.stop_id
+    forward: endsAtStop
+    inverse: isPathwayDestinationOf
+
+  # location_group_stops.txt
+  - file: location_group_stops.txt
+    field: location_group_id
+    references: location_groups.location_group_id
+    forward: assignsToLocationGroup
+    inverse: hasLocationGroupStop
+  - file: location_group_stops.txt
+    field: stop_id
+    references: stops.stop_id
+    forward: includesStop
+    inverse: isStopOfLocationGroupStop
+
+  # booking_rules.txt
+  - file: booking_rules.txt
+    field: prior_notice_service_id
+    references: calendar.service_id
+    forward: hasPriorNoticeCalendar
+    inverse: isPriorNoticeCalendarOf
+
+  # translations.txt
+  - file: translations.txt
+    field: record_id
+    references: agency.agency_id
+    forward: translatesAgency
+    inverse: hasAgencyTranslation
+  - file: translations.txt
+    field: record_id
+    references: stops.stop_id
+    forward: translatesStop
+    inverse: hasStopTranslation
+  - file: translations.txt
+    field: record_id
+    references: routes.route_id
+    forward: translatesRoute
+    inverse: hasRouteTranslation
+  - file: translations.txt
+    field: record_id
+    references: trips.trip_id
+    forward: translatesTrip
+    inverse: hasTripTranslation
+  - file: translations.txt
+    field: record_id
+    references: stop_times.trip_id
+    forward: translatesStopTime
+    inverse: hasStopTimeTranslation
+  - file: translations.txt
+    field: record_id
+    references: pathways.pathway_id
+    forward: translatesPathway
+    inverse: hasPathwayTranslation
+  - file: translations.txt
+    field: record_id
+    references: levels.level_id
+    forward: translatesLevel
+    inverse: hasLevelTranslation
+  - file: translations.txt
+    field: record_id
+    references: attributions.attribution_id
+    forward: translatesAttribution
+    inverse: hasAttributionTranslation
+  # record_sub_id qualifies the stop_times reference of record_id; it maps to
+  # the same relation, so the same property names are reused (triples merge).
+  - file: translations.txt
+    field: record_sub_id
+    references: stop_times.stop_sequence
+    forward: translatesStopTime
+    inverse: hasStopTimeTranslation
+
+  # attributions.txt
+  - file: attributions.txt
+    field: agency_id
+    references: agency.agency_id
+    forward: isAttributionOfAgency
+    inverse: hasAgencyAttribution
+  - file: attributions.txt
+    field: route_id
+    references: routes.route_id
+    forward: isAttributionOfRoute
+    inverse: hasRouteAttribution
+  - file: attributions.txt
+    field: trip_id
+    references: trips.trip_id
+    forward: isAttributionOfTrip
+    inverse: hasTripAttribution

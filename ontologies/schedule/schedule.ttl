@@ -1,4 +1,5 @@
 @prefix gtfs: <http://gtfs.simovi.org/schedule#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix dct: <http://purl.org/dc/terms/> .
@@ -1659,7 +1660,7 @@ gtfs:record_sub_id a gtfs:Field ;
     skos:definition """Secondary ID of the table when the table does not have a unique ID, as defined in the reference.""" .
 
 gtfs:field_value a gtfs:Field ;
-    gtfs:fieldType gtfs:TextOrURLOrEmailOrPhoneNumber ;
+    gtfs:fieldType gtfs:Text, gtfs:URL, gtfs:Email, gtfs:PhoneNumber ;
     gtfs:presence gtfs:ConditionallyRequired ;
     skos:definition """Defines the value which should be translated instead of identifying a specific record. The translation is applied when the field identified by table_name and field_name contains the exact same value defined in field_value. If only a subset of the value matches field_value, the translation is not applied. If two translation rules match the same record (one with field_value and one with record_id), the rule with record_id takes precedence.""" .
 
@@ -1767,3 +1768,951 @@ gtfs:attribution_phone a gtfs:Field ;
     gtfs:presence gtfs:Optional ;
     skos:definition """Phone number of the organization.""" .
 
+# -----------------
+# Object Properties
+# -----------------
+
+# Relations between classes derived from foreign keys in the spec.
+# Property names are defined in serializers/schedule/relations.yaml.
+
+gtfs:hasParentStation a owl:ObjectProperty ;
+    rdfs:label "has parent station"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isParentStationOf ;
+    skos:note "Derived from the foreign key stops.txt parent_station -> stops.stop_id." .
+
+gtfs:isParentStationOf a owl:ObjectProperty ;
+    rdfs:label "is parent station of"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:hasParentStation ;
+    skos:note "Derived from the foreign key stops.txt parent_station -> stops.stop_id." .
+
+gtfs:isOnLevel a owl:ObjectProperty ;
+    rdfs:label "is on level"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:Level ;
+    owl:inverseOf gtfs:isLevelOf ;
+    skos:note "Derived from the foreign key stops.txt level_id -> levels.level_id." .
+
+gtfs:isLevelOf a owl:ObjectProperty ;
+    rdfs:label "is level of"@en ;
+    rdfs:domain gtfs:Level ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isOnLevel ;
+    skos:note "Derived from the foreign key stops.txt level_id -> levels.level_id." .
+
+gtfs:isOperatedByAgency a owl:ObjectProperty ;
+    rdfs:label "is operated by agency"@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:Agency ;
+    owl:inverseOf gtfs:operatesRoute ;
+    skos:note "Derived from the foreign key routes.txt agency_id -> agency.agency_id." .
+
+gtfs:operatesRoute a owl:ObjectProperty ;
+    rdfs:label "operates route"@en ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range gtfs:Route ;
+    owl:inverseOf gtfs:isOperatedByAgency ;
+    skos:note "Derived from the foreign key routes.txt agency_id -> agency.agency_id." .
+
+gtfs:belongsToRoute a owl:ObjectProperty ;
+    rdfs:label "belongs to route"@en ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range gtfs:Route ;
+    owl:inverseOf gtfs:hasTrip ;
+    skos:note "Derived from the foreign key trips.txt route_id -> routes.route_id." .
+
+gtfs:hasTrip a owl:ObjectProperty ;
+    rdfs:label "has trip"@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:Trip ;
+    owl:inverseOf gtfs:belongsToRoute ;
+    skos:note "Derived from the foreign key trips.txt route_id -> routes.route_id." .
+
+gtfs:runsOnCalendar a owl:ObjectProperty ;
+    rdfs:label "runs on calendar"@en ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range gtfs:Calendar ;
+    owl:inverseOf gtfs:isCalendarOfTrip ;
+    skos:note "Derived from the foreign key trips.txt service_id -> calendar.service_id." .
+
+gtfs:isCalendarOfTrip a owl:ObjectProperty ;
+    rdfs:label "is calendar of trip"@en ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range gtfs:Trip ;
+    owl:inverseOf gtfs:runsOnCalendar ;
+    skos:note "Derived from the foreign key trips.txt service_id -> calendar.service_id." .
+
+gtfs:runsOnCalendarDate a owl:ObjectProperty ;
+    rdfs:label "runs on calendar date"@en ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range gtfs:CalendarDate ;
+    owl:inverseOf gtfs:isCalendarDateOfTrip ;
+    skos:note "Derived from the foreign key trips.txt service_id -> calendar_dates.service_id." .
+
+gtfs:isCalendarDateOfTrip a owl:ObjectProperty ;
+    rdfs:label "is calendar date of trip"@en ;
+    rdfs:domain gtfs:CalendarDate ;
+    rdfs:range gtfs:Trip ;
+    owl:inverseOf gtfs:runsOnCalendarDate ;
+    skos:note "Derived from the foreign key trips.txt service_id -> calendar_dates.service_id." .
+
+gtfs:hasShape a owl:ObjectProperty ;
+    rdfs:label "has shape"@en ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range gtfs:Shape ;
+    owl:inverseOf gtfs:isShapeOf ;
+    skos:note "Derived from the foreign key trips.txt shape_id -> shapes.shape_id." .
+
+gtfs:isShapeOf a owl:ObjectProperty ;
+    rdfs:label "is shape of"@en ;
+    rdfs:domain gtfs:Shape ;
+    rdfs:range gtfs:Trip ;
+    owl:inverseOf gtfs:hasShape ;
+    skos:note "Derived from the foreign key trips.txt shape_id -> shapes.shape_id." .
+
+gtfs:belongsToTrip a owl:ObjectProperty ;
+    rdfs:label "belongs to trip"@en ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range gtfs:Trip ;
+    owl:inverseOf gtfs:hasStopTime ;
+    skos:note "Derived from the foreign key stop_times.txt trip_id -> trips.trip_id." .
+
+gtfs:hasStopTime a owl:ObjectProperty ;
+    rdfs:label "has stop time"@en ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range gtfs:StopTime ;
+    owl:inverseOf gtfs:belongsToTrip ;
+    skos:note "Derived from the foreign key stop_times.txt trip_id -> trips.trip_id." .
+
+gtfs:atStop a owl:ObjectProperty ;
+    rdfs:label "at stop"@en ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isStopOf ;
+    skos:note "Derived from the foreign key stop_times.txt stop_id -> stops.stop_id." .
+
+gtfs:isStopOf a owl:ObjectProperty ;
+    rdfs:label "is stop of"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:StopTime ;
+    owl:inverseOf gtfs:atStop ;
+    skos:note "Derived from the foreign key stop_times.txt stop_id -> stops.stop_id." .
+
+gtfs:atLocationGroup a owl:ObjectProperty ;
+    rdfs:label "at location group"@en ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range gtfs:LocationGroup ;
+    owl:inverseOf gtfs:isLocationGroupOf ;
+    skos:note "Derived from the foreign key stop_times.txt location_group_id -> location_groups.location_group_id." .
+
+gtfs:isLocationGroupOf a owl:ObjectProperty ;
+    rdfs:label "is location group of"@en ;
+    rdfs:domain gtfs:LocationGroup ;
+    rdfs:range gtfs:StopTime ;
+    owl:inverseOf gtfs:atLocationGroup ;
+    skos:note "Derived from the foreign key stop_times.txt location_group_id -> location_groups.location_group_id." .
+
+gtfs:atLocation a owl:ObjectProperty ;
+    rdfs:label "at location"@en ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range gtfs:Location ;
+    owl:inverseOf gtfs:isLocationOf ;
+    skos:note "Derived from the foreign key stop_times.txt location_id -> locations.id." .
+
+gtfs:isLocationOf a owl:ObjectProperty ;
+    rdfs:label "is location of"@en ;
+    rdfs:domain gtfs:Location ;
+    rdfs:range gtfs:StopTime ;
+    owl:inverseOf gtfs:atLocation ;
+    skos:note "Derived from the foreign key stop_times.txt location_id -> locations.id." .
+
+gtfs:hasPickupBookingRule a owl:ObjectProperty ;
+    rdfs:label "has pickup booking rule"@en ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range gtfs:BookingRule ;
+    owl:inverseOf gtfs:isPickupBookingRuleFor ;
+    skos:note "Derived from the foreign key stop_times.txt pickup_booking_rule_id -> booking_rules.booking_rule_id." .
+
+gtfs:isPickupBookingRuleFor a owl:ObjectProperty ;
+    rdfs:label "is pickup booking rule for"@en ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range gtfs:StopTime ;
+    owl:inverseOf gtfs:hasPickupBookingRule ;
+    skos:note "Derived from the foreign key stop_times.txt pickup_booking_rule_id -> booking_rules.booking_rule_id." .
+
+gtfs:hasDropOffBookingRule a owl:ObjectProperty ;
+    rdfs:label "has drop off booking rule"@en ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range gtfs:BookingRule ;
+    owl:inverseOf gtfs:isDropOffBookingRuleFor ;
+    skos:note "Derived from the foreign key stop_times.txt drop_off_booking_rule_id -> booking_rules.booking_rule_id." .
+
+gtfs:isDropOffBookingRuleFor a owl:ObjectProperty ;
+    rdfs:label "is drop off booking rule for"@en ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range gtfs:StopTime ;
+    owl:inverseOf gtfs:hasDropOffBookingRule ;
+    skos:note "Derived from the foreign key stop_times.txt drop_off_booking_rule_id -> booking_rules.booking_rule_id." .
+
+gtfs:amendsCalendar a owl:ObjectProperty ;
+    rdfs:label "amends calendar"@en ;
+    rdfs:domain gtfs:CalendarDate ;
+    rdfs:range gtfs:Calendar ;
+    owl:inverseOf gtfs:hasCalendarException ;
+    skos:note "Derived from the foreign key calendar_dates.txt service_id -> calendar.service_id." .
+
+gtfs:hasCalendarException a owl:ObjectProperty ;
+    rdfs:label "has calendar exception"@en ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range gtfs:CalendarDate ;
+    owl:inverseOf gtfs:amendsCalendar ;
+    skos:note "Derived from the foreign key calendar_dates.txt service_id -> calendar.service_id." .
+
+gtfs:belongsToAgency a owl:ObjectProperty ;
+    rdfs:label "belongs to agency"@en ;
+    rdfs:domain gtfs:FareAttribute ;
+    rdfs:range gtfs:Agency ;
+    owl:inverseOf gtfs:hasFareAttribute ;
+    skos:note "Derived from the foreign key fare_attributes.txt agency_id -> agency.agency_id." .
+
+gtfs:hasFareAttribute a owl:ObjectProperty ;
+    rdfs:label "has fare attribute"@en ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range gtfs:FareAttribute ;
+    owl:inverseOf gtfs:belongsToAgency ;
+    skos:note "Derived from the foreign key fare_attributes.txt agency_id -> agency.agency_id." .
+
+gtfs:usesFareAttribute a owl:ObjectProperty ;
+    rdfs:label "uses fare attribute"@en ;
+    rdfs:domain gtfs:FareRule ;
+    rdfs:range gtfs:FareAttribute ;
+    owl:inverseOf gtfs:hasFareRule ;
+    skos:note "Derived from the foreign key fare_rules.txt fare_id -> fare_attributes.fare_id." .
+
+gtfs:hasFareRule a owl:ObjectProperty ;
+    rdfs:label "has fare rule"@en ;
+    rdfs:domain gtfs:FareAttribute ;
+    rdfs:range gtfs:FareRule ;
+    owl:inverseOf gtfs:usesFareAttribute ;
+    skos:note "Derived from the foreign key fare_rules.txt fare_id -> fare_attributes.fare_id." .
+
+gtfs:appliesToRoute a owl:ObjectProperty ;
+    rdfs:label "applies to route"@en ;
+    rdfs:domain gtfs:FareRule ;
+    rdfs:range gtfs:Route ;
+    owl:inverseOf gtfs:isRouteOfFareRule ;
+    skos:note "Derived from the foreign key fare_rules.txt route_id -> routes.route_id." .
+
+gtfs:isRouteOfFareRule a owl:ObjectProperty ;
+    rdfs:label "is route of fare rule"@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:FareRule ;
+    owl:inverseOf gtfs:appliesToRoute ;
+    skos:note "Derived from the foreign key fare_rules.txt route_id -> routes.route_id." .
+
+gtfs:hasOriginZone a owl:ObjectProperty ;
+    rdfs:label "has origin zone"@en ;
+    rdfs:domain gtfs:FareRule ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isOriginZoneOf ;
+    skos:note "Derived from the foreign key fare_rules.txt origin_id -> stops.zone_id." .
+
+gtfs:isOriginZoneOf a owl:ObjectProperty ;
+    rdfs:label "is origin zone of"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:FareRule ;
+    owl:inverseOf gtfs:hasOriginZone ;
+    skos:note "Derived from the foreign key fare_rules.txt origin_id -> stops.zone_id." .
+
+gtfs:hasDestinationZone a owl:ObjectProperty ;
+    rdfs:label "has destination zone"@en ;
+    rdfs:domain gtfs:FareRule ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isDestinationZoneOf ;
+    skos:note "Derived from the foreign key fare_rules.txt destination_id -> stops.zone_id." .
+
+gtfs:isDestinationZoneOf a owl:ObjectProperty ;
+    rdfs:label "is destination zone of"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:FareRule ;
+    owl:inverseOf gtfs:hasDestinationZone ;
+    skos:note "Derived from the foreign key fare_rules.txt destination_id -> stops.zone_id." .
+
+gtfs:containsZone a owl:ObjectProperty ;
+    rdfs:label "contains zone"@en ;
+    rdfs:domain gtfs:FareRule ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isZoneContainedIn ;
+    skos:note "Derived from the foreign key fare_rules.txt contains_id -> stops.zone_id." .
+
+gtfs:isZoneContainedIn a owl:ObjectProperty ;
+    rdfs:label "is zone contained in"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:FareRule ;
+    owl:inverseOf gtfs:containsZone ;
+    skos:note "Derived from the foreign key fare_rules.txt contains_id -> stops.zone_id." .
+
+gtfs:isActiveOnCalendar a owl:ObjectProperty ;
+    rdfs:label "is active on calendar"@en ;
+    rdfs:domain gtfs:Timeframe ;
+    rdfs:range gtfs:Calendar ;
+    owl:inverseOf gtfs:isCalendarOfTimeframe ;
+    skos:note "Derived from the foreign key timeframes.txt service_id -> calendar.service_id." .
+
+gtfs:isCalendarOfTimeframe a owl:ObjectProperty ;
+    rdfs:label "is calendar of timeframe"@en ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range gtfs:Timeframe ;
+    owl:inverseOf gtfs:isActiveOnCalendar ;
+    skos:note "Derived from the foreign key timeframes.txt service_id -> calendar.service_id." .
+
+gtfs:isActiveOnCalendarDate a owl:ObjectProperty ;
+    rdfs:label "is active on calendar date"@en ;
+    rdfs:domain gtfs:Timeframe ;
+    rdfs:range gtfs:CalendarDate ;
+    owl:inverseOf gtfs:isCalendarDateOfTimeframe ;
+    skos:note "Derived from the foreign key timeframes.txt service_id -> calendar_dates.service_id." .
+
+gtfs:isCalendarDateOfTimeframe a owl:ObjectProperty ;
+    rdfs:label "is calendar date of timeframe"@en ;
+    rdfs:domain gtfs:CalendarDate ;
+    rdfs:range gtfs:Timeframe ;
+    owl:inverseOf gtfs:isActiveOnCalendarDate ;
+    skos:note "Derived from the foreign key timeframes.txt service_id -> calendar_dates.service_id." .
+
+gtfs:isForRiderCategory a owl:ObjectProperty ;
+    rdfs:label "is for rider category"@en ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range gtfs:RiderCategory ;
+    owl:inverseOf gtfs:isRiderCategoryOf ;
+    skos:note "Derived from the foreign key fare_products.txt rider_category_id -> rider_categories.rider_category_id." .
+
+gtfs:isRiderCategoryOf a owl:ObjectProperty ;
+    rdfs:label "is rider category of"@en ;
+    rdfs:domain gtfs:RiderCategory ;
+    rdfs:range gtfs:FareProduct ;
+    owl:inverseOf gtfs:isForRiderCategory ;
+    skos:note "Derived from the foreign key fare_products.txt rider_category_id -> rider_categories.rider_category_id." .
+
+gtfs:usesFareMedia a owl:ObjectProperty ;
+    rdfs:label "uses fare media"@en ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range gtfs:FareMedia ;
+    owl:inverseOf gtfs:isFareMediaOf ;
+    skos:note "Derived from the foreign key fare_products.txt fare_media_id -> fare_media.fare_media_id." .
+
+gtfs:isFareMediaOf a owl:ObjectProperty ;
+    rdfs:label "is fare media of"@en ;
+    rdfs:domain gtfs:FareMedia ;
+    rdfs:range gtfs:FareProduct ;
+    owl:inverseOf gtfs:usesFareMedia ;
+    skos:note "Derived from the foreign key fare_products.txt fare_media_id -> fare_media.fare_media_id." .
+
+gtfs:appliesToRouteNetwork a owl:ObjectProperty ;
+    rdfs:label "applies to route network"@en ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Route ;
+    owl:inverseOf gtfs:isRouteNetworkOfFareLegRule ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt network_id -> routes.network_id." .
+
+gtfs:isRouteNetworkOfFareLegRule a owl:ObjectProperty ;
+    rdfs:label "is route network of fare leg rule"@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:FareLegRule ;
+    owl:inverseOf gtfs:appliesToRouteNetwork ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt network_id -> routes.network_id." .
+
+gtfs:appliesToNetwork a owl:ObjectProperty ;
+    rdfs:label "applies to network"@en ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Network ;
+    owl:inverseOf gtfs:isNetworkOfFareLegRule ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt network_id -> networks.network_id." .
+
+gtfs:isNetworkOfFareLegRule a owl:ObjectProperty ;
+    rdfs:label "is network of fare leg rule"@en ;
+    rdfs:domain gtfs:Network ;
+    rdfs:range gtfs:FareLegRule ;
+    owl:inverseOf gtfs:appliesToNetwork ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt network_id -> networks.network_id." .
+
+gtfs:departsFromArea a owl:ObjectProperty ;
+    rdfs:label "departs from area"@en ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Area ;
+    owl:inverseOf gtfs:isDepartureAreaOf ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt from_area_id -> areas.area_id." .
+
+gtfs:isDepartureAreaOf a owl:ObjectProperty ;
+    rdfs:label "is departure area of"@en ;
+    rdfs:domain gtfs:Area ;
+    rdfs:range gtfs:FareLegRule ;
+    owl:inverseOf gtfs:departsFromArea ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt from_area_id -> areas.area_id." .
+
+gtfs:arrivesAtArea a owl:ObjectProperty ;
+    rdfs:label "arrives at area"@en ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Area ;
+    owl:inverseOf gtfs:isArrivalAreaOf ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt to_area_id -> areas.area_id." .
+
+gtfs:isArrivalAreaOf a owl:ObjectProperty ;
+    rdfs:label "is arrival area of"@en ;
+    rdfs:domain gtfs:Area ;
+    rdfs:range gtfs:FareLegRule ;
+    owl:inverseOf gtfs:arrivesAtArea ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt to_area_id -> areas.area_id." .
+
+gtfs:startsInTimeframe a owl:ObjectProperty ;
+    rdfs:label "starts in timeframe"@en ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Timeframe ;
+    owl:inverseOf gtfs:isStartTimeframeOf ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt from_timeframe_group_id -> timeframes.timeframe_group_id." .
+
+gtfs:isStartTimeframeOf a owl:ObjectProperty ;
+    rdfs:label "is start timeframe of"@en ;
+    rdfs:domain gtfs:Timeframe ;
+    rdfs:range gtfs:FareLegRule ;
+    owl:inverseOf gtfs:startsInTimeframe ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt from_timeframe_group_id -> timeframes.timeframe_group_id." .
+
+gtfs:endsInTimeframe a owl:ObjectProperty ;
+    rdfs:label "ends in timeframe"@en ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:Timeframe ;
+    owl:inverseOf gtfs:isEndTimeframeOf ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt to_timeframe_group_id -> timeframes.timeframe_group_id." .
+
+gtfs:isEndTimeframeOf a owl:ObjectProperty ;
+    rdfs:label "is end timeframe of"@en ;
+    rdfs:domain gtfs:Timeframe ;
+    rdfs:range gtfs:FareLegRule ;
+    owl:inverseOf gtfs:endsInTimeframe ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt to_timeframe_group_id -> timeframes.timeframe_group_id." .
+
+gtfs:offersFareProduct a owl:ObjectProperty ;
+    rdfs:label "offers fare product"@en ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:FareProduct ;
+    owl:inverseOf gtfs:isFareProductOf ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt fare_product_id -> fare_products.fare_product_id." .
+
+gtfs:isFareProductOf a owl:ObjectProperty ;
+    rdfs:label "is fare product of"@en ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range gtfs:FareLegRule ;
+    owl:inverseOf gtfs:offersFareProduct ;
+    skos:note "Derived from the foreign key fare_leg_rules.txt fare_product_id -> fare_products.fare_product_id." .
+
+gtfs:joinsFromRouteNetwork a owl:ObjectProperty ;
+    rdfs:label "joins from route network"@en ;
+    rdfs:domain gtfs:FareLegJoinRule ;
+    rdfs:range gtfs:Route ;
+    owl:inverseOf gtfs:isFromRouteNetworkOf ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt from_network_id -> routes.network_id." .
+
+gtfs:isFromRouteNetworkOf a owl:ObjectProperty ;
+    rdfs:label "is from route network of"@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:FareLegJoinRule ;
+    owl:inverseOf gtfs:joinsFromRouteNetwork ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt from_network_id -> routes.network_id." .
+
+gtfs:joinsFromNetwork a owl:ObjectProperty ;
+    rdfs:label "joins from network"@en ;
+    rdfs:domain gtfs:FareLegJoinRule ;
+    rdfs:range gtfs:Network ;
+    owl:inverseOf gtfs:isFromNetworkOf ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt from_network_id -> networks.network_id." .
+
+gtfs:isFromNetworkOf a owl:ObjectProperty ;
+    rdfs:label "is from network of"@en ;
+    rdfs:domain gtfs:Network ;
+    rdfs:range gtfs:FareLegJoinRule ;
+    owl:inverseOf gtfs:joinsFromNetwork ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt from_network_id -> networks.network_id." .
+
+gtfs:joinsToRouteNetwork a owl:ObjectProperty ;
+    rdfs:label "joins to route network"@en ;
+    rdfs:domain gtfs:FareLegJoinRule ;
+    rdfs:range gtfs:Route ;
+    owl:inverseOf gtfs:isToRouteNetworkOf ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt to_network_id -> routes.network_id." .
+
+gtfs:isToRouteNetworkOf a owl:ObjectProperty ;
+    rdfs:label "is to route network of"@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:FareLegJoinRule ;
+    owl:inverseOf gtfs:joinsToRouteNetwork ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt to_network_id -> routes.network_id." .
+
+gtfs:joinsToNetwork a owl:ObjectProperty ;
+    rdfs:label "joins to network"@en ;
+    rdfs:domain gtfs:FareLegJoinRule ;
+    rdfs:range gtfs:Network ;
+    owl:inverseOf gtfs:isToNetworkOf ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt to_network_id -> networks.network_id." .
+
+gtfs:isToNetworkOf a owl:ObjectProperty ;
+    rdfs:label "is to network of"@en ;
+    rdfs:domain gtfs:Network ;
+    rdfs:range gtfs:FareLegJoinRule ;
+    owl:inverseOf gtfs:joinsToNetwork ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt to_network_id -> networks.network_id." .
+
+gtfs:joinsFromStop a owl:ObjectProperty ;
+    rdfs:label "joins from stop"@en ;
+    rdfs:domain gtfs:FareLegJoinRule ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isJoinOriginStopOf ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt from_stop_id -> stops.stop_id." .
+
+gtfs:isJoinOriginStopOf a owl:ObjectProperty ;
+    rdfs:label "is join origin stop of"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:FareLegJoinRule ;
+    owl:inverseOf gtfs:joinsFromStop ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt from_stop_id -> stops.stop_id." .
+
+gtfs:joinsToStop a owl:ObjectProperty ;
+    rdfs:label "joins to stop"@en ;
+    rdfs:domain gtfs:FareLegJoinRule ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isJoinDestinationStopOf ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt to_stop_id -> stops.stop_id." .
+
+gtfs:isJoinDestinationStopOf a owl:ObjectProperty ;
+    rdfs:label "is join destination stop of"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:FareLegJoinRule ;
+    owl:inverseOf gtfs:joinsToStop ;
+    skos:note "Derived from the foreign key fare_leg_join_rules.txt to_stop_id -> stops.stop_id." .
+
+gtfs:transfersFromLegGroup a owl:ObjectProperty ;
+    rdfs:label "transfers from leg group"@en ;
+    rdfs:domain gtfs:FareTransferRule ;
+    rdfs:range gtfs:FareLegRule ;
+    owl:inverseOf gtfs:isTransferOriginLegGroupOf ;
+    skos:note "Derived from the foreign key fare_transfer_rules.txt from_leg_group_id -> fare_leg_rules.leg_group_id." .
+
+gtfs:isTransferOriginLegGroupOf a owl:ObjectProperty ;
+    rdfs:label "is transfer origin leg group of"@en ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:FareTransferRule ;
+    owl:inverseOf gtfs:transfersFromLegGroup ;
+    skos:note "Derived from the foreign key fare_transfer_rules.txt from_leg_group_id -> fare_leg_rules.leg_group_id." .
+
+gtfs:transfersToLegGroup a owl:ObjectProperty ;
+    rdfs:label "transfers to leg group"@en ;
+    rdfs:domain gtfs:FareTransferRule ;
+    rdfs:range gtfs:FareLegRule ;
+    owl:inverseOf gtfs:isTransferDestinationLegGroupOf ;
+    skos:note "Derived from the foreign key fare_transfer_rules.txt to_leg_group_id -> fare_leg_rules.leg_group_id." .
+
+gtfs:isTransferDestinationLegGroupOf a owl:ObjectProperty ;
+    rdfs:label "is transfer destination leg group of"@en ;
+    rdfs:domain gtfs:FareLegRule ;
+    rdfs:range gtfs:FareTransferRule ;
+    owl:inverseOf gtfs:transfersToLegGroup ;
+    skos:note "Derived from the foreign key fare_transfer_rules.txt to_leg_group_id -> fare_leg_rules.leg_group_id." .
+
+gtfs:appliesFareProduct a owl:ObjectProperty ;
+    rdfs:label "applies fare product"@en ;
+    rdfs:domain gtfs:FareTransferRule ;
+    rdfs:range gtfs:FareProduct ;
+    owl:inverseOf gtfs:isFareProductOfTransferRule ;
+    skos:note "Derived from the foreign key fare_transfer_rules.txt fare_product_id -> fare_products.fare_product_id." .
+
+gtfs:isFareProductOfTransferRule a owl:ObjectProperty ;
+    rdfs:label "is fare product of transfer rule"@en ;
+    rdfs:domain gtfs:FareProduct ;
+    rdfs:range gtfs:FareTransferRule ;
+    owl:inverseOf gtfs:appliesFareProduct ;
+    skos:note "Derived from the foreign key fare_transfer_rules.txt fare_product_id -> fare_products.fare_product_id." .
+
+gtfs:assignsToArea a owl:ObjectProperty ;
+    rdfs:label "assigns to area"@en ;
+    rdfs:domain gtfs:StopArea ;
+    rdfs:range gtfs:Area ;
+    owl:inverseOf gtfs:hasStopAssignment ;
+    skos:note "Derived from the foreign key stop_areas.txt area_id -> areas.area_id." .
+
+gtfs:hasStopAssignment a owl:ObjectProperty ;
+    rdfs:label "has stop assignment"@en ;
+    rdfs:domain gtfs:Area ;
+    rdfs:range gtfs:StopArea ;
+    owl:inverseOf gtfs:assignsToArea ;
+    skos:note "Derived from the foreign key stop_areas.txt area_id -> areas.area_id." .
+
+gtfs:assignsStop a owl:ObjectProperty ;
+    rdfs:label "assigns stop"@en ;
+    rdfs:domain gtfs:StopArea ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:hasAreaAssignment ;
+    skos:note "Derived from the foreign key stop_areas.txt stop_id -> stops.stop_id." .
+
+gtfs:hasAreaAssignment a owl:ObjectProperty ;
+    rdfs:label "has area assignment"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:StopArea ;
+    owl:inverseOf gtfs:assignsStop ;
+    skos:note "Derived from the foreign key stop_areas.txt stop_id -> stops.stop_id." .
+
+gtfs:assignsToNetwork a owl:ObjectProperty ;
+    rdfs:label "assigns to network"@en ;
+    rdfs:domain gtfs:RouteNetwork ;
+    rdfs:range gtfs:Network ;
+    owl:inverseOf gtfs:hasRouteAssignment ;
+    skos:note "Derived from the foreign key route_networks.txt network_id -> networks.network_id." .
+
+gtfs:hasRouteAssignment a owl:ObjectProperty ;
+    rdfs:label "has route assignment"@en ;
+    rdfs:domain gtfs:Network ;
+    rdfs:range gtfs:RouteNetwork ;
+    owl:inverseOf gtfs:assignsToNetwork ;
+    skos:note "Derived from the foreign key route_networks.txt network_id -> networks.network_id." .
+
+gtfs:assignsRoute a owl:ObjectProperty ;
+    rdfs:label "assigns route"@en ;
+    rdfs:domain gtfs:RouteNetwork ;
+    rdfs:range gtfs:Route ;
+    owl:inverseOf gtfs:hasNetworkAssignment ;
+    skos:note "Derived from the foreign key route_networks.txt route_id -> routes.route_id." .
+
+gtfs:hasNetworkAssignment a owl:ObjectProperty ;
+    rdfs:label "has network assignment"@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:RouteNetwork ;
+    owl:inverseOf gtfs:assignsRoute ;
+    skos:note "Derived from the foreign key route_networks.txt route_id -> routes.route_id." .
+
+gtfs:appliesToTrip a owl:ObjectProperty ;
+    rdfs:label "applies to trip"@en ;
+    rdfs:domain gtfs:Frequency ;
+    rdfs:range gtfs:Trip ;
+    owl:inverseOf gtfs:hasFrequency ;
+    skos:note "Derived from the foreign key frequencies.txt trip_id -> trips.trip_id." .
+
+gtfs:hasFrequency a owl:ObjectProperty ;
+    rdfs:label "has frequency"@en ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range gtfs:Frequency ;
+    owl:inverseOf gtfs:appliesToTrip ;
+    skos:note "Derived from the foreign key frequencies.txt trip_id -> trips.trip_id." .
+
+gtfs:transfersFromStop a owl:ObjectProperty ;
+    rdfs:label "transfers from stop"@en ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isTransferOriginStopOf ;
+    skos:note "Derived from the foreign key transfers.txt from_stop_id -> stops.stop_id." .
+
+gtfs:isTransferOriginStopOf a owl:ObjectProperty ;
+    rdfs:label "is transfer origin stop of"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:Transfer ;
+    owl:inverseOf gtfs:transfersFromStop ;
+    skos:note "Derived from the foreign key transfers.txt from_stop_id -> stops.stop_id." .
+
+gtfs:transfersToStop a owl:ObjectProperty ;
+    rdfs:label "transfers to stop"@en ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isTransferDestinationStopOf ;
+    skos:note "Derived from the foreign key transfers.txt to_stop_id -> stops.stop_id." .
+
+gtfs:isTransferDestinationStopOf a owl:ObjectProperty ;
+    rdfs:label "is transfer destination stop of"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:Transfer ;
+    owl:inverseOf gtfs:transfersToStop ;
+    skos:note "Derived from the foreign key transfers.txt to_stop_id -> stops.stop_id." .
+
+gtfs:transfersFromRoute a owl:ObjectProperty ;
+    rdfs:label "transfers from route"@en ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range gtfs:Route ;
+    owl:inverseOf gtfs:isTransferOriginRouteOf ;
+    skos:note "Derived from the foreign key transfers.txt from_route_id -> routes.route_id." .
+
+gtfs:isTransferOriginRouteOf a owl:ObjectProperty ;
+    rdfs:label "is transfer origin route of"@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:Transfer ;
+    owl:inverseOf gtfs:transfersFromRoute ;
+    skos:note "Derived from the foreign key transfers.txt from_route_id -> routes.route_id." .
+
+gtfs:transfersToRoute a owl:ObjectProperty ;
+    rdfs:label "transfers to route"@en ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range gtfs:Route ;
+    owl:inverseOf gtfs:isTransferDestinationRouteOf ;
+    skos:note "Derived from the foreign key transfers.txt to_route_id -> routes.route_id." .
+
+gtfs:isTransferDestinationRouteOf a owl:ObjectProperty ;
+    rdfs:label "is transfer destination route of"@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:Transfer ;
+    owl:inverseOf gtfs:transfersToRoute ;
+    skos:note "Derived from the foreign key transfers.txt to_route_id -> routes.route_id." .
+
+gtfs:transfersFromTrip a owl:ObjectProperty ;
+    rdfs:label "transfers from trip"@en ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range gtfs:Trip ;
+    owl:inverseOf gtfs:isTransferOriginTripOf ;
+    skos:note "Derived from the foreign key transfers.txt from_trip_id -> trips.trip_id." .
+
+gtfs:isTransferOriginTripOf a owl:ObjectProperty ;
+    rdfs:label "is transfer origin trip of"@en ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range gtfs:Transfer ;
+    owl:inverseOf gtfs:transfersFromTrip ;
+    skos:note "Derived from the foreign key transfers.txt from_trip_id -> trips.trip_id." .
+
+gtfs:transfersToTrip a owl:ObjectProperty ;
+    rdfs:label "transfers to trip"@en ;
+    rdfs:domain gtfs:Transfer ;
+    rdfs:range gtfs:Trip ;
+    owl:inverseOf gtfs:isTransferDestinationTripOf ;
+    skos:note "Derived from the foreign key transfers.txt to_trip_id -> trips.trip_id." .
+
+gtfs:isTransferDestinationTripOf a owl:ObjectProperty ;
+    rdfs:label "is transfer destination trip of"@en ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range gtfs:Transfer ;
+    owl:inverseOf gtfs:transfersToTrip ;
+    skos:note "Derived from the foreign key transfers.txt to_trip_id -> trips.trip_id." .
+
+gtfs:beginsAtStop a owl:ObjectProperty ;
+    rdfs:label "begins at stop"@en ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isPathwayOriginOf ;
+    skos:note "Derived from the foreign key pathways.txt from_stop_id -> stops.stop_id." .
+
+gtfs:isPathwayOriginOf a owl:ObjectProperty ;
+    rdfs:label "is pathway origin of"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:Pathway ;
+    owl:inverseOf gtfs:beginsAtStop ;
+    skos:note "Derived from the foreign key pathways.txt from_stop_id -> stops.stop_id." .
+
+gtfs:endsAtStop a owl:ObjectProperty ;
+    rdfs:label "ends at stop"@en ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isPathwayDestinationOf ;
+    skos:note "Derived from the foreign key pathways.txt to_stop_id -> stops.stop_id." .
+
+gtfs:isPathwayDestinationOf a owl:ObjectProperty ;
+    rdfs:label "is pathway destination of"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:Pathway ;
+    owl:inverseOf gtfs:endsAtStop ;
+    skos:note "Derived from the foreign key pathways.txt to_stop_id -> stops.stop_id." .
+
+gtfs:assignsToLocationGroup a owl:ObjectProperty ;
+    rdfs:label "assigns to location group"@en ;
+    rdfs:domain gtfs:LocationGroupStop ;
+    rdfs:range gtfs:LocationGroup ;
+    owl:inverseOf gtfs:hasLocationGroupStop ;
+    skos:note "Derived from the foreign key location_group_stops.txt location_group_id -> location_groups.location_group_id." .
+
+gtfs:hasLocationGroupStop a owl:ObjectProperty ;
+    rdfs:label "has location group stop"@en ;
+    rdfs:domain gtfs:LocationGroup ;
+    rdfs:range gtfs:LocationGroupStop ;
+    owl:inverseOf gtfs:assignsToLocationGroup ;
+    skos:note "Derived from the foreign key location_group_stops.txt location_group_id -> location_groups.location_group_id." .
+
+gtfs:includesStop a owl:ObjectProperty ;
+    rdfs:label "includes stop"@en ;
+    rdfs:domain gtfs:LocationGroupStop ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:isStopOfLocationGroupStop ;
+    skos:note "Derived from the foreign key location_group_stops.txt stop_id -> stops.stop_id." .
+
+gtfs:isStopOfLocationGroupStop a owl:ObjectProperty ;
+    rdfs:label "is stop of location group stop"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:LocationGroupStop ;
+    owl:inverseOf gtfs:includesStop ;
+    skos:note "Derived from the foreign key location_group_stops.txt stop_id -> stops.stop_id." .
+
+gtfs:hasPriorNoticeCalendar a owl:ObjectProperty ;
+    rdfs:label "has prior notice calendar"@en ;
+    rdfs:domain gtfs:BookingRule ;
+    rdfs:range gtfs:Calendar ;
+    owl:inverseOf gtfs:isPriorNoticeCalendarOf ;
+    skos:note "Derived from the foreign key booking_rules.txt prior_notice_service_id -> calendar.service_id." .
+
+gtfs:isPriorNoticeCalendarOf a owl:ObjectProperty ;
+    rdfs:label "is prior notice calendar of"@en ;
+    rdfs:domain gtfs:Calendar ;
+    rdfs:range gtfs:BookingRule ;
+    owl:inverseOf gtfs:hasPriorNoticeCalendar ;
+    skos:note "Derived from the foreign key booking_rules.txt prior_notice_service_id -> calendar.service_id." .
+
+gtfs:translatesAgency a owl:ObjectProperty ;
+    rdfs:label "translates agency"@en ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range gtfs:Agency ;
+    owl:inverseOf gtfs:hasAgencyTranslation ;
+    skos:note "Derived from the foreign key translations.txt record_id -> agency.agency_id." .
+
+gtfs:hasAgencyTranslation a owl:ObjectProperty ;
+    rdfs:label "has agency translation"@en ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range gtfs:Translation ;
+    owl:inverseOf gtfs:translatesAgency ;
+    skos:note "Derived from the foreign key translations.txt record_id -> agency.agency_id." .
+
+gtfs:translatesStop a owl:ObjectProperty ;
+    rdfs:label "translates stop"@en ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range gtfs:Stop ;
+    owl:inverseOf gtfs:hasStopTranslation ;
+    skos:note "Derived from the foreign key translations.txt record_id -> stops.stop_id." .
+
+gtfs:hasStopTranslation a owl:ObjectProperty ;
+    rdfs:label "has stop translation"@en ;
+    rdfs:domain gtfs:Stop ;
+    rdfs:range gtfs:Translation ;
+    owl:inverseOf gtfs:translatesStop ;
+    skos:note "Derived from the foreign key translations.txt record_id -> stops.stop_id." .
+
+gtfs:translatesRoute a owl:ObjectProperty ;
+    rdfs:label "translates route"@en ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range gtfs:Route ;
+    owl:inverseOf gtfs:hasRouteTranslation ;
+    skos:note "Derived from the foreign key translations.txt record_id -> routes.route_id." .
+
+gtfs:hasRouteTranslation a owl:ObjectProperty ;
+    rdfs:label "has route translation"@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:Translation ;
+    owl:inverseOf gtfs:translatesRoute ;
+    skos:note "Derived from the foreign key translations.txt record_id -> routes.route_id." .
+
+gtfs:translatesTrip a owl:ObjectProperty ;
+    rdfs:label "translates trip"@en ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range gtfs:Trip ;
+    owl:inverseOf gtfs:hasTripTranslation ;
+    skos:note "Derived from the foreign key translations.txt record_id -> trips.trip_id." .
+
+gtfs:hasTripTranslation a owl:ObjectProperty ;
+    rdfs:label "has trip translation"@en ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range gtfs:Translation ;
+    owl:inverseOf gtfs:translatesTrip ;
+    skos:note "Derived from the foreign key translations.txt record_id -> trips.trip_id." .
+
+gtfs:translatesStopTime a owl:ObjectProperty ;
+    rdfs:label "translates stop time"@en ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range gtfs:StopTime ;
+    owl:inverseOf gtfs:hasStopTimeTranslation ;
+    skos:note "Derived from the foreign key translations.txt record_id -> stop_times.trip_id." .
+
+gtfs:hasStopTimeTranslation a owl:ObjectProperty ;
+    rdfs:label "has stop time translation"@en ;
+    rdfs:domain gtfs:StopTime ;
+    rdfs:range gtfs:Translation ;
+    owl:inverseOf gtfs:translatesStopTime ;
+    skos:note "Derived from the foreign key translations.txt record_id -> stop_times.trip_id." .
+
+gtfs:translatesPathway a owl:ObjectProperty ;
+    rdfs:label "translates pathway"@en ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range gtfs:Pathway ;
+    owl:inverseOf gtfs:hasPathwayTranslation ;
+    skos:note "Derived from the foreign key translations.txt record_id -> pathways.pathway_id." .
+
+gtfs:hasPathwayTranslation a owl:ObjectProperty ;
+    rdfs:label "has pathway translation"@en ;
+    rdfs:domain gtfs:Pathway ;
+    rdfs:range gtfs:Translation ;
+    owl:inverseOf gtfs:translatesPathway ;
+    skos:note "Derived from the foreign key translations.txt record_id -> pathways.pathway_id." .
+
+gtfs:translatesLevel a owl:ObjectProperty ;
+    rdfs:label "translates level"@en ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range gtfs:Level ;
+    owl:inverseOf gtfs:hasLevelTranslation ;
+    skos:note "Derived from the foreign key translations.txt record_id -> levels.level_id." .
+
+gtfs:hasLevelTranslation a owl:ObjectProperty ;
+    rdfs:label "has level translation"@en ;
+    rdfs:domain gtfs:Level ;
+    rdfs:range gtfs:Translation ;
+    owl:inverseOf gtfs:translatesLevel ;
+    skos:note "Derived from the foreign key translations.txt record_id -> levels.level_id." .
+
+gtfs:translatesAttribution a owl:ObjectProperty ;
+    rdfs:label "translates attribution"@en ;
+    rdfs:domain gtfs:Translation ;
+    rdfs:range gtfs:Attribution ;
+    owl:inverseOf gtfs:hasAttributionTranslation ;
+    skos:note "Derived from the foreign key translations.txt record_id -> attributions.attribution_id." .
+
+gtfs:hasAttributionTranslation a owl:ObjectProperty ;
+    rdfs:label "has attribution translation"@en ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range gtfs:Translation ;
+    owl:inverseOf gtfs:translatesAttribution ;
+    skos:note "Derived from the foreign key translations.txt record_id -> attributions.attribution_id." .
+
+gtfs:isAttributionOfAgency a owl:ObjectProperty ;
+    rdfs:label "is attribution of agency"@en ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range gtfs:Agency ;
+    owl:inverseOf gtfs:hasAgencyAttribution ;
+    skos:note "Derived from the foreign key attributions.txt agency_id -> agency.agency_id." .
+
+gtfs:hasAgencyAttribution a owl:ObjectProperty ;
+    rdfs:label "has agency attribution"@en ;
+    rdfs:domain gtfs:Agency ;
+    rdfs:range gtfs:Attribution ;
+    owl:inverseOf gtfs:isAttributionOfAgency ;
+    skos:note "Derived from the foreign key attributions.txt agency_id -> agency.agency_id." .
+
+gtfs:isAttributionOfRoute a owl:ObjectProperty ;
+    rdfs:label "is attribution of route"@en ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range gtfs:Route ;
+    owl:inverseOf gtfs:hasRouteAttribution ;
+    skos:note "Derived from the foreign key attributions.txt route_id -> routes.route_id." .
+
+gtfs:hasRouteAttribution a owl:ObjectProperty ;
+    rdfs:label "has route attribution"@en ;
+    rdfs:domain gtfs:Route ;
+    rdfs:range gtfs:Attribution ;
+    owl:inverseOf gtfs:isAttributionOfRoute ;
+    skos:note "Derived from the foreign key attributions.txt route_id -> routes.route_id." .
+
+gtfs:isAttributionOfTrip a owl:ObjectProperty ;
+    rdfs:label "is attribution of trip"@en ;
+    rdfs:domain gtfs:Attribution ;
+    rdfs:range gtfs:Trip ;
+    owl:inverseOf gtfs:hasTripAttribution ;
+    skos:note "Derived from the foreign key attributions.txt trip_id -> trips.trip_id." .
+
+gtfs:hasTripAttribution a owl:ObjectProperty ;
+    rdfs:label "has trip attribution"@en ;
+    rdfs:domain gtfs:Trip ;
+    rdfs:range gtfs:Attribution ;
+    owl:inverseOf gtfs:isAttributionOfTrip ;
+    skos:note "Derived from the foreign key attributions.txt trip_id -> trips.trip_id." .
+
+# -------------------
+# Datatype Properties
+# -------------------

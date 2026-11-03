@@ -1,0 +1,137 @@
+# ----------------------------------------------------------------------------
+# GTFS Schedule field type constraints (source of truth)
+#
+# SHACL constraint parameters for each GTFS field type, used by yaml2shacl.py
+# to generate ontologies/schedule/shapes.ttl. The official GTFS reference
+# defines these types only in prose (see field_types in schedule.yaml); the
+# machine-readable interpretation below is defined for this project and is
+# meant to be edited here.
+#
+# Keys per type:
+#   datatype:      xsd datatype of the literal value
+#   nodeKind:      sh:IRI for resource-valued fields (e.g. URL)
+#   pattern:       regex the lexical form must match (sh:pattern)
+#   minInclusive / maxInclusive / minExclusive / maxExclusive: numeric range
+#   notEquals:     a single forbidden value (compiled as sh:not [ sh:hasValue ])
+#   or:            list of other type names; value must match one of them
+#   semantic:      informal semantic hint for serializers (not compiled)
+#   note:          clarification of the interpretation
+#
+# "Enum" carries no constraints here: sh:in is derived per field from its
+# options in schedule.yaml. "Array" and "Object" (locations.geojson) are
+# structural GeoJSON types with no literal constraints in phase 1.
+# ----------------------------------------------------------------------------
+
+types:
+  - name: Color
+    datatype: xsd:string
+    pattern: "^[0-9A-Fa-f]{6}$"
+
+  - name: Currency code
+    datatype: xsd:string
+    pattern: "^[A-Z]{3}$"
+
+  - name: Currency amount
+    datatype: xsd:decimal
+
+  - name: Date
+    datatype: xsd:string
+    pattern: "^\\d{8}$"
+    semantic: date
+    note: "Service day in YYYYMMDD format; kept lexical because a service day is not a calendar date (it may exceed 24:00:00)."
+
+  - name: Email
+    datatype: xsd:string
+    pattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+
+  - name: Enum
+    note: "sh:in is generated per field from its options in schedule.yaml."
+
+  - name: ID
+    datatype: xsd:string
+
+  - name: Unique ID
+    datatype: xsd:string
+    note: "Uniqueness within the dataset requires a SHACL-SPARQL constraint (phase 2)."
+
+  - name: Foreign ID
+    datatype: xsd:string
+    note: "Referential integrity requires materialized links or SHACL-SPARQL (phase 2)."
+
+  - name: Language code
+    datatype: xsd:string
+    pattern: "^[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*$"
+
+  - name: Latitude
+    datatype: xsd:decimal
+    minInclusive: -90.0
+    maxInclusive: 90.0
+
+  - name: Longitude
+    datatype: xsd:decimal
+    minInclusive: -180.0
+    maxInclusive: 180.0
+
+  - name: Float
+    datatype: xsd:decimal
+
+  - name: Integer
+    datatype: xsd:integer
+
+  - name: Non-negative float
+    datatype: xsd:decimal
+    minInclusive: 0.0
+
+  - name: Non-negative integer
+    datatype: xsd:integer
+    minInclusive: 0
+
+  - name: Non-null integer
+    datatype: xsd:integer
+    notEquals: 0
+
+  - name: Non-zero integer
+    datatype: xsd:integer
+    notEquals: 0
+
+  - name: Positive float
+    datatype: xsd:decimal
+    minExclusive: 0.0
+
+  - name: Positive integer
+    datatype: xsd:integer
+    minExclusive: 0
+
+  - name: Phone number
+    datatype: xsd:string
+
+  - name: Time
+    datatype: xsd:string
+    pattern: "^\\d{1,3}:[0-5]\\d:[0-5]\\d$"
+    semantic: duration
+    note: "Elapsed time since noon minus 12h of the service day; a duration, not a time of day (may exceed 24:00:00). Lexical form is kept for fidelity with the feed."
+
+  - name: Local time
+    datatype: xsd:string
+    pattern: "^([01]?\\d|2[0-3]):[0-5]\\d:[0-5]\\d$"
+    semantic: time
+    note: "Wall-clock time in the local time of the specified location."
+
+  - name: Text
+    datatype: xsd:string
+
+  - name: String
+    datatype: xsd:string
+
+  - name: Timezone
+    datatype: xsd:string
+
+  - name: URL
+    nodeKind: sh:IRI
+
+  - name: Array
+
+  - name: Object
+
+  - name: Text or URL or Email or Phone number
+    or: [Text, URL, Email, Phone number]

@@ -8,6 +8,66 @@ This project uses a single YAML source-of-truth to generate and share the GTFS S
 - **Generated Outputs (planned)**: TTL, Markdown, PDF, DBML, SQL, Django ORM, Pydantic Types, SQLAlchemy ORM, TypeScript Type Definitions, Prisma ORM, JSON, XML, and Mermaid.
 - **Validation**: JSON Schema for structure; ontology with SHACL shapes for semantic constraints.
 
+## Convert a GTFS feed to RDF
+
+The schedule converter accepts an HTTP(S) URL or a local ZIP and writes a single
+`feed.ttl`, ready to import into QLever or another Turtle-compatible triple store:
+
+```bash
+uv run python converters/schedule/gtfs2ttl.py \
+  https://feeds.simovi.org/incofer/schedule/gtfs.zip \
+  --output-dir ./output/incofer \
+  --base-iri https://feeds.simovi.org/incofer/schedule/rdf/
+
+uv run python converters/schedule/gtfs2ttl.py ./gtfs.zip --output-dir ./output
+```
+
+The converter reads [schedule.yaml](serializers/schedule/schedule.yaml),
+[fieldtypes.yaml](serializers/schedule/fieldtypes.yaml), and
+[relations.yaml](serializers/schedule/relations.yaml). Each record gets its table's
+ontology class and a feed-scoped IRI based on its primary key (including composite
+keys). Full-row keys and omitted optional IDs use a hash of the record; singleton
+tables use one fixed identity. Without `--base-iri`, the namespace includes the ZIP's
+SHA-256 hash. Set an explicit namespace to retain record IRIs across feed updates;
+use different namespaces for different feeds.
+
+- IDs remain strings, including leading zeros. Numbers use `xsd:integer` or
+  `xsd:decimal`; URL fields are IRIs. Dates (`YYYYMMDD`) and GTFS times (including
+  values beyond 24 hours) retain their string representation, matching the shapes.
+- Empty cells are omitted, not converted to empty literals or default values.
+- Foreign IDs remain literal field values, **and** named object links and their
+  inverses are emitted explicitly. QLever does not need OWL reasoning for these
+  joins. Non-unique target keys link to every matching record: e.g. a trip links to
+  all its shape-point records, since the current ontology models each as a `Shape`.
+- Translation links respect `table_name` and the stop-time composite record key.
+- GeoJSON features become `Location` instances; nested objects and arrays are
+  preserved using blank nodes and RDF lists, with a separate FeatureCollection node.
+- Unknown columns are preserved as strings with warnings. Unknown files are
+  skipped with warnings. Missing foreign-key targets are reported, their ID values
+  retained, and no placeholder records are invented.
+
+Records and foreign-key indexes are held in memory; triples are written
+incrementally. ZIP members are read without extraction. A failed conversion
+preserves any existing `feed.ttl`. This is a conversion step, not full GTFS
+validation: requiredness, numeric bounds, and other constraints can be checked
+separately with [the SHACL shapes](ontologies/schedule/shapes.ttl). The output
+contains instance data, not a copy of the ontology or shapes.
+
+Example query after loading the output into QLever:
+
+```sparql
+PREFIX gtfs: <http://gtfs.simovi.org/schedule#>
+
+SELECT ?agency ?routeName (COUNT(?trip) AS ?trips) WHERE {
+  ?operator a gtfs:Agency ;
+      gtfs:agency_name ?agency ;
+      gtfs:operatesRoute ?route .
+  ?route gtfs:route_long_name ?routeName ;
+      gtfs:hasTrip ?trip .
+}
+GROUP BY ?agency ?routeName
+```
+
 ## Conversion Overview
 
 ```mermaid

@@ -437,6 +437,60 @@
     }
   },
   "$defs": {
+    "ruleCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Condition of a presence rule. Record-scoped conditions reference fields of the same record; dataset-scoped conditions (scope: dataset) are annotated but not compiled to SHACL core.",
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Field of the same record that the condition tests"
+        },
+        "in": {
+          "type": "array",
+          "items": { "type": ["integer", "string"] },
+          "description": "Condition holds when the field value is one of these"
+        },
+        "equals": {
+          "type": ["integer", "string"],
+          "description": "Condition holds when the field equals this value"
+        },
+        "empty_means": {
+          "type": ["integer", "string"],
+          "description": "Value that an empty (absent) field counts as"
+        },
+        "present": {
+          "type": "boolean",
+          "description": "Condition holds when the field is defined"
+        },
+        "empty": {
+          "type": "boolean",
+          "description": "Condition holds when the field is empty (absent)"
+        },
+        "equals_field": {
+          "type": "string",
+          "description": "Condition holds when the field equals another field of the record"
+        },
+        "not_equals_field": {
+          "type": "string",
+          "description": "Condition holds when the field differs from another field of the record"
+        },
+        "all": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ruleCondition" },
+          "description": "Condition holds when all sub-conditions hold"
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["record", "dataset"],
+          "description": "record (default): same-row condition; dataset: cross-file or aggregate condition"
+        },
+        "note": {
+          "type": "string",
+          "description": "Prose for conditions that cannot be expressed structurally (dataset scope)"
+        }
+      }
+    },
     "fieldDefinition": {
       "type": "object",
       "additionalProperties": false,
@@ -447,8 +501,11 @@
           "description": "Field name"
         },
         "type": {
-          "type": "string",
-          "description": "Field type (e.g., Text, ID, Enum, etc.)"
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" }, "minItems": 2 }
+          ],
+          "description": "Field type (e.g., Text, ID, Enum, etc.), or a list when the spec allows alternative types"
         },
         "presence": {
           "type": "string",
@@ -481,6 +538,33 @@
             "type": "string"
           },
           "description": "Conditional requirements for the field"
+        },
+        "rules": {
+          "type": "array",
+          "description": "Machine-readable presence rules compiled to SHACL. Each rule is an implication: when the condition holds, the consequence (then) applies.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["when", "then"],
+            "properties": {
+              "when": { "$ref": "#/$defs/ruleCondition" },
+              "then": {
+                "type": "string",
+                "enum": ["required", "forbidden", "optional", "recommended"],
+                "description": "Consequence when the condition holds"
+              },
+              "values": {
+                "type": "array",
+                "items": { "type": ["integer", "string"] },
+                "description": "With then=forbidden: only these specific values are forbidden"
+              },
+              "except_values": {
+                "type": "array",
+                "items": { "type": ["integer", "string"] },
+                "description": "With then=forbidden: all values except these are forbidden"
+              }
+            }
+          }
         },
         "notes": {
           "oneOf": [

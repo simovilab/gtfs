@@ -1,0 +1,23 @@
+@prefix gtfs: <http://gtfs.simovi.org/schedule#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ---------------------------------------------------------------------------
+# SHACL shapes for the GTFS Schedule ontology.
+#
+# GENERATED FILE - do not edit by hand.
+# Built by converters/schedule/yaml2shacl.py from:
+#   serializers/schedule/schedule.yaml   (fields, presence, options, rules)
+#   serializers/schedule/fieldtypes.yaml (constraints per field type)
+# ---------------------------------------------------------------------------
+
+{% for shape in shapes %}
+# ==========
+# {{ shape.file }}
+# ==========
+
+gtfs:{{ shape.name }} a sh:NodeShape ;
+    sh:targetClass gtfs:{{ shape.target }} ;
+{{ shape.clauses }} .
+
+{% endfor %}

@@ -14,5 +14,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "ontospy>=2.7",
+    "pyshacl>=0.40.2",
     "pytest>=9.1.1",
 ]

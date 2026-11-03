@@ -1,5 +1,6 @@
-# Ontospy
-docs/
+# Generated OntoSpy documentation
+documentation/ontology/
+documentation/**/ontology/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
