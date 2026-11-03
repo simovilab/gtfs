@@ -1,2261 +1,1769 @@
-@prefix gtfs: <http://ontology.gtfs.org/reference#> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix gtfs: <http://gtfs.simovi.org/schedule#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+gtfs: a owl:Ontology ;
+    dct:title "GTFS Schedule Ontology" ;
+    dct:description """This document defines the format and structure of the files that comprise a GTFS dataset.""" ;
+    dct:date "2026-04-27"^^xsd:date .
+
+# -------------------
+# Ontology Properties
+# -------------------
+
+gtfs:presence a owl:ObjectProperty ;
+    skos:definition "Links a file or field to its presence condition." .
+
+gtfs:fieldType a owl:ObjectProperty ;
+    skos:definition "Links a field to its field type." .
+
+gtfs:fileName a owl:DatatypeProperty ;
+    skos:definition "The name of a file within the GTFS dataset." .
+
+gtfs:definedBy a owl:ObjectProperty ;
+    skos:definition "Links a class to the dataset file where its records are defined." .
+
+# ----------------
+# Term Definitions
+# ----------------
+
+gtfs:Term a skos:ConceptScheme .
+
+gtfs:Dataset a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "Dataset" ;
+    skos:definition """A complete set of files defined by this specification reference. Altering the dataset creates a new version of the dataset. Datasets should be published at a public, permanent URL, including the zip file name. (e.g., https://www.agency.org/gtfs/gtfs.zip).""" .
+
+gtfs:Record a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "Record" ;
+    skos:definition """A basic data structure comprised of a number of different field values describing a single entity (e.g. transit agency, stop, route, etc.). Represented, in a table, as a row.""" .
+
+gtfs:Field a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "Field" ;
+    skos:definition """A property of an object or entity. Represented, in a table, as a column. The field exists if added in a file as a header. It may or may not have field values defined.""" .
+
+gtfs:FieldValue a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "Field value" ;
+    skos:definition """An individual entry in a field. Represented, in a table, as a single cell.""" .
+
+gtfs:ServiceDay a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "Service day" ;
+    skos:definition """A service day is a time period used to indicate route scheduling. The exact definition of service day varies from agency to agency but service days often do not correspond with calendar days. A service day may exceed 24:00:00 if service begins on one day and ends on a following day. For example, service that runs from 08:00:00 on Friday to 02:00:00 on Saturday, could be denoted as running from 08:00:00 to 26:00:00 on a single service day.""" .
+
+gtfs:TextToSpeechField a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "Text-to-speech field" ;
+    skos:definition """The field should contain the same information than its parent field (on which it falls back if it is empty). It is aimed to be read as text-to-speech, therefore, abbreviation should be either removed (\"St\" should be either read as \"Street\" or \"Saint\"; \"Elizabeth I\" should be \"Elizabeth the first\") or kept to be read as it (\"JFK Airport\" is said abbreviated).""" .
+
+gtfs:Leg a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "Leg" ;
+    skos:definition """Travel in which a rider boards and alights between a pair of subsequent locations along a trip.""" .
+
+gtfs:Journey a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "Journey" ;
+    skos:definition """Overall travel from origin to destination, including all legs and transfers in-between.""" .
+
+gtfs:SubJourney a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "Sub-journey" ;
+    skos:definition """Two or more legs that comprise a subset of a journey.""" .
+
+gtfs:FareProduct a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "Fare product" ;
+    skos:definition """Purchassable fare products that can be used to pay for or validate travel.""" .
+
+gtfs:EffectiveFareLeg a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "Effective Fare Leg" ;
+    skos:definition """A sub-journey of two or more legs that should be treated as a single leg for matching rules in fare_leg_rules.txt for the purposes of fare calculation.""" .
+
+# --------
+# Presence
+# --------
+
+gtfs:Presence a skos:ConceptScheme .
+
+gtfs:Required a skos:Concept ;
+    skos:inScheme gtfs:Presence ;
+    skos:prefLabel "Required" ;
+    skos:definition """The field or file must be included in the dataset and contain a valid value for each record.""" .
+
+gtfs:Optional a skos:Concept ;
+    skos:inScheme gtfs:Presence ;
+    skos:prefLabel "Optional" ;
+    skos:definition """The field or file may be omitted from the dataset.""" .
+
+gtfs:ConditionallyRequired a skos:Concept ;
+    skos:inScheme gtfs:Presence ;
+    skos:prefLabel "Conditionally Required" ;
+    skos:definition """The field or file must be included under conditions outlined in the field or file description.""" .
+
+gtfs:ConditionallyForbidden a skos:Concept ;
+    skos:inScheme gtfs:Presence ;
+    skos:prefLabel "Conditionally Forbidden" ;
+    skos:definition """The field or file must not be included under conditions outlined in the field or file description.""" .
+
+gtfs:Recommended a skos:Concept ;
+    skos:inScheme gtfs:Presence ;
+    skos:prefLabel "Recommended" ;
+    skos:definition """The field or file may be omitted from the dataset, but it is a best practice to include it. Before omitting this field or file, the best practice should be carefully evaluated and the full implications of omission should be understood.""" .
+
+# -----------
+# Field Types
+# -----------
+
+gtfs:FieldType a skos:ConceptScheme .
+
+gtfs:Color a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Color" ;
+    skos:definition """A color encoded as a six-digit hexadecimal number. Refer to https://htmlcolorcodes.com to generate a valid value (the leading \"#\" must not be included).""" ;
+    skos:example """FFFFFF for white, 000000 for black or 0039A6 for the A,C,E lines in NYMTA.""" .
+
+gtfs:CurrencyCode a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Currency code" ;
+    skos:definition """An ISO 4217 alphabetical currency code. For the list of current currency, refer to https://en.wikipedia.org/wiki/ISO_4217#Active_codes.""" ;
+    skos:example """CAD for Canadian dollars, EUR for euros or JPY for Japanese yen.""" .
+
+gtfs:CurrencyAmount a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Currency amount" ;
+    skos:definition """A decimal value indicating a currency amount. The number of decimal places is specified by ISO 4217 for the accompanying Currency code. All financial calculations should be processed as decimal, currency, or another equivalent type suitable for financial calculations depending on the programming language used to consume data. Processing currency amounts as float is discouraged due to gains or losses of money during calculations.""" .
+
+gtfs:Date a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Date" ;
+    skos:definition """Service day in the YYYYMMDD format. Since time within a service day may be above 24:00:00, a service day may contain information for the subsequent day(s).""" ;
+    skos:example """20180913 for September 13th, 2018.""" .
+
+gtfs:Email a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Email" ;
+    skos:definition """An email address.""" ;
+    skos:example """example@example.com""" .
+
+gtfs:Enum a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Enum" ;
+    skos:definition """An option from a set of predefined constants defined in the Description column.""" ;
+    skos:example """The route_type field contains a 0 for tram, a 1 for subway...""" .
+
+gtfs:ID a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "ID" ;
+    skos:definition """An ID field value is an internal ID, not intended to be shown to riders, and is a sequence of any UTF-8 characters. Using only printable ASCII characters is recommended. An ID is labeled \"unique ID\" when it must be unique within a file. IDs defined in one .txt file are often referenced in another .txt file. IDs that reference an ID in another table are labeled \"foreign ID\".""" ;
+    skos:example """The `stop_id` field in [stops.txt](#stopstxt) is a \"unique ID\". The `parent_station` field in [stops.txt](#stopstxt) is a \"foreign ID referencing `stops.stop_id`\".""" .
+
+gtfs:LanguageCode a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Language code" ;
+    skos:definition """An IETF BCP 47 language code. For an introduction to IETF BCP 47, refer to http://www.rfc-editor.org/rfc/bcp/bcp47.txt and http://www.w3.org/International/articles/language-tags/.""" ;
+    skos:example """`en` for English, `en-US` for American English or `de` for German.""" .
+
+gtfs:Latitude a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Latitude" ;
+    skos:definition """WGS84 latitude in decimal degrees. The value must be greater than or equal to -90.0 and less than or equal to 90.0.""" ;
+    skos:example """`41.890169` for the Colosseum in Rome.""" .
+
+gtfs:Longitude a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Longitude" ;
+    skos:definition """WGS84 longitude in decimal degrees. The value must be greater than or equal to -180.0 and less than or equal to 180.0.""" ;
+    skos:example """`12.492269` for the Colosseum in Rome.""" .
+
+gtfs:Float a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Float" ;
+    skos:definition """A floating point number.""" .
+
+gtfs:Integer a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Integer" ;
+    skos:definition """An integer.""" .
+
+gtfs:PhoneNumber a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Phone number" ;
+    skos:definition """A phone number.""" .
+
+gtfs:Time a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Time" ;
+    skos:definition """Time in the HH:MM:SS format (H:MM:SS is also accepted). The time is measured from \"noon minus 12h\" of the service day (effectively midnight except for days on which daylight savings time changes occur). For times occurring after midnight on the service day, enter the time as a value greater than 24:00:00 in HH:MM:SS.""" ;
+    skos:example """`14:30:00` for 2:30PM or `25:35:00` for 1:35AM on the next day.""" .
+
+gtfs:LocalTime a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Local time" ;
+    skos:definition """Time in the HH:MM:SS format (H:MM:SS is also accepted). Represents a wall-clock time shown in the local time of the specified location.""" .
+
+gtfs:Text a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Text" ;
+    skos:definition """A string of UTF-8 characters, which is aimed to be displayed and which must therefore be human readable.""" .
+
+gtfs:Timezone a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Timezone" ;
+    skos:definition """TZ timezone from the https://www.iana.org/time-zones. Timezone names never contain the space character but may contain an underscore. Refer to http://en.wikipedia.org/wiki/List_of_tz_zones for a list of valid values.""" ;
+    skos:example """`Asia/Tokyo`, `America/Los_Angeles` or `Africa/Cairo`.""" .
+
+gtfs:URL a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "URL" ;
+    skos:definition """A fully qualified URL that includes http:// or https://, and any special characters in the URL must be correctly escaped. See the following http://www.w3.org/Addressing/URL/4_URI_Recommentations.html for a description of how to create fully qualified URL values.""" .
+
+# Field types referenced in field definitions but not defined
+# as base types (e.g. signed numbers, ID variants).
+
+gtfs:Array a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Array" .
+
+gtfs:ForeignID a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Foreign ID" .
+
+gtfs:NonNegativeFloat a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Non-negative float" .
+
+gtfs:NonNegativeInteger a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Non-negative integer" .
+
+gtfs:NonNullInteger a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Non-null integer" .
+
+gtfs:NonZeroInteger a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Non-zero integer" .
+
+gtfs:PositiveFloat a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Positive float" .
+
+gtfs:PositiveInteger a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Positive integer" .
+
+gtfs:String a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "String" .
+
+gtfs:TextOrURLOrEmailOrPhoneNumber a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Text or URL or Email or Phone number" .
+
+gtfs:UniqueID a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "Unique ID" .
+
+# -----------
+# Field Signs
+# -----------
+
+gtfs:FieldSign a skos:ConceptScheme .
+
+gtfs:NonNegative a skos:Concept ;
+    skos:inScheme gtfs:FieldSign ;
+    skos:prefLabel "Non-negative" ;
+    skos:definition """Greater than or equal to 0.""" .
+
+gtfs:NonZero a skos:Concept ;
+    skos:inScheme gtfs:FieldSign ;
+    skos:prefLabel "Non-zero" ;
+    skos:definition """Not equal to 0.""" .
+
+gtfs:Positive a skos:Concept ;
+    skos:inScheme gtfs:FieldSign ;
+    skos:prefLabel "Positive" ;
+    skos:definition """Greater than 0.""" .
+
+# -------------
+# Dataset Files
+# -------------
+
+gtfs:DatasetFile a owl:Class .
+
+gtfs:AgencyFile a gtfs:DatasetFile ;
+    gtfs:fileName "agency.txt" ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Transit agencies with service represented in this dataset.""" .
+
+gtfs:StopsFile a gtfs:DatasetFile ;
+    gtfs:fileName "stops.txt" ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Stops where vehicles pick up or drop off riders. Also defines stations and station entrances.""" ;
+    skos:note """Conditionally Required: Optional if demand-responsive zones are defined in locations.geojson. Required otherwise.""" .
+
+gtfs:RoutesFile a gtfs:DatasetFile ;
+    gtfs:fileName "routes.txt" ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Transit routes. A route is a group of trips that are displayed to riders as a single service.""" .
+
+gtfs:TripsFile a gtfs:DatasetFile ;
+    gtfs:fileName "trips.txt" ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Trips for each route. A trip is a sequence of two or more stops that occur during a specific time period.""" .
+
+gtfs:StopTimesFile a gtfs:DatasetFile ;
+    gtfs:fileName "stop_times.txt" ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Times that a vehicle arrives at and departs from stops for each trip.""" .
+
+gtfs:CalendarFile a gtfs:DatasetFile ;
+    gtfs:fileName "calendar.txt" ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Service dates specified using a weekly schedule with start and end dates.""" ;
+    skos:note """Conditionally Required: Required unless all dates of service are defined in calendar_dates.txt. Optional otherwise.""" .
+
+gtfs:CalendarDatesFile a gtfs:DatasetFile ;
+    gtfs:fileName "calendar_dates.txt" ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Exceptions for the services defined in the calendar.txt.""" ;
+    skos:note """Conditionally Required: Required if calendar.txt is omitted. In which case calendar_dates.txt must contain all dates of service. Optional otherwise.""" .
+
+gtfs:FareAttributesFile a gtfs:DatasetFile ;
+    gtfs:fileName "fare_attributes.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Fare information for a transit agency's routes.""" .
+
+gtfs:FareRulesFile a gtfs:DatasetFile ;
+    gtfs:fileName "fare_rules.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Rules to apply fares for itineraries.""" .
+
+gtfs:TimeframesFile a gtfs:DatasetFile ;
+    gtfs:fileName "timeframes.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Date and time periods to use in fare rules for fares that depend on date and time factors.""" .
+
+gtfs:RiderCategoriesFile a gtfs:DatasetFile ;
+    gtfs:fileName "rider_categories.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Defines categories of riders (e.g. elderly, student).""" .
+
+gtfs:FareMediaFile a gtfs:DatasetFile ;
+    gtfs:fileName "fare_media.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """To describe the fare media that can be employed to use fare products.""" .
+
+gtfs:FareProductsFile a gtfs:DatasetFile ;
+    gtfs:fileName "fare_products.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """To describe the different types of tickets or fares that can be purchased by riders.""" .
+
+gtfs:FareLegRulesFile a gtfs:DatasetFile ;
+    gtfs:fileName "fare_leg_rules.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Fare rules for individual legs of travel.""" .
+
+gtfs:FareLegJoinRulesFile a gtfs:DatasetFile ;
+    gtfs:fileName "fare_leg_join_rules.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Rules for defining two or more legs should be considered as a single effective fare leg for the purposes of matching against rules in fare_leg_rules.txt""" .
+
+gtfs:FareTransferRulesFile a gtfs:DatasetFile ;
+    gtfs:fileName "fare_transfer_rules.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Fare rules for transfers between legs of travel.""" .
+
+gtfs:AreasFile a gtfs:DatasetFile ;
+    gtfs:fileName "areas.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Area grouping of locations.""" .
+
+gtfs:StopAreasFile a gtfs:DatasetFile ;
+    gtfs:fileName "stop_areas.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Rules to assign stops to areas.""" .
+
+gtfs:NetworksFile a gtfs:DatasetFile ;
+    gtfs:fileName "networks.txt" ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Network grouping of routes.""" ;
+    skos:note """Conditionally Forbidden: Forbidden if network_id exists in routes.txt. Optional otherwise.""" .
+
+gtfs:RouteNetworksFile a gtfs:DatasetFile ;
+    gtfs:fileName "route_networks.txt" ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Rules to assign routes to networks.""" ;
+    skos:note """Conditionally Forbidden: Forbidden if network_id exists in routes.txt. Optional otherwise.""" .
+
+gtfs:ShapesFile a gtfs:DatasetFile ;
+    gtfs:fileName "shapes.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Rules for mapping vehicle travel paths, sometimes referred to as route alignments.""" .
+
+gtfs:FrequenciesFile a gtfs:DatasetFile ;
+    gtfs:fileName "frequencies.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Headway (time between trips) for headway-based service or a compressed representation of fixed-schedule service.""" .
+
+gtfs:TransfersFile a gtfs:DatasetFile ;
+    gtfs:fileName "transfers.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Rules for making connections at transfer points between routes.""" .
+
+gtfs:PathwaysFile a gtfs:DatasetFile ;
+    gtfs:fileName "pathways.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Pathways linking together locations within stations.""" .
+
+gtfs:LevelsFile a gtfs:DatasetFile ;
+    gtfs:fileName "levels.txt" ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Levels within stations.""" ;
+    skos:note """Conditionally Required: Required when describing pathways with elevators (pathway_mode=5). Optional otherwise.""" .
+
+gtfs:LocationGroupsFile a gtfs:DatasetFile ;
+    gtfs:fileName "location_groups.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """A group of stops that together indicate locations where a rider may request pickup or drop off.""" .
+
+gtfs:LocationGroupStopsFile a gtfs:DatasetFile ;
+    gtfs:fileName "location_group_stops.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Rules to assign stops to location groups.""" .
+
+gtfs:LocationsFile a gtfs:DatasetFile ;
+    gtfs:fileName "locations.geojson" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Zones for rider pickup or drop-off requests by on-demand services, represented as GeoJSON polygons.""" .
+
+gtfs:BookingRulesFile a gtfs:DatasetFile ;
+    gtfs:fileName "booking_rules.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Booking information for rider-requested services.""" .
+
+gtfs:TranslationsFile a gtfs:DatasetFile ;
+    gtfs:fileName "translations.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Translations of customer-facing dataset values.""" .
+
+gtfs:FeedInfoFile a gtfs:DatasetFile ;
+    gtfs:fileName "feed_info.txt" ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Dataset metadata, including publisher, version, and expiration information.""" ;
+    skos:note """Conditionally Required: Required if translations.txt is provided. Recommended otherwise.""" .
+
+gtfs:AttributionsFile a gtfs:DatasetFile ;
+    gtfs:fileName "attributions.txt" ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Dataset attributions.""" .
+
+# -------
+# Classes
+# -------
+
+gtfs:Agency a owl:Class ;
+    skos:prefLabel "Agency" ;
+    gtfs:definedBy gtfs:AgencyFile .
+
+gtfs:Stop a owl:Class ;
+    skos:prefLabel "Stop" ;
+    gtfs:definedBy gtfs:StopsFile .
+
+gtfs:Route a owl:Class ;
+    skos:prefLabel "Route" ;
+    gtfs:definedBy gtfs:RoutesFile .
+
+gtfs:Shape a owl:Class ;
+    skos:prefLabel "Shape" ;
+    gtfs:definedBy gtfs:ShapesFile .
+
+gtfs:Calendar a owl:Class ;
+    skos:prefLabel "Calendar" ;
+    gtfs:definedBy gtfs:CalendarFile .
+
+gtfs:Trip a owl:Class ;
+    skos:prefLabel "Trip" ;
+    gtfs:definedBy gtfs:TripsFile .
+
+gtfs:StopTime a owl:Class ;
+    skos:prefLabel "StopTime" ;
+    gtfs:definedBy gtfs:StopTimesFile .
+
+gtfs:CalendarDate a owl:Class ;
+    skos:prefLabel "CalendarDate" ;
+    gtfs:definedBy gtfs:CalendarDatesFile .
+
+gtfs:FareAttribute a owl:Class ;
+    skos:prefLabel "FareAttribute" ;
+    gtfs:definedBy gtfs:FareAttributesFile .
+
+gtfs:FareRule a owl:Class ;
+    skos:prefLabel "FareRule" ;
+    gtfs:definedBy gtfs:FareRulesFile .
+
+gtfs:Timeframe a owl:Class ;
+    skos:prefLabel "Timeframe" ;
+    gtfs:definedBy gtfs:TimeframesFile .
+
+gtfs:RiderCategory a owl:Class ;
+    skos:prefLabel "RiderCategory" ;
+    gtfs:definedBy gtfs:RiderCategoriesFile .
+
+gtfs:FareMedia a owl:Class ;
+    skos:prefLabel "FareMedia" ;
+    gtfs:definedBy gtfs:FareMediaFile .
+
+gtfs:FareProduct a owl:Class ;
+    skos:prefLabel "FareProduct" ;
+    gtfs:definedBy gtfs:FareProductsFile .
+
+gtfs:FareLegRule a owl:Class ;
+    skos:prefLabel "FareLegRule" ;
+    gtfs:definedBy gtfs:FareLegRulesFile .
+
+gtfs:FareLegJoinRule a owl:Class ;
+    skos:prefLabel "FareLegJoinRule" ;
+    gtfs:definedBy gtfs:FareLegJoinRulesFile .
+
+gtfs:FareTransferRule a owl:Class ;
+    skos:prefLabel "FareTransferRule" ;
+    gtfs:definedBy gtfs:FareTransferRulesFile .
+
+gtfs:Area a owl:Class ;
+    skos:prefLabel "Area" ;
+    gtfs:definedBy gtfs:AreasFile .
+
+gtfs:StopArea a owl:Class ;
+    skos:prefLabel "StopArea" ;
+    gtfs:definedBy gtfs:StopAreasFile .
+
+gtfs:Network a owl:Class ;
+    skos:prefLabel "Network" ;
+    gtfs:definedBy gtfs:NetworksFile .
+
+gtfs:RouteNetwork a owl:Class ;
+    skos:prefLabel "RouteNetwork" ;
+    gtfs:definedBy gtfs:RouteNetworksFile .
+
+gtfs:Frequency a owl:Class ;
+    skos:prefLabel "Frequency" ;
+    gtfs:definedBy gtfs:FrequenciesFile .
+
+gtfs:Transfer a owl:Class ;
+    skos:prefLabel "Transfer" ;
+    gtfs:definedBy gtfs:TransfersFile .
+
+gtfs:Pathway a owl:Class ;
+    skos:prefLabel "Pathway" ;
+    gtfs:definedBy gtfs:PathwaysFile .
+
+gtfs:Level a owl:Class ;
+    skos:prefLabel "Level" ;
+    gtfs:definedBy gtfs:LevelsFile .
+
+gtfs:LocationGroup a owl:Class ;
+    skos:prefLabel "LocationGroup" ;
+    gtfs:definedBy gtfs:LocationGroupsFile .
+
+gtfs:LocationGroupStop a owl:Class ;
+    skos:prefLabel "LocationGroupStop" ;
+    gtfs:definedBy gtfs:LocationGroupStopsFile .
+
+gtfs:Location a owl:Class ;
+    skos:prefLabel "Location" ;
+    gtfs:definedBy gtfs:LocationsFile .
+
+gtfs:BookingRule a owl:Class ;
+    skos:prefLabel "BookingRule" ;
+    gtfs:definedBy gtfs:BookingRulesFile .
+
+gtfs:Translation a owl:Class ;
+    skos:prefLabel "Translation" ;
+    gtfs:definedBy gtfs:TranslationsFile .
+
+gtfs:FeedInfo a owl:Class ;
+    skos:prefLabel "FeedInfo" ;
+    gtfs:definedBy gtfs:FeedInfoFile .
+
+gtfs:Attribution a owl:Class ;
+    skos:prefLabel "Attribution" ;
+    gtfs:definedBy gtfs:AttributionsFile .
+
+# -----------------
+# Field Definitions
+# -----------------
+
+gtfs:Field a owl:Class .
+
+# Fields of agency.txt
+
+gtfs:agency_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Identifies a transit brand which is often synonymous with a transit agency. Note that in some cases, such as when a single agency operates multiple separate services, agencies and brands are distinct. This document uses the term \"agency\" in place of \"brand\". A dataset may contain data from multiple agencies.""" .
+
+gtfs:agency_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Full name of the transit agency.""" .
+
+gtfs:agency_url a gtfs:Field ;
+    gtfs:fieldType gtfs:URL ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """URL of the transit agency.""" .
+
+gtfs:agency_timezone a gtfs:Field ;
+    gtfs:fieldType gtfs:Timezone ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Timezone where the transit agency is located. If multiple agencies are specified in the dataset, each must have the same agency_timezone.""" .
+
+gtfs:agency_lang a gtfs:Field ;
+    gtfs:fieldType gtfs:LanguageCode ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Primary language used by this transit agency. Should be provided to help GTFS consumers choose capitalization rules and other language-specific settings for the dataset.""" .
+
+gtfs:agency_phone a gtfs:Field ;
+    gtfs:fieldType gtfs:PhoneNumber ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """A voice telephone number for the specified agency. This field is a string value that presents the telephone number as typical for the agency's service area. It may contain punctuation marks to group the digits of the number. Dialable text (for example, TriMet's \"503-238-RIDE\") is permitted, but the field must not contain any other descriptive text.""" .
+
+gtfs:agency_fare_url a gtfs:Field ;
+    gtfs:fieldType gtfs:URL ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """URL of a web page where a rider can purchase tickets or other fare instruments for that agency, or a web page containing information about that agency's fares.""" .
+
+gtfs:agency_email a gtfs:Field ;
+    gtfs:fieldType gtfs:Email ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Email address actively monitored by the agency's customer service department. This email address should be a direct contact point where transit riders can reach a customer service representative at the agency.""" .
+
+gtfs:cemv_support a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Indicates if riders can access a transit service (i.e., trip) associated with this agency by using a contactless EMV (Europay, Mastercard, and Visa) card or mobile device as fare media at a fare validator (such as in pay-as-you-go or open-loop systems). This field does not indicate that cEMV can be used to purchase other fare products or to add value to another fare media. Support for cEMVs should only be indicated if all services under this agency are accessible with the use of cEMV cards or mobile devices as fare media. If both agency.cemv_support and routes.cemv_support are provided for the same service, the value in routes.cemv_support shall take precedence. This field is independent of all other fare-related files and may be used separately. If there is conflicting information between this field and any fare-related file (such as fare_media.txt, fare_products.txt, or fare_leg_rules.txt), the information in those files shall take precedence over agency.cemv_support.""" .
+
+# Fields of stops.txt
+
+gtfs:stop_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a location: stop/platform, station, entrance/exit, generic node or boarding area (see location_type).""" .
+
+gtfs:stop_code a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Short text or a number that identifies the location for riders. These codes are often used in phone-based transit information systems or printed on signage to make it easier for riders to get information for a particular location. The stop_code may be the same as stop_id if it is public facing. This field should be left empty for locations without a code presented to riders.""" .
+
+gtfs:stop_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Name of the location. The stop_name should match the agency's rider-facing name for the location as printed on a timetable, published online, or represented on signage. For translations into other languages, use translations.txt. When the location is a boarding area (location_type=4), the stop_name should contains the name of the boarding area as displayed by the agency. It could be just one letter (like on some European intercity railway stations), or text like \"Wheelchair boarding area\" (NYC's Subway) or \"Head of short trains\" (Paris' RER).""" .
+
+gtfs:tts_stop_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Readable version of the stop_name. See \"Text-to-speech field\" in the Term Definitions for more.""" .
+
+gtfs:stop_desc a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Description of the location that provides useful, quality information. Should not be a duplicate of stop_name.""" .
+
+gtfs:stop_lat a gtfs:Field ;
+    gtfs:fieldType gtfs:Latitude ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Latitude of the location. For stops/platforms (location_type=0) and boarding area (location_type=4), the coordinates must be the ones of the bus pole — if exists — and otherwise of where the travelers are boarding the vehicle (on the sidewalk or the platform, and not on the roadway or the track where the vehicle stops).""" .
+
+gtfs:stop_lon a gtfs:Field ;
+    gtfs:fieldType gtfs:Longitude ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Longitude of the location. For stops/platforms (location_type=0) and boarding area (location_type=4), the coordinates must be the ones of the bus pole — if exists — and otherwise of where the travelers are boarding the vehicle (on the sidewalk or the platform, and not on the roadway or the track where the vehicle stops).""" .
+
+gtfs:zone_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies the fare zone for a stop. If this record represents a station or station entrance, the zone_id is ignored.""" .
+
+gtfs:stop_url a gtfs:Field ;
+    gtfs:fieldType gtfs:URL ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """URL of a web page about the location. This should be different from the agency.agency_url and the routes.route_url field values.""" .
+
+gtfs:location_type a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Location type.""" .
+
+gtfs:parent_station a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Defines hierarchy between the different locations defined in stops.txt. It contains the ID of the parent location, as followed: Stop/platform (location_type=0): the parent_station field contains the ID of a station. Station (location_type=1): this field must be empty. Entrance/exit (location_type=2) or generic node (location_type=3): the parent_station field contains the ID of a station (location_type=1). Boarding Area (location_type=4): the parent_station field contains ID of a platform.""" .
+
+gtfs:stop_timezone a gtfs:Field ;
+    gtfs:fieldType gtfs:Timezone ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Timezone of the location. If the location has a parent station, it inherits the parent station's timezone instead of applying its own. Stations and parentless stops with empty stop_timezone inherit the timezone specified by agency.agency_timezone. The times provided in stop_times.txt are in the timezone specified by agency.agency_timezone, not stop_timezone. This ensures that the time values in a trip always increase over the course of a trip, regardless of which timezones the trip crosses.""" .
+
+gtfs:wheelchair_boarding a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Indicates whether wheelchair boardings are possible from the location.""" .
+
+gtfs:level_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Level of the location. The same level may be used by multiple unlinked stations.""" .
+
+gtfs:platform_code a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Platform identifier for a platform stop (a stop belonging to a station). This should be just the platform identifier (eg. \"G\" or \"3\"). Words like \"platform\" or \"track\" (or the feed's language-specific equivalent) should not be included. This allows feed consumers to more easily internationalize and localize the platform identifier into other languages.""" .
+
+gtfs:stop_access a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Indicates how the stop is accessed for a particular station. When stop_access is empty, the access for the specified stop or platform is considered undefined.""" .
+
+# Fields of routes.txt
+
+gtfs:route_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a route.""" .
+
+gtfs:agency_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Agency for the specified route.""" .
+
+gtfs:route_short_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Short name of a route. Often a short, abstract identifier (e.g., \"32\", \"100X\", \"Green\") that riders use to identify a route. Both route_short_name and route_long_name may be defined.""" .
+
+gtfs:route_long_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Full name of a route. This name is generally more descriptive than the route_short_name and often includes the route's destination or stop. Both route_short_name and route_long_name may be defined.""" .
+
+gtfs:route_desc a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Description of a route that provides useful, quality information. Should not be a duplicate of route_short_name or route_long_name.""" .
+
+gtfs:route_type a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Indicates the type of transportation used on a route.""" .
+
+gtfs:route_url a gtfs:Field ;
+    gtfs:fieldType gtfs:URL ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """URL of a web page about the particular route. Should be different from the agency.agency_url value.""" .
+
+gtfs:route_color a gtfs:Field ;
+    gtfs:fieldType gtfs:Color ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Route color designation that matches public facing material. Defaults to white (FFFFFF) when omitted or left empty. The color difference between route_color and route_text_color should provide sufficient contrast when viewed on a black and white screen.""" .
+
+gtfs:route_text_color a gtfs:Field ;
+    gtfs:fieldType gtfs:Color ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Legible color to use for text drawn against a background of route_color. Defaults to black (000000) when omitted or left empty. The color difference between route_color and route_text_color should provide sufficient contrast when viewed on a black and white screen.""" .
+
+gtfs:route_sort_order a gtfs:Field ;
+    gtfs:fieldType gtfs:NonNegativeInteger ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Orders the routes in a way which is ideal for presentation to customers. Routes with smaller route_sort_order values should be displayed first.""" .
+
+gtfs:continuous_pickup a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Indicates that the rider can board the transit vehicle at any point along the vehicle's travel path as described by shapes.txt, on every trip of the route. Values for routes.continuous_pickup may be overridden by defining values in stop_times.continuous_pickup for specific stop_times along the route.""" .
+
+gtfs:continuous_drop_off a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Indicates that the rider can alight from the transit vehicle at any point along the vehicle's travel path as described by shapes.txt, on every trip of the route. Values for routes.continuous_drop_off may be overridden by defining values in stop_times.continuous_drop_off for specific stop_times along the route.""" .
+
+gtfs:network_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ID ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Identifies a group of routes. Multiple rows in routes.txt may have the same network_id.""" .
+
+gtfs:cemv_support a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Indicates if riders can access a transit service (i.e., trip) associated with this route by using a contactless EMV (Europay, Mastercard, and Visa) card or mobile device as fare media at a fare validator (such as in pay-as-you-go or open-loop systems). This field does not indicate that cEMV can be used to purchase other fare products or to add value to another fare media. Support for cEMVs should only be indicated if all services under this route are accessible with the use of cEMV cards or mobile devices as fare media. If both agency.cemv_support and routes.cemv_support are provided for the same service, the value in routes.cemv_support shall take precedence. This field is independent of all other fare-related files and may be used separately. If there is conflicting information between this field and any fare-related file (such as fare_media.txt, fare_products.txt, or fare_leg_rules.txt), the information in those files shall take precedence over agency.cemv_support.""" .
+
+# Fields of shapes.txt
+
+gtfs:shape_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a shape.""" .
+
+gtfs:shape_pt_lat a gtfs:Field ;
+    gtfs:fieldType gtfs:Latitude ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Latitude of a shape point. Each record in shapes.txt represents a shape point used to define the shape.""" .
+
+gtfs:shape_pt_lon a gtfs:Field ;
+    gtfs:fieldType gtfs:Longitude ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Longitude of a shape point.""" .
+
+gtfs:shape_pt_sequence a gtfs:Field ;
+    gtfs:fieldType gtfs:NonNegativeInteger ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Sequence in which the shape points connect to form the shape. Values must increase along the trip but do not need to be consecutive.""" .
+
+gtfs:shape_dist_traveled a gtfs:Field ;
+    gtfs:fieldType gtfs:NonNegativeFloat ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Actual distance traveled along the shape from the first shape point to the point specified in this record. Used by trip planners to show the correct portion of the shape on a map. Values must increase along with shape_pt_sequence; they must not be used to show reverse travel along a route. Distance units must be consistent with those used in stop_times.txt.""" .
+
+# Fields of calendar.txt
+
+gtfs:service_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a set of dates when service is available for one or more routes.""" .
+
+gtfs:monday a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Indicates whether the service operates on all Mondays in the date range specified by the start_date and end_date fields. Note that exceptions for particular dates may be listed in calendar_dates.txt.""" .
+
+gtfs:tuesday a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Functions in the same way as monday except applies to Tuesdays.""" .
+
+gtfs:wednesday a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Functions in the same way as monday except applies to Wednesdays.""" .
+
+gtfs:thursday a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Functions in the same way as monday except applies to Thursdays.""" .
+
+gtfs:friday a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Functions in the same way as monday except applies to Fridays.""" .
+
+gtfs:saturday a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Functions in the same way as monday except applies to Saturdays.""" .
+
+gtfs:sunday a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Functions in the same way as monday except applies to Sundays.""" .
+
+gtfs:start_date a gtfs:Field ;
+    gtfs:fieldType gtfs:Date ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Start service day for the service interval.""" .
+
+gtfs:end_date a gtfs:Field ;
+    gtfs:fieldType gtfs:Date ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """End service day for the service interval. This service day is included in the interval.""" .
+
+# Fields of trips.txt
+
+gtfs:route_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a route.""" .
+
+gtfs:service_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a set of dates when service is available for one or more routes.""" .
+
+gtfs:trip_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a trip.""" .
+
+gtfs:trip_headsign a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Text that appears on signage identifying the trip's destination to riders. This field is recommended for all services with headsign text displayed on the vehicle which may be used to distinguish amongst trips in a route.""" .
+
+gtfs:trip_short_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Public-facing text used to identify the trip to riders, for instance, to identify train numbers for commuter rail trips. If riders do not commonly rely on trip names, trip_short_name should be empty.""" .
+
+gtfs:direction_id a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Indicates the direction of travel for a trip. This field should not be used in routing; it provides a way to separate trips by direction when publishing time tables.""" .
+
+gtfs:block_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies the block to which the trip belongs. A block consists of a single trip or many sequential trips made using the same vehicle, defined by shared service days and block_id. A block_id may have trips with different service days, making distinct blocks.""" .
+
+gtfs:shape_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Identifies a geospatial shape describing the vehicle travel path for a trip.""" .
+
+gtfs:wheelchair_accessible a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Indicates wheelchair accessibility.""" .
+
+gtfs:bikes_allowed a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Indicates whether bikes are allowed.""" .
+
+gtfs:cars_allowed a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Indicates whether cars are allowed.""" .
+
+gtfs:safe_duration_factor a gtfs:Field ;
+    gtfs:fieldType gtfs:Float ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Multiplier applied to travel time estimates calculated for on-demand trips.""" .
+
+gtfs:safe_duration_offset a gtfs:Field ;
+    gtfs:fieldType gtfs:Float ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Fixed offset value in seconds applied to travel time estimates calculated for on-demand trips.""" .
+
+# Fields of stop_times.txt
+
+gtfs:trip_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a trip.""" .
+
+gtfs:arrival_time a gtfs:Field ;
+    gtfs:fieldType gtfs:Time ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Arrival time at the stop (defined by stop_times.stop_id) for a specific trip (defined by stop_times.trip_id) in the time zone specified by agency.agency_timezone, not stops.stop_timezone.""" .
+
+gtfs:departure_time a gtfs:Field ;
+    gtfs:fieldType gtfs:Time ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Departure time from the stop (defined by stop_times.stop_id) for a specific trip (defined by stop_times.trip_id) in the time zone specified by agency.agency_timezone, not stops.stop_timezone.""" .
+
+gtfs:stop_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Identifies the serviced stop.""" .
+
+gtfs:location_group_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Identifies the serviced location group that indicates groups of stops where riders may request pickup or drop off.""" .
+
+gtfs:location_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Identifies the GeoJSON location that corresponds to serviced zone where riders may request pickup or drop off.""" .
+
+gtfs:stop_sequence a gtfs:Field ;
+    gtfs:fieldType gtfs:NonNegativeInteger ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Order of stops, location groups, or GeoJSON locations for a particular trip. The values must increase along the trip but do not need to be consecutive.""" .
+
+gtfs:stop_headsign a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Text that appears on signage identifying the trip's destination to riders. This field overrides the default trips.trip_headsign when the headsign changes between stops. If the headsign is displayed for an entire trip, trips.trip_headsign should be used instead.""" .
+
+gtfs:start_pickup_drop_off_window a gtfs:Field ;
+    gtfs:fieldType gtfs:Time ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Time that on-demand service becomes available in a GeoJSON location, location group, or stop.""" .
+
+gtfs:end_pickup_drop_off_window a gtfs:Field ;
+    gtfs:fieldType gtfs:Time ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Time that on-demand service ends in a GeoJSON location, location group, or stop.""" .
+
+gtfs:pickup_type a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Indicates pickup method.""" .
+
+gtfs:drop_off_type a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Indicates drop off method.""" .
+
+gtfs:continuous_pickup a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Indicates that the rider can board the transit vehicle at any point along the vehicle’s travel path as described by shapes.txt, from this stop_time to the next stop_time in the trip's stop_sequence.""" .
+
+gtfs:continuous_drop_off a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Indicates that the rider can alight from the transit vehicle at any point along the vehicle’s travel path as described by shapes.txt, from this stop_time to the next stop_time in the trip's stop_sequence.""" .
+
+gtfs:shape_dist_traveled a gtfs:Field ;
+    gtfs:fieldType gtfs:NonNegativeFloat ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Actual distance traveled along the associated shape, from the first stop to the stop specified in this record. This field specifies how much of the shape to draw between any two stops during a trip.""" .
+
+gtfs:timepoint a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Indicates if arrival and departure times for a stop are strictly adhered to by the vehicle or if they are instead approximate and/or interpolated times.""" .
+
+gtfs:pickup_booking_rule_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies the boarding booking rule at this stop time.""" .
+
+gtfs:drop_off_booking_rule_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies the alighting booking rule at this stop time.""" .
+
+# Fields of calendar_dates.txt
+
+gtfs:service_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a set of dates when a service exception occurs for one or more routes. Each (service_id, date) pair may only appear once in calendar_dates.txt if using calendar.txt and calendar_dates.txt in conjunction. If a service_id value appears in both calendar.txt and calendar_dates.txt, the information in calendar_dates.txt modifies the service information specified in calendar.txt.""" .
+
+gtfs:date a gtfs:Field ;
+    gtfs:fieldType gtfs:Date ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Date when service exception occurs.""" .
+
+gtfs:exception_type a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Indicates whether service is available on the date specified in the date field.<hr>*Example:* Suppose a route has one set of trips available on holidays and another set of trips available on all other days. One service_id could correspond to the regular service schedule and another service_id could correspond to the holiday schedule. For a particular holiday, the calendar_dates.txt file could be used to add the holiday to the holiday service_id and to remove the holiday from the regular service_id schedule.""" .
+
+# Fields of fare_attributes.txt
+
+gtfs:fare_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a fare class.""" .
+
+gtfs:price a gtfs:Field ;
+    gtfs:fieldType gtfs:NonNegativeFloat ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Fare price, in the unit specified by currency_type.""" .
+
+gtfs:currency_type a gtfs:Field ;
+    gtfs:fieldType gtfs:CurrencyCode ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Currency used to pay the fare.""" .
+
+gtfs:payment_method a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Indicates when the fare must be paid.""" .
+
+gtfs:transfers a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Indicates the number of transfers permitted on this fare.""" .
+
+gtfs:agency_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Identifies the relevant agency for a fare.""" .
+
+gtfs:transfer_duration a gtfs:Field ;
+    gtfs:fieldType gtfs:NonNegativeInteger ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Length of time in seconds before a transfer expires. When transfers=0 this field may be used to indicate how long a ticket is valid for or it may be left empty.""" .
+
+# Fields of fare_rules.txt
+
+gtfs:fare_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a fare class.""" .
+
+gtfs:route_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies a route associated with the fare class. If several routes with the same fare attributes exist, create a record in fare_rules.txt for each route.<hr>*Example:* If fare class \"b\" is valid on route \"TSW\" and \"TSE\", fare_rules.txt would contain records: fare_id,route_id / b,TSW / b,TSE.""" .
+
+gtfs:origin_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies an origin zone. If a fare class has multiple origin zones, create a record in fare_rules.txt for each origin_id.<hr>*Example:* If fare class \"b\" is valid for all travel originating from either zone \"2\" or zone \"8\", fare_rules.txt would contain: fare_id,...,origin_id / b,...,2 / b,...,8.""" .
+
+gtfs:destination_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies a destination zone. If a fare class has multiple destination zones, create a record in fare_rules.txt for each destination_id.<hr>*Example:* The origin_id and destination_id fields can be used together to specify that fare class \"b\" is valid for travel between zones 3 and 4, and between zones 3 and 5: fare_id,...,origin_id,destination_id / b,...,3,4 / b,...,3,5.""" .
+
+gtfs:contains_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies the zones that a rider will enter while using a given fare class. Used in some systems to calculate correct fare class.<hr>*Example:* If fare class \"c\" is associated with all travel on the GRT route that passes through zones 5, 6, and 7, fare_rules.txt would contain records for contains_id 5, 6, and 7. Because all contains_id zones must be matched for the fare to apply, an itinerary that passes through zones 5 and 6 but not zone 7 would not have fare class \"c\".""" .
+
+# Fields of timeframes.txt
+
+gtfs:timeframe_group_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a timeframe or set of timeframes.""" .
+
+gtfs:start_time a gtfs:Field ;
+    gtfs:fieldType gtfs:LocalTime ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Defines the beginning of a timeframe. The interval includes the start time. Values greater than 24:00:00 are forbidden. An empty value in start_time is considered 00:00:00.""" .
+
+gtfs:end_time a gtfs:Field ;
+    gtfs:fieldType gtfs:LocalTime ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Defines the end of a timeframe. The interval does not include the end time. Values greater than 24:00:00 are forbidden. An empty value in end_time is considered 24:00:00.""" .
+
+gtfs:service_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a set of dates that a timeframe is in effect.""" .
+
+# Fields of rider_categories.txt
+
+gtfs:rider_category_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a rider category.""" .
+
+gtfs:rider_category_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Rider category name as displayed to the rider.""" .
+
+gtfs:is_default_fare_category a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Specifies if an entry in rider_categories.txt should be considered the default category (i.e. the main category that should be displayed to riders). For example, Adult fare, Regular fare, etc. When multiple rider categories are eligible for a single fare product specified by a fare_product_id, there must be exactly one eligible rider category indicated as the default rider category (is_default_fare_category=1).""" .
+
+gtfs:eligibility_url a gtfs:Field ;
+    gtfs:fieldType gtfs:URL ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """URL of a web page, usually from the operating agency, that provides detailed information about a specific rider category and/or describes its eligibility criteria.""" .
+
+# Fields of fare_media.txt
+
+gtfs:fare_media_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a fare media.""" .
+
+gtfs:fare_media_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Name of the fare media. For fare media which are transit cards (fare_media_type=2) or mobile apps (fare_media_type=4), fare_media_name should be included and should match the rider-facing name used by the organizations delivering them.""" .
+
+gtfs:fare_media_type a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """The type of fare media.""" .
+
+# Fields of fare_products.txt
+
+gtfs:fare_product_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a fare product or set of fare products. Multiple records sharing the same fare_product_id are permitted as long as they contain different fare_media_id values or rider_category_id values.""" .
+
+gtfs:fare_product_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """The name of the fare product as displayed to riders.""" .
+
+gtfs:rider_category_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies a rider category eligible for the fare product. If fare_products.rider_category_id is empty, the fare product is eligible for any rider_category_id. When multiple rider categories are eligible for a single fare product specified by a fare_product_id, there must be only one of these rider categories indicated as the default rider category (is_default_fare_category=1).""" .
+
+gtfs:fare_media_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies a fare media that can be employed to use the fare product during the trip. When fare_media_id is empty, it is considered that the fare media is unknown.""" .
+
+gtfs:amount a gtfs:Field ;
+    gtfs:fieldType gtfs:CurrencyAmount ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """The cost of the fare product. May be negative to represent transfer discounts. May be zero to represent a fare product that is free. The currency amount must contain the number of decimal places specified by the norm ISO 4217 for the accompanying Currency code.<hr>*Example:* If the fare is 2 US Dollars, the amount is 2.00 instead of 2.""" .
+
+gtfs:currency a gtfs:Field ;
+    gtfs:fieldType gtfs:CurrencyCode ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """The currency of the cost of the fare product.""" .
+
+# Fields of fare_leg_rules.txt
+
+gtfs:leg_group_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies a group of entries in fare_leg_rules.txt. Used to describe fare transfer rules between fare_transfer_rules.from_leg_group_id and fare_transfer_rules.to_leg_group_id. Multiple entries may belong to the same leg_group_id. The same entry (not including leg_group_id) must not belong to multiple leg_group_id values.""" .
+
+gtfs:network_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies a route network that applies for the fare leg rule. If rule_priority does not exist and there are no matching network_id values, empty network_id entries will be matched by default and correspond to all networks defined in routes.txt or networks.txt excluding the ones listed under fare_leg_rules.network_id. If rule_priority exists, an empty network_id indicates the route network of the leg does not affect the matching of this rule. When matching against an effective fare leg of multiple legs, each leg must have the same network_id.""" .
+
+gtfs:from_area_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies a departure area. If rule_priority does not exist and there are no matching from_area_id values, empty from_area_id entries will be matched by default and correspond to all areas defined in areas.area_id excluding the ones listed under fare_leg_rules.from_area_id. If rule_priority exists, an empty from_area_id indicates the departure area does not affect the matching of this rule. When matching against an effective fare leg of multiple legs, the first leg is used for determining the departure area.""" .
+
+gtfs:to_area_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies an arrival area. If rule_priority does not exist and there are no matching to_area_id values, empty to_area_id entries will be matched by default and correspond to all areas defined in areas.area_id excluding the ones listed under fare_leg_rules.to_area_id. If rule_priority exists, an empty to_area_id indicates the arrival area does not affect the matching of this rule. When matching against an effective fare leg of multiple legs, the last leg is used for determining the arrival area.""" .
+
+gtfs:from_timeframe_group_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Defines the timeframe for the fare validation event at the start of the fare leg. The \"start time\" of the fare leg is the time at which the event is scheduled to occur. For example, the time could be the scheduled departure time of a bus at the start of a fare leg where the rider boards and validates their fare. The start time is computed in local time as determined by the Local Time Semantics of timeframes.txt, using the stop or station of the fare leg's departure event for timezone resolution when appropriate. For a fare leg rule that specifies a from_timeframe_group_id, the rule matches a leg if there exists a record in timeframes.txt where: (1) timeframe_group_id equals from_timeframe_group_id, (2) the set of days identified by service_id contains the current day of the fare leg's start time, and (3) the time-of-day of the fare leg's start time is greater than or equal to timeframes.start_time and less than timeframes.end_time. An empty from_timeframe_group_id indicates that the start time of the leg does not affect the matching of this rule. When matching against an effective fare leg of multiple legs, the first leg is used for determining the starting fare validation event.""" .
+
+gtfs:to_timeframe_group_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Defines the timeframe for the fare validation event at the end of the fare leg. The \"end time\" of the fare leg is the time at which the event is scheduled to occur. For example, the time could be the scheduled arrival time of a bus at the end of a fare leg where the rider gets off and validates their fare. The end time is computed in local time as determined by the Local Time Semantics of timeframes.txt, using the stop or station of the fare leg's arrival event for timezone resolution when appropriate. For a fare leg rule that specifies a to_timeframe_group_id, the rule matches a leg if there exists a record in timeframes.txt where: (1) timeframe_group_id equals to_timeframe_group_id, (2) the set of days identified by service_id contains the current day of the fare leg's end time, and (3) the time-of-day of the fare leg's end time is greater than or equal to timeframes.start_time and less than timeframes.end_time. An empty to_timeframe_group_id indicates that the end time of the leg does not affect the matching of this rule. When matching against an effective fare leg of multiple legs, the last leg is used for determining the ending fare validation event.""" .
+
+gtfs:fare_product_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """The fare product required to travel the leg.""" .
+
+gtfs:rule_priority a gtfs:Field ;
+    gtfs:fieldType gtfs:NonNegativeInteger ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Defines the order of priority in which matching rules are applied to legs, allowing certain rules to take precedence over others. When multiple entries match, the rule or set of rules with the highest value for rule_priority will be selected. An empty value for rule_priority is treated as zero.""" .
+
+# Fields of fare_leg_join_rules.txt
+
+gtfs:from_network_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Matches a pre-transfer leg that uses the specified route network. If specified, the same to_network_id must also be specified.""" .
+
+gtfs:to_network_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Matches a post-transfer leg that uses the specified route network. If specified, the same from_network_id must also be specified.""" .
+
+gtfs:from_stop_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Matches a pre-transfer leg that ends at the specified stop (location_type=0 or empty) or station (location_type=1).""" .
+
+gtfs:to_stop_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Matches a post-transfer leg that starts at the specified stop (location_type=0 or empty) or station (location_type=1).""" .
+
+# Fields of fare_transfer_rules.txt
+
+gtfs:from_leg_group_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies a group of pre-transfer fare leg rules. If there are no matching from_leg_group_id values to the leg_group_id being filtered, empty from_leg_group_id entries will be matched by default and correspond to all leg groups defined under fare_leg_rules.leg_group_id excluding the ones listed under fare_transfer_rules.from_leg_group_id.""" .
+
+gtfs:to_leg_group_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies a group of post-transfer fare leg rules. If there are no matching to_leg_group_id values to the leg_group_id being filtered, empty to_leg_group_id entries will be matched by default and correspond to all leg groups defined under fare_leg_rules.leg_group_id excluding the ones listed under fare_transfer_rules.to_leg_group_id.""" .
+
+gtfs:transfer_count a gtfs:Field ;
+    gtfs:fieldType gtfs:NonZeroInteger ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Defines how many consecutive transfers the transfer rule may be applied to. Valid options are -1 (no limit) or 1 or more (defines how many transfers the rule may span). If a sub-journey matches multiple records with different transfer_count values, the rule with the minimum transfer_count that is greater than or equal to the current transfer count of the sub-journey is selected.""" .
+
+gtfs:duration_limit a gtfs:Field ;
+    gtfs:fieldType gtfs:PositiveInteger ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Defines the duration limit of the transfer, expressed in integer increments of seconds. If there is no duration limit, duration_limit must be empty.""" .
+
+gtfs:duration_limit_type a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Defines the relative start and end of duration_limit. When a transfer rule with the same from_leg_group_id and to_leg_group_id is matched multiple times consecutively within a multi-leg journey, the duration_limit specified by the rule should be measured starting from the first matched leg.""" .
+
+gtfs:fare_transfer_type a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Indicates the cost processing method of transferring between legs in a journey.""" .
+
+gtfs:fare_product_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """The fare product required to transfer between two fare legs. If empty, the cost of the transfer rule is 0.""" .
+
+# Fields of areas.txt
+
+gtfs:area_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies an area. Must be unique in areas.txt.""" .
+
+gtfs:area_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """The name of the area as displayed to the rider.""" .
+
+# Fields of stop_areas.txt
+
+gtfs:area_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies an area to which one or multiple stop_id values belong. The same stop_id may be defined in many area_id values.""" .
+
+gtfs:stop_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a stop. If a station (location_type=1) is defined in this field, all of its platforms are part of the same area unless platforms are assigned to other areas.""" .
+
+# Fields of networks.txt
+
+gtfs:network_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a network. Must be unique in networks.txt.""" .
+
+gtfs:network_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """The name of the network that applies for fare leg rules, as used by the local agency and its riders.""" .
+
+# Fields of route_networks.txt
+
+gtfs:network_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a network to which one or multiple route_id values belong. A route_id can only be defined in one network_id.""" .
+
+gtfs:route_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a route.""" .
+
+# Fields of frequencies.txt
+
+gtfs:trip_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a trip to which the specified headway of service applies.""" .
+
+gtfs:start_time a gtfs:Field ;
+    gtfs:fieldType gtfs:Time ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Time at which the first vehicle departs from the first stop of the trip with the specified headway.""" .
+
+gtfs:end_time a gtfs:Field ;
+    gtfs:fieldType gtfs:Time ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Time at which service changes to a different headway (or ceases) at the first stop in the trip.""" .
+
+gtfs:headway_secs a gtfs:Field ;
+    gtfs:fieldType gtfs:PositiveInteger ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Time, in seconds, between departures from the same stop for the trip, during the time interval specified by start_time and end_time. Multiple headways may be defined for the same trip, but must not overlap. New headways may start at the exact time the previous headway ends.""" .
+
+gtfs:exact_times a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Indicates the type of service for a trip.""" .
+
+# Fields of transfers.txt
+
+gtfs:from_stop_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Identifies a stop (location_type=0) or a station (location_type=1) where a connection between routes begins. If this field refers to a station, the transfer rule applies to all its child stops. It must refer to a stop (location_type=0) if transfer_type is 4 or 5.""" .
+
+gtfs:to_stop_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Identifies a stop (location_type=0) or a station (location_type=1) where a connection between routes ends. If this field refers to a station, the transfer rule applies to all its child stops. It must refer to a stop (location_type=0) if transfer_type is 4 or 5.""" .
+
+gtfs:from_route_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies a route where a connection begins. If from_route_id is defined, the transfer will apply to the arriving trip on the route for the given from_stop_id. If both from_trip_id and from_route_id are defined, the trip_id must belong to the route_id, and from_trip_id will take precedence.""" .
+
+gtfs:to_route_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies a route where a connection ends. If to_route_id is defined, the transfer will apply to the departing trip on the route for the given to_stop_id. If both to_trip_id and to_route_id are defined, the trip_id must belong to the route_id, and to_trip_id will take precedence.""" .
+
+gtfs:from_trip_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Identifies a trip where a connection between routes begins. If from_trip_id is defined, the transfer will apply to the arriving trip for the given from_stop_id. If both from_trip_id and from_route_id are defined, the trip_id must belong to the route_id, and from_trip_id will take precedence.""" .
+
+gtfs:to_trip_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Identifies a trip where a connection between routes ends. If to_trip_id is defined, the transfer will apply to the departing trip for the given to_stop_id. If both to_trip_id and to_route_id are defined, the trip_id must belong to the route_id, and to_trip_id will take precedence.""" .
+
+gtfs:transfer_type a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Indicates the type of connection for the specified (from_stop_id, to_stop_id) pair.""" .
+
+gtfs:min_transfer_time a gtfs:Field ;
+    gtfs:fieldType gtfs:NonNegativeInteger ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Amount of time, in seconds, that must be available to permit a transfer between routes at the specified stops. The min_transfer_time should be sufficient to permit a typical rider to move between the two stops, including buffer time to allow for schedule variance on each route.""" .
+
+# Fields of pathways.txt
+
+gtfs:pathway_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a pathway. Must be unique in the dataset. Different pathways may have the same from_stop_id and to_stop_id values. Example: Two escalators side-by-side in opposite directions, or a stair set and elevator going from the same place to the same place.""" .
+
+gtfs:from_stop_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Location at which the pathway begins. Must identify a platform (location_type=0 or empty), entrance/exit (location_type=2), generic node (location_type=3) or boarding area (location_type=4). Values that identify stations (location_type=1), or stops with stop_access=1, are forbidden.""" .
+
+gtfs:to_stop_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Location at which the pathway ends. Must identify a platform (location_type=0 or empty), entrance/exit (location_type=2), generic node (location_type=3) or boarding area (location_type=4). Values that identify stations (location_type=1), or stops with stop_access=1, are forbidden.""" .
+
+gtfs:pathway_mode a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Type of pathway between the specified (from_stop_id, to_stop_id) pair.""" .
+
+gtfs:is_bidirectional a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Indicates the direction that the pathway can be taken.""" .
+
+gtfs:length a gtfs:Field ;
+    gtfs:fieldType gtfs:NonNegativeFloat ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Horizontal length in meters of the pathway from the origin location to the destination location. Recommended for walkways (pathway_mode=1), fare gates (pathway_mode=6) and exit gates (pathway_mode=7).""" .
+
+gtfs:traversal_time a gtfs:Field ;
+    gtfs:fieldType gtfs:PositiveInteger ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Average time in seconds needed to walk through the pathway from the origin location to the destination location. Recommended for moving sidewalks (pathway_mode=3), escalators (pathway_mode=4) and elevators (pathway_mode=5).""" .
+
+gtfs:stair_count a gtfs:Field ;
+    gtfs:fieldType gtfs:NonNullInteger ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Number of stairs of the pathway. A positive value implies walking up; a negative value implies walking down. Recommended for stairs (pathway_mode=2). If only an estimated stair count can be provided, approximate 15 stairs for 1 floor.""" .
+
+gtfs:max_slope a gtfs:Field ;
+    gtfs:fieldType gtfs:Float ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Maximum slope ratio of the pathway. Valid options are 0 or empty for no slope, or a float ratio (positive for upwards, negative for downwards). Should only be used with walkways (pathway_mode=1) and moving sidewalks (pathway_mode=3). Example: 0.083 (8.3%) is the maximum slope ratio for hand-propelled wheelchairs in the US.""" .
+
+gtfs:min_width a gtfs:Field ;
+    gtfs:fieldType gtfs:PositiveFloat ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Minimum width of the pathway in meters. Recommended if the minimum width is less than 1 meter.""" .
+
+gtfs:signposted_as a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Public facing text from physical signage that is visible to riders. The text should appear exactly how it is printed on the signs. May be used to provide text directions to riders, such as \"follow signs to\". When the physical signage is multilingual, this field may be populated and translated following the example of stops.stop_name in feed_info.feed_lang.""" .
+
+gtfs:reversed_signposted_as a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Same as signposted_as, but when the pathway is used from the to_stop_id to the from_stop_id.""" .
+
+# Fields of levels.txt
+
+gtfs:level_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a level in a station.""" .
+
+gtfs:level_index a gtfs:Field ;
+    gtfs:fieldType gtfs:Float ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Numeric index of the level that indicates its relative position. Ground level should have index 0, with levels above ground indicated by positive indices and levels below ground by negative indices.""" .
+
+gtfs:level_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Name of the level as seen by the rider inside the building or station.""" .
+
+# Fields of location_groups.txt
+
+gtfs:location_group_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a location group. ID must be unique across all stops.stop_id, locations.geojson id, and location_groups.location_group_id values.""" .
+
+gtfs:location_group_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """The name of the location group as displayed to the rider.""" .
+
+# Fields of location_group_stops.txt
+
+gtfs:location_group_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a location group to which one or multiple stop_id values belong. The same stop_id may be defined in many location_group_id values.""" .
+
+gtfs:stop_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a stop belonging to the location group.""" .
+
+# Fields of locations.geojson
+
+gtfs:type a gtfs:Field ;
+    gtfs:fieldType gtfs:String ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """\"FeatureCollection\" of locations.""" .
+
+gtfs:features a gtfs:Field ;
+    gtfs:fieldType gtfs:Array ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Collection of \"Feature\" objects describing the locations.""" .
+
+# Fields of booking_rules.txt
+
+gtfs:booking_rule_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Identifies a rule.""" .
+
+gtfs:booking_type a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Indicates how far in advance booking can be made.""" .
+
+gtfs:prior_notice_duration_min a gtfs:Field ;
+    gtfs:fieldType gtfs:Integer ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Minimum number of minutes before travel to make the request.""" .
+
+gtfs:prior_notice_duration_max a gtfs:Field ;
+    gtfs:fieldType gtfs:Integer ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Maximum number of minutes before travel to make the booking request.""" .
+
+gtfs:prior_notice_last_day a gtfs:Field ;
+    gtfs:fieldType gtfs:Integer ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Last day before travel to make the booking request. Example: Ride must be booked 1 day in advance before 5PM will be encoded as prior_notice_last_day=1.""" .
+
+gtfs:prior_notice_last_time a gtfs:Field ;
+    gtfs:fieldType gtfs:Time ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Last time on the last day before travel to make the booking request. Example: Ride must be booked 1 day in advance before 5PM will be encoded as prior_notice_last_time=17:00:00.""" .
+
+gtfs:prior_notice_start_day a gtfs:Field ;
+    gtfs:fieldType gtfs:Integer ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Earliest day before travel to make the booking request. Example: Ride can be booked at the earliest one week in advance at midnight will be encoded as prior_notice_start_day=7.""" .
+
+gtfs:prior_notice_start_time a gtfs:Field ;
+    gtfs:fieldType gtfs:Time ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Earliest time on the earliest day before travel to make the booking request. Example: Ride can be booked at the earliest one week in advance at midnight will be encoded as prior_notice_start_time=00:00:00.""" .
+
+gtfs:prior_notice_service_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyForbidden ;
+    skos:definition """Indicates the service days on which prior_notice_last_day or prior_notice_start_day are counted. Example: If empty, prior_notice_start_day=2 will be two calendar days in advance. If defined as a service_id containing only business days, prior_notice_start_day=2 will be two business days in advance.""" .
+
+gtfs:message a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Message to riders utilizing service at a stop_time when booking on-demand pickup and drop off.""" .
+
+gtfs:pickup_message a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Functions in the same way as message but used when riders have on-demand pickup only.""" .
+
+gtfs:drop_off_message a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Functions in the same way as message but used when riders have on-demand drop off only.""" .
+
+gtfs:phone_number a gtfs:Field ;
+    gtfs:fieldType gtfs:PhoneNumber ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Phone number to call to make the booking request.""" .
+
+gtfs:info_url a gtfs:Field ;
+    gtfs:fieldType gtfs:URL ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """URL providing information about the booking rule.""" .
+
+gtfs:booking_url a gtfs:Field ;
+    gtfs:fieldType gtfs:URL ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """URL to an online interface or app where the booking request can be made.""" .
+
+# Fields of translations.txt
+
+gtfs:table_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Defines the table that contains the field to be translated. Any file added to GTFS will have a table_name value equivalent to the file name, not including the .txt file extension.""" .
+
+gtfs:field_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Name of the field to be translated. Fields with type Text may be translated; URL, Email, and Phone number may be translated to provide resources in the correct language. Other types should not be translated.""" .
+
+gtfs:language a gtfs:Field ;
+    gtfs:fieldType gtfs:LanguageCode ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Language of translation. If the language is the same as in feed_info.feed_lang, the original value of the field is assumed to be the default value to use in languages without specific translations (if default_lang does not specify otherwise).""" .
+
+gtfs:translation a gtfs:Field ;
+    gtfs:fieldType gtfs:TextOrURLOrEmailOrPhoneNumber ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Translated value.""" .
+
+gtfs:record_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Defines the record that corresponds to the field to be translated. The value must be the first or only field of a table's primary key as defined in the reference.""" .
+
+gtfs:record_sub_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Secondary ID of the table when the table does not have a unique ID, as defined in the reference.""" .
+
+gtfs:field_value a gtfs:Field ;
+    gtfs:fieldType gtfs:TextOrURLOrEmailOrPhoneNumber ;
+    gtfs:presence gtfs:ConditionallyRequired ;
+    skos:definition """Defines the value which should be translated instead of identifying a specific record. The translation is applied when the field identified by table_name and field_name contains the exact same value defined in field_value. If only a subset of the value matches field_value, the translation is not applied. If two translation rules match the same record (one with field_value and one with record_id), the rule with record_id takes precedence.""" .
+
+# Fields of feed_info.txt
+
+gtfs:feed_publisher_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Full name of the organization that publishes the dataset.""" .
+
+gtfs:feed_publisher_url a gtfs:Field ;
+    gtfs:fieldType gtfs:URL ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """URL of the dataset publishing organization's website.""" .
+
+gtfs:feed_lang a gtfs:Field ;
+    gtfs:fieldType gtfs:LanguageCode ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Default language used for the text in this dataset. The translations.txt file can be used if the text needs to be translated into languages other than the default one. The default language may be multilingual for datasets with the original text in multiple languages; in such cases, feed_lang should contain mul and translations should be provided for each language used in the dataset. If all original text is in the same language, then mul should not be used.""" .
+
+gtfs:default_lang a gtfs:Field ;
+    gtfs:fieldType gtfs:LanguageCode ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Defines the language that should be used when the data consumer does not know the language of the rider.""" .
+
+gtfs:feed_start_date a gtfs:Field ;
+    gtfs:fieldType gtfs:Date ;
+    gtfs:presence gtfs:Recommended ;
+    skos:definition """The dataset provides complete and reliable schedule information for service in the period from the beginning of the feed_start_date day to the end of the feed_end_date day. Both days may be left empty if unavailable. The feed_end_date date must not precede the feed_start_date date if both are given. It is recommended that dataset providers give schedule data outside this period to advise of likely future service, but dataset consumers should treat it mindful of its non-authoritative status. If feed_start_date or feed_end_date extend beyond the active calendar dates defined in calendar.txt and calendar_dates.txt, the dataset asserts there is no service for dates within the feed range but not included in the active calendar dates.""" .
+
+gtfs:feed_end_date a gtfs:Field ;
+    gtfs:fieldType gtfs:Date ;
+    gtfs:presence gtfs:Recommended ;
+    skos:definition """End date for the feed period described by feed_start_date.""" .
+
+gtfs:feed_version a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Recommended ;
+    skos:definition """String that indicates the current version of the GTFS dataset.""" .
+
+gtfs:feed_contact_email a gtfs:Field ;
+    gtfs:fieldType gtfs:Email ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Email address for communication regarding the GTFS dataset and data publishing practices. feed_contact_email is a technical contact for GTFS-consuming applications. Provide customer service contact information through agency.txt. It is recommended that at least one of feed_contact_email or feed_contact_url are provided.""" .
+
+gtfs:feed_contact_url a gtfs:Field ;
+    gtfs:fieldType gtfs:URL ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """URL for contact information regarding the GTFS dataset and data publishing practices. feed_contact_url is a technical contact for GTFS-consuming applications. Provide customer service contact information through agency.txt. It is recommended that at least one of feed_contact_url or feed_contact_email are provided.""" .
+
+# Fields of attributions.txt
+
+gtfs:attribution_id a gtfs:Field ;
+    gtfs:fieldType gtfs:UniqueID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Identifies an attribution for the dataset or a subset of it.""" .
+
+gtfs:agency_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Agency to which the attribution applies. If one agency_id, route_id, or trip_id attribution is defined, the other ones must be empty. If none is specified, the attribution applies to the whole dataset.""" .
+
+gtfs:route_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Functions in the same way as agency_id except the attribution applies to a route.""" .
+
+gtfs:trip_id a gtfs:Field ;
+    gtfs:fieldType gtfs:ForeignID ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Functions in the same way as agency_id except the attribution applies to a trip.""" .
+
+gtfs:organization_name a gtfs:Field ;
+    gtfs:fieldType gtfs:Text ;
+    gtfs:presence gtfs:Required ;
+    skos:definition """Name of the organization that the dataset is attributed to.""" .
+
+gtfs:is_producer a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """The role of the organization is producer. At least one of is_producer, is_operator, or is_authority should be set to 1.""" .
+
+gtfs:is_operator a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Functions in the same way as is_producer except the role of the organization is operator.""" .
+
+gtfs:is_authority a gtfs:Field ;
+    gtfs:fieldType gtfs:Enum ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Functions in the same way as is_producer except the role of the organization is authority.""" .
+
+gtfs:attribution_url a gtfs:Field ;
+    gtfs:fieldType gtfs:URL ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """URL of the organization.""" .
+
+gtfs:attribution_email a gtfs:Field ;
+    gtfs:fieldType gtfs:Email ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Email of the organization.""" .
+
+gtfs:attribution_phone a gtfs:Field ;
+    gtfs:fieldType gtfs:PhoneNumber ;
+    gtfs:presence gtfs:Optional ;
+    skos:definition """Phone number of the organization.""" .
 
-<http://ontology.gtfs.org/reference#> a owl:Ontology ;
-    dct:title "GTFS Ontology" ;
-    dct:description "An ontology for the General Transit Feed Specification (GTFS)." .
-
-#################################################################
-#    Classes
-#################################################################
-
-gtfs:Agency a rdfs:Class .
-gtfs:Stop a rdfs:Class .
-gtfs:Route a rdfs:Class .
-gtfs:Trip a rdfs:Class .
-gtfs:StopTime a rdfs:Class .
-gtfs:Calendar a rdfs:Class .
-gtfs:CalendarDate a rdfs:Class .
-gtfs:FareAttribute a rdfs:Class .
-gtfs:FareRule a rdfs:Class .
-gtfs:Timeframe a rdfs:Class .
-gtfs:RiderCategory a rdfs:Class .
-gtfs:FareMedia a rdfs:Class .
-gtfs:FareProduct a rdfs:Class .
-gtfs:FareLegRule a rdfs:Class .
-gtfs:FareLegJoinRule a rdfs:Class .
-gtfs:FareTransferRule a rdfs:Class .
-gtfs:Area a rdfs:Class .
-gtfs:StopArea a rdfs:Class .
-gtfs:Network a rdfs:Class .
-gtfs:RouteNetwork a rdfs:Class .
-gtfs:Shape a rdfs:Class .
-gtfs:Frequency a rdfs:Class .
-gtfs:Transfer a rdfs:Class .
-gtfs:Pathway a rdfs:Class .
-gtfs:Level a rdfs:Class .
-gtfs:LocationGroup a rdfs:Class .
-gtfs:GeoJsonLocation a rdfs:Class .
-gtfs:BookingRule a rdfs:Class .
-gtfs:FeedInfo a rdfs:Class .
-gtfs:Attribution a rdfs:Class .
-gtfs:Translation a rdfs:Class .
-
-#################################################################
-#    Properties
-#################################################################
-
-gtfs:agency_id a rdf:Property ;
-    rdfs:range xsd:string .
-
-gtfs:agency_name a rdf:Property ;
-    rdfs:domain gtfs:Agency ;
-    rdfs:range xsd:string .
-
-gtfs:agency_url a rdf:Property ;
-    rdfs:domain gtfs:Agency ;
-    rdfs:range xsd:anyURI .
-
-gtfs:agency_timezone a rdf:Property ;
-    rdfs:domain gtfs:Agency ;
-    rdfs:range xsd:string .
-
-gtfs:agency_lang a rdf:Property ;
-    rdfs:domain gtfs:Agency ;
-    rdfs:range xsd:string .
-
-gtfs:agency_phone a rdf:Property ;
-    rdfs:domain gtfs:Agency ;
-    rdfs:range xsd:string .
-
-gtfs:agency_fare_url a rdf:Property ;
-    rdfs:domain gtfs:Agency ;
-    rdfs:range xsd:anyURI .
-
-gtfs:agency_email a rdf:Property ;
-    rdfs:domain gtfs:Agency ;
-    rdfs:range xsd:string .
-
-gtfs:cemv_support a rdf:Property ;
-    rdfs:domain gtfs:Agency ;
-    rdfs:range xsd:integer .
-
-gtfs:stop_id a rdf:Property ;
-    rdfs:range xsd:string .
-
-gtfs:stop_code a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:string .
-
-gtfs:stop_name a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:string .
-
-gtfs:tts_stop_name a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:string .
-
-gtfs:stop_desc a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:string .
-
-gtfs:stop_lat a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:decimal .
-
-gtfs:stop_lon a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:decimal .
-
-gtfs:zone_id a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:string .
-
-gtfs:stop_url a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:anyURI .
-
-gtfs:location_type a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:integer .
-
-gtfs:parent_station a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:string .
-
-gtfs:stop_timezone a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:string .
-
-gtfs:wheelchair_boarding a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:integer .
-
-gtfs:level_id a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:string .
-
-gtfs:platform_code a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:string .
-
-gtfs:stop_access a rdf:Property ;
-    rdfs:domain gtfs:Stop ;
-    rdfs:range xsd:integer .
-
-gtfs:route_id a rdf:Property ;
-    rdfs:range xsd:string .
-
-gtfs:route_short_name a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range xsd:string .
-
-gtfs:route_long_name a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range xsd:string .
-
-gtfs:route_desc a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range xsd:string .
-
-gtfs:route_type a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range xsd:integer .
-
-gtfs:route_url a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range xsd:anyURI .
-
-gtfs:route_color a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range xsd:string .
-
-gtfs:route_text_color a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range xsd:string .
-
-gtfs:route_sort_order a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range xsd:integer .
-
-gtfs:continuous_pickup a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range xsd:integer .
-
-gtfs:continuous_drop_off a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range xsd:integer .
-
-gtfs:network_id a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range xsd:string .
-
-gtfs:service_id a rdf:Property ;
-    rdfs:domain gtfs:Trip ;
-    rdfs:range xsd:string .
-
-gtfs:trip_id a rdf:Property ;
-    rdfs:range xsd:string .
-
-gtfs:trip_headsign a rdf:Property ;
-    rdfs:domain gtfs:Trip ;
-    rdfs:range xsd:string .
-
-gtfs:trip_short_name a rdf:Property ;
-    rdfs:domain gtfs:Trip ;
-    rdfs:range xsd:string .
-
-gtfs:direction_id a rdf:Property ;
-    rdfs:domain gtfs:Trip ;
-    rdfs:range xsd:integer .
-
-gtfs:block_id a rdf:Property ;
-    rdfs:domain gtfs:Trip ;
-    rdfs:range xsd:string .
-
-gtfs:shape_id a rdf:Property ;
-    rdfs:domain gtfs:Trip ;
-    rdfs:range xsd:string .
-
-gtfs:wheelchair_accessible a rdf:Property ;
-    rdfs:domain gtfs:Trip ;
-    rdfs:range xsd:integer .
-
-gtfs:bikes_allowed a rdf:Property ;
-    rdfs:domain gtfs:Trip ;
-    rdfs:range xsd:integer .
-
-gtfs:cars_allowed a rdf:Property ;
-    rdfs:domain gtfs:Trip ;
-    rdfs:range xsd:integer .
-
-gtfs:arrival_time a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range xsd:string . # xsd:time doesn't support > 24:00 hours which GTFS allows
-
-gtfs:departure_time a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range xsd:string .
-
-gtfs:stop_sequence a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range xsd:nonNegativeInteger .
-
-gtfs:stop_headsign a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range xsd:string .
-
-gtfs:pickup_type a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range xsd:integer .
-
-gtfs:drop_off_type a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range xsd:integer .
-
-gtfs:shape_dist_traveled a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range xsd:decimal .
-
-gtfs:timepoint a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range xsd:integer .
-
-gtfs:pickup_booking_rule_id a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range xsd:string .
-
-gtfs:drop_off_booking_rule_id a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range xsd:string .
-
-gtfs:monday a rdf:Property ;
-    rdfs:domain gtfs:Calendar ;
-    rdfs:range xsd:integer .
-
-gtfs:tuesday a rdf:Property ;
-    rdfs:domain gtfs:Calendar ;
-    rdfs:range xsd:integer .
-
-gtfs:wednesday a rdf:Property ;
-    rdfs:domain gtfs:Calendar ;
-    rdfs:range xsd:integer .
-
-gtfs:thursday a rdf:Property ;
-    rdfs:domain gtfs:Calendar ;
-    rdfs:range xsd:integer .
-
-gtfs:friday a rdf:Property ;
-    rdfs:domain gtfs:Calendar ;
-    rdfs:range xsd:integer .
-
-gtfs:saturday a rdf:Property ;
-    rdfs:domain gtfs:Calendar ;
-    rdfs:range xsd:integer .
-
-gtfs:sunday a rdf:Property ;
-    rdfs:domain gtfs:Calendar ;
-    rdfs:range xsd:integer .
-
-gtfs:start_date a rdf:Property ;
-    rdfs:domain gtfs:Calendar ;
-    rdfs:range xsd:string .
-
-gtfs:end_date a rdf:Property ;
-    rdfs:domain gtfs:Calendar ;
-    rdfs:range xsd:string .
-
-# Object Properties for Linking
-
-gtfs:agency a rdf:Property ;
-    rdfs:domain gtfs:Route ;
-    rdfs:range gtfs:Agency .
-
-gtfs:route a rdf:Property ;
-    rdfs:range gtfs:Route . # Domain removed/relaxed to allow use in Trip and FareRule
-
-gtfs:service a rdf:Property ;
-    rdfs:domain gtfs:Trip ;
-    # Range could be Calendar or CalendarDate (Union), leaving open for now or generic Resource
-    rdfs:range rdfs:Resource .
-
-gtfs:trip a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range gtfs:Trip .
-
-gtfs:stop a rdf:Property ;
-    rdfs:domain gtfs:StopTime ;
-    rdfs:range gtfs:Stop .
-
-gtfs:date a rdf:Property ;
-    rdfs:domain gtfs:CalendarDate ;
-    rdfs:range xsd:string .
-
-gtfs:exception_type a rdf:Property ;
-    rdfs:domain gtfs:CalendarDate ;
-    rdfs:range xsd:integer .
-
-gtfs:fare_id a rdf:Property ;
-    # rdfs:domain gtfs:FareAttribute ; # Used in FareRule too, so removed domain or set Union
-    rdfs:range xsd:string .
-
-gtfs:price a rdf:Property ;
-    rdfs:domain gtfs:FareAttribute ;
-    rdfs:range xsd:decimal .
-
-gtfs:currency_type a rdf:Property ;
-    rdfs:domain gtfs:FareAttribute ;
-    rdfs:range xsd:string .
-
-gtfs:payment_method a rdf:Property ;
-    rdfs:domain gtfs:FareAttribute ;
-    rdfs:range xsd:integer .
-
-gtfs:transfers a rdf:Property ;
-    rdfs:domain gtfs:FareAttribute ;
-    rdfs:range xsd:integer .
-
-gtfs:agency_id rdfs:domain gtfs:FareAttribute . # Re-use property
-
-gtfs:transfer_duration a rdf:Property ;
-    rdfs:domain gtfs:FareAttribute ;
-    rdfs:range xsd:integer .
-
-gtfs:origin_id a rdf:Property ;
-    rdfs:domain gtfs:FareRule ;
-    rdfs:range xsd:string .
-
-gtfs:destination_id a rdf:Property ;
-    rdfs:domain gtfs:FareRule ;
-    rdfs:range xsd:string .
-
-gtfs:contains_id a rdf:Property ;
-    rdfs:domain gtfs:FareRule ;
-    rdfs:range xsd:string .
-
-gtfs:timeframe_group_id a rdf:Property ;
-    rdfs:domain gtfs:Timeframe ;
-    rdfs:range xsd:string .
-
-gtfs:shape_dist_traveled a rdf:Property ;
-    # rdfs:domain gtfs:Shape ; # Also used in StopTime, so relax or multi-domain
-    rdfs:range xsd:decimal .
-
-gtfs:start_time a rdf:Property ;
-    # Reused from Timeframe. Domain relaxed or verified?
-    # gtfs:Timeframe uses it. gtfs:Frequency uses it. 
-    # Relax domain to Resource or Union if strictness matters.
-    # Currently defined as domain gtfs:Timeframe. I will remove domain below.
-    rdfs:range xsd:string .
-
-gtfs:end_time a rdf:Property ;
-    # Reused from Timeframe
-    rdfs:range xsd:string .
-
-gtfs:headway_secs a rdf:Property ;
-    rdfs:domain gtfs:Frequency ;
-    rdfs:range xsd:integer .
-
-gtfs:exact_times a rdf:Property ;
-    rdfs:domain gtfs:Frequency ;
-    rdfs:range xsd:integer .
-
-gtfs:from_stop_id a rdf:Property ;
-    rdfs:domain gtfs:Transfer ; # And Pathway
-    rdfs:range xsd:string .
-
-gtfs:to_stop_id a rdf:Property ;
-    rdfs:domain gtfs:Transfer ; # And Pathway
-    rdfs:range xsd:string .
-
-# gtfs:transfer_type (Enum)
-gtfs:transfer_type a rdf:Property ;
-    rdfs:domain gtfs:Transfer ;
-    rdfs:range xsd:integer .
-
-gtfs:min_transfer_time a rdf:Property ;
-    rdfs:domain gtfs:Transfer ;
-    rdfs:range xsd:integer .
-
-gtfs:from_route_id a rdf:Property ;
-    rdfs:domain gtfs:Transfer ;
-    rdfs:range xsd:string .
-
-gtfs:to_route_id a rdf:Property ;
-    rdfs:domain gtfs:Transfer ;
-    rdfs:range xsd:string .
-
-gtfs:from_trip_id a rdf:Property ;
-    rdfs:domain gtfs:Transfer ;
-    rdfs:range xsd:string .
-
-gtfs:to_trip_id a rdf:Property ;
-    rdfs:domain gtfs:Transfer ;
-    rdfs:range xsd:string .
-
-gtfs:pathway_id a rdf:Property ;
-    rdfs:domain gtfs:Pathway ;
-    rdfs:range xsd:string .
-
-gtfs:pathway_mode a rdf:Property ;
-    rdfs:domain gtfs:Pathway ;
-    rdfs:range xsd:integer .
-
-gtfs:is_bidirectional a rdf:Property ;
-    rdfs:domain gtfs:Pathway ;
-    rdfs:range xsd:integer .
-
-gtfs:length a rdf:Property ;
-    rdfs:domain gtfs:Pathway ; # And potentially others
-    rdfs:range xsd:decimal .
-
-gtfs:traversal_time a rdf:Property ;
-    rdfs:domain gtfs:Pathway ;
-    rdfs:range xsd:integer .
-
-gtfs:stair_count a rdf:Property ;
-    rdfs:domain gtfs:Pathway ;
-    rdfs:range xsd:integer .
-
-gtfs:max_slope a rdf:Property ;
-    rdfs:domain gtfs:Pathway ;
-    rdfs:range xsd:decimal .
-
-gtfs:min_width a rdf:Property ;
-    rdfs:domain gtfs:Pathway ;
-    rdfs:range xsd:decimal .
-
-gtfs:signposted_as a rdf:Property ;
-    rdfs:domain gtfs:Pathway ;
-    rdfs:range xsd:string .
-
-gtfs:reversed_signposted_as a rdf:Property ;
-    rdfs:domain gtfs:Pathway ;
-    rdfs:range xsd:string .
-
-gtfs:level_id a rdf:Property ;
-    # rdfs:domain gtfs:Level ; # Also used in Stop? No, Stop has level_id. 
-    rdfs:range xsd:string .
-
-gtfs:level_index a rdf:Property ;
-    rdfs:domain gtfs:Level ;
-    rdfs:range xsd:decimal .
-
-gtfs:level_name a rdf:Property ;
-    rdfs:domain gtfs:Level ;
-    rdfs:range xsd:string .
-
-# Object Properties (Batch 3)
-gtfs:rider_category a rdf:Property ;
-    rdfs:domain gtfs:FareProduct ;
-    rdfs:range gtfs:RiderCategory .
-
-gtfs:fare_media a rdf:Property ;
-    rdfs:domain gtfs:FareProduct ;
-    rdfs:range gtfs:FareMedia .
-
-gtfs:fare_product a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ; # And others
-    rdfs:range gtfs:FareProduct .
-
-gtfs:from_area a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range gtfs:Area . # Validated against Area class now
-
-gtfs:to_area a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range gtfs:Area .
-
-gtfs:from_timeframe a rdf:Property ;
-    # rdfs:domain gtfs:FareLegRule ; # Relax because start_time is used in Frequency
-    rdfs:range gtfs:Timeframe .
-
-gtfs:to_timeframe a rdf:Property ;
-    rdfs:range gtfs:Timeframe .
-
-# Object Properties (Batch 6)
-
-gtfs:from_stop a rdf:Property ;
-    rdfs:domain gtfs:Transfer ; # And Pathway
-    rdfs:range gtfs:Stop .
-
-gtfs:to_stop a rdf:Property ;
-    rdfs:domain gtfs:Transfer ; # And Pathway
-    rdfs:range gtfs:Stop .
-
-gtfs:from_route a rdf:Property ;
-    rdfs:domain gtfs:Transfer ;
-    rdfs:range gtfs:Route .
-
-gtfs:to_route a rdf:Property ;
-    rdfs:domain gtfs:Transfer ;
-    rdfs:range gtfs:Route .
-
-gtfs:from_trip a rdf:Property ;
-    rdfs:domain gtfs:Transfer ;
-    rdfs:range gtfs:Trip .
-
-gtfs:to_trip a rdf:Property ;
-    rdfs:domain gtfs:Transfer ;
-    rdfs:range gtfs:Trip .
-
-gtfs:level a rdf:Property ;
-    rdfs:domain gtfs:Stop ; # Also Pathway? No pathway links to level via definition? No.
-    # Actually Stop has level_id, so this links Stop -> Level
-    rdfs:range gtfs:Level .
-
-gtfs:location_group_id a rdf:Property ;
-    rdfs:domain gtfs:LocationGroup ;
-    rdfs:range xsd:string .
-
-gtfs:location_group_name a rdf:Property ;
-    rdfs:domain gtfs:LocationGroup ;
-    rdfs:range xsd:string .
-
-gtfs:stop_name a rdf:Property ; 
-    # Defined in Stop, reused in GeoJsonLocation
-    rdfs:range xsd:string .
-
-gtfs:stop_desc a rdf:Property ;
-    # Defined in Stop, reused in GeoJsonLocation
-    rdfs:range xsd:string .
-
-gtfs:booking_rule_id a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:string .
-
-gtfs:booking_type a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:integer .
-
-gtfs:prior_notice_duration_min a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:integer .
-
-gtfs:prior_notice_duration_max a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:integer .
-
-gtfs:prior_notice_last_day a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:integer .
-
-gtfs:prior_notice_last_time a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:string .
-
-gtfs:prior_notice_start_day a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:integer .
-
-gtfs:prior_notice_start_time a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:string .
-
-gtfs:message a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:string .
-
-gtfs:pickup_message a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:string .
-
-gtfs:drop_off_message a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:string .
-
-gtfs:phone_number a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ; # And Attribution
-    rdfs:range xsd:string .
-
-gtfs:info_url a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:string .
-
-gtfs:booking_url a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:string .
-
-gtfs:feed_publisher_name a rdf:Property ;
-    rdfs:domain gtfs:FeedInfo ;
-    rdfs:range xsd:string .
-
-gtfs:feed_publisher_url a rdf:Property ;
-    rdfs:domain gtfs:FeedInfo ;
-    rdfs:range xsd:string .
-
-gtfs:feed_lang a rdf:Property ;
-    rdfs:domain gtfs:FeedInfo ;
-    rdfs:range xsd:string .
-
-gtfs:default_lang a rdf:Property ;
-    rdfs:domain gtfs:FeedInfo ;
-    rdfs:range xsd:string .
-
-gtfs:feed_start_date a rdf:Property ;
-    rdfs:domain gtfs:FeedInfo ;
-    rdfs:range xsd:string .
-
-gtfs:feed_end_date a rdf:Property ;
-    rdfs:domain gtfs:FeedInfo ;
-    rdfs:range xsd:string .
-
-gtfs:feed_version a rdf:Property ;
-    rdfs:domain gtfs:FeedInfo ;
-    rdfs:range xsd:string .
-
-gtfs:feed_contact_email a rdf:Property ;
-    rdfs:domain gtfs:FeedInfo ;
-    rdfs:range xsd:string .
-
-gtfs:feed_contact_url a rdf:Property ;
-    rdfs:domain gtfs:FeedInfo ;
-    rdfs:range xsd:string .
-
-gtfs:attribution_id a rdf:Property ;
-    rdfs:domain gtfs:Attribution ;
-    rdfs:range xsd:string .
-
-gtfs:organization_name a rdf:Property ;
-    rdfs:domain gtfs:Attribution ;
-    rdfs:range xsd:string .
-
-gtfs:is_producer a rdf:Property ;
-    rdfs:domain gtfs:Attribution ;
-    rdfs:range xsd:integer .
-
-gtfs:is_operator a rdf:Property ;
-    rdfs:domain gtfs:Attribution ;
-    rdfs:range xsd:integer .
-
-gtfs:is_authority a rdf:Property ;
-    rdfs:domain gtfs:Attribution ;
-    rdfs:range xsd:integer .
-
-gtfs:attribution_url a rdf:Property ;
-    rdfs:domain gtfs:Attribution ;
-    rdfs:range xsd:string .
-
-gtfs:attribution_email a rdf:Property ;
-    rdfs:domain gtfs:Attribution ;
-    rdfs:range xsd:string .
-
-gtfs:attribution_phone a rdf:Property ;
-    rdfs:domain gtfs:Attribution ;
-    rdfs:range xsd:string .
-
-# Translations
-gtfs:table_name a rdf:Property ;
-    rdfs:domain gtfs:Translation ;
-    rdfs:range xsd:string .
-
-gtfs:field_name a rdf:Property ;
-    rdfs:domain gtfs:Translation ;
-    rdfs:range xsd:string .
-
-gtfs:language a rdf:Property ;
-    rdfs:domain gtfs:Translation ;
-    rdfs:range xsd:string .
-
-gtfs:translation a rdf:Property ;
-    rdfs:domain gtfs:Translation ;
-    rdfs:range xsd:string .
-
-gtfs:record_id a rdf:Property ;
-    rdfs:domain gtfs:Translation ;
-    rdfs:range xsd:string .
-
-gtfs:record_sub_id a rdf:Property ;
-    rdfs:domain gtfs:Translation ;
-    rdfs:range xsd:string .
-
-gtfs:field_value a rdf:Property ;
-    rdfs:domain gtfs:Translation ;
-    rdfs:range xsd:string .
-
-# Object Properties (Batch 7)
-gtfs:pickup_booking_rule a rdf:Property ;
-    # rdfs:domain gtfs:StopTime ;
-    rdfs:range gtfs:BookingRule .
-
-gtfs:drop_off_booking_rule a rdf:Property ;
-    # rdfs:domain gtfs:StopTime ;
-    rdfs:range gtfs:BookingRule .
-
-gtfs:prior_notice_service a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:string . # Links to Service ID (Calendar/CalendarDate) via string or object property?
-    # Usually service_id is handled as a string that joins to Calendar/CalendarDate. I defined gtfs:service object property earlier for Trip.
-    # I can reuse gtfs:service or define specific one.
-    # gtfs:service is domain Trip.
-    # Let's use gtfs:prior_notice_service (data property) or make a new object property.
-    # Since it references a service_id, let's keep it as data property `prior_notice_service_id` and maybe an object property `prior_notice_service_ref`?
-    # I'll stick to defining `prior_notice_service_id` as data property first.
-
-gtfs:prior_notice_service_id a rdf:Property ;
-    rdfs:domain gtfs:BookingRule ;
-    rdfs:range xsd:string .
-
-# Links
-gtfs:booking_rule a rdf:Property ;
-    # General link if needed based on booking_rule_id
-    rdfs:range gtfs:BookingRule .
-
-gtfs:stop a rdf:Property ;
-    rdfs:domain gtfs:LocationGroup ; # LocationGroup contains Stops
-    rdfs:range gtfs:Stop .
-
-# Note: location_group_stops.txt effectively adds 'stop' property to 'LocationGroup' class.
-
-gtfs:location_group a rdf:Property ;
-    # rdfs:domain gtfs:StopTime ; # StopTimes can ref location_group_id
-    rdfs:range gtfs:LocationGroup .
-
-gtfs:location a rdf:Property ;
-    # rdfs:domain gtfs:StopTime ; # StopTimes can ref location_id (GeoJSON)
-    rdfs:range gtfs:GeoJsonLocation .
-
-gtfs:rider_category_id a rdf:Property ;
-    # rdfs:domain gtfs:RiderCategory ; # Used elsewhere? Fare Products logic later.
-    rdfs:range xsd:string .
-
-gtfs:rider_category_name a rdf:Property ;
-    rdfs:domain gtfs:RiderCategory ;
-    rdfs:range xsd:string .
-
-gtfs:is_child a rdf:Property ;
-    rdfs:domain gtfs:RiderCategory ;
-    rdfs:range xsd:integer .
-
-gtfs:is_elderly a rdf:Property ;
-    rdfs:domain gtfs:RiderCategory ;
-    rdfs:range xsd:integer .
-
-gtfs:is_student a rdf:Property ;
-    rdfs:domain gtfs:RiderCategory ;
-    rdfs:range xsd:integer .
-
-gtfs:min_age a rdf:Property ;
-    rdfs:domain gtfs:RiderCategory ;
-    rdfs:range xsd:integer .
-
-gtfs:max_age a rdf:Property ;
-    rdfs:domain gtfs:RiderCategory ;
-    rdfs:range xsd:integer .
-
-gtfs:fare_media_id a rdf:Property ;
-    # rdfs:domain gtfs:FareMedia ; # Used elsewhere
-    rdfs:range xsd:string .
-
-gtfs:fare_media_name a rdf:Property ;
-    rdfs:domain gtfs:FareMedia ;
-    rdfs:range xsd:string .
-
-gtfs:fare_media_type a rdf:Property ;
-    rdfs:domain gtfs:FareMedia ;
-    rdfs:range xsd:integer .
-
-gtfs:fare_product_id a rdf:Property ;
-    # rdfs:domain gtfs:FareProduct ; # Reference
-    rdfs:range xsd:string .
-
-gtfs:fare_product_name a rdf:Property ;
-    rdfs:domain gtfs:FareProduct ;
-    rdfs:range xsd:string .
-
-gtfs:amount a rdf:Property ;
-    rdfs:domain gtfs:FareProduct ; # And potentially others?
-    rdfs:range xsd:decimal .
-
-gtfs:currency a rdf:Property ;
-    rdfs:domain gtfs:FareProduct ;
-    rdfs:range xsd:string .
-
-gtfs:leg_group_id a rdf:Property ;
-    # rdfs:domain gtfs:FareLegRule ; # Domain logic complex for rules
-    rdfs:range xsd:string .
-
-gtfs:network_id rdfs:range xsd:string . # Relax domain from Route to allow use in FareLegRule
-
-gtfs:from_area_id a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range xsd:string .
-
-gtfs:to_area_id a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range xsd:string .
-
-gtfs:from_timeframe_group_id a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range xsd:string .
-
-gtfs:to_timeframe_group_id a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range xsd:string .
-
-gtfs:from_leg_group_id a rdf:Property ;
-    rdfs:domain gtfs:FareLegJoinRule ; # And Transfer Rule
-    rdfs:range xsd:string .
-
-gtfs:to_leg_group_id a rdf:Property ;
-    rdfs:domain gtfs:FareLegJoinRule ; # And Transfer Rule
-    rdfs:range xsd:string .
-
-gtfs:transfer_count a rdf:Property ;
-    rdfs:domain gtfs:FareTransferRule ;
-    rdfs:range xsd:integer .
-
-gtfs:duration_limit a rdf:Property ;
-    rdfs:domain gtfs:FareTransferRule ;
-    rdfs:range xsd:integer .
-
-gtfs:duration_limit_type a rdf:Property ;
-    rdfs:domain gtfs:FareTransferRule ;
-    rdfs:range xsd:integer .
-
-gtfs:fare_transfer_type a rdf:Property ;
-    rdfs:domain gtfs:FareTransferRule ;
-    rdfs:range xsd:integer .
-
-gtfs:area_id a rdf:Property ;
-    rdfs:domain gtfs:Area ;
-    rdfs:range xsd:string .
-
-gtfs:area_name a rdf:Property ;
-    rdfs:domain gtfs:Area ;
-    rdfs:range xsd:string .
-
-# gtfs:stop_id defined previously, used in StopArea
-# gtfs:area_id defined above, used in StopArea
-
-# gtfs:network_id defined previously, used in Network and RouteNetwork
-
-gtfs:network_name a rdf:Property ;
-    rdfs:domain gtfs:Network ;
-    rdfs:range xsd:string .
-
-# gtfs:route_id defined previously, used in RouteNetwork
-
-gtfs:shape_pt_lat a rdf:Property ;
-    rdfs:domain gtfs:Shape ;
-    rdfs:range xsd:decimal .
-
-gtfs:shape_pt_lon a rdf:Property ;
-    rdfs:domain gtfs:Shape ;
-    rdfs:range xsd:decimal .
-
-gtfs:shape_pt_sequence a rdf:Property ;
-    rdfs:domain gtfs:Shape ;
-    rdfs:range xsd:nonNegativeInteger .
-
-gtfs:shape_dist_traveled a rdf:Property ;
-    # rdfs:domain gtfs:Shape ; # Also used in StopTime, so relax or multi-domain
-    rdfs:range xsd:decimal .
-
-# Object Properties (Batch 3)
-gtfs:rider_category a rdf:Property ;
-    rdfs:domain gtfs:FareProduct ;
-    rdfs:range gtfs:RiderCategory .
-
-gtfs:fare_media a rdf:Property ;
-    rdfs:domain gtfs:FareProduct ;
-    rdfs:range gtfs:FareMedia .
-
-gtfs:fare_product a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ; # And others
-    rdfs:range gtfs:FareProduct .
-
-gtfs:from_area a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range gtfs:Area . # Validated against Area class now
-
-gtfs:to_area a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range gtfs:Area .
-
-gtfs:from_timeframe a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range gtfs:Timeframe .
-
-gtfs:to_timeframe a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range gtfs:Timeframe .
-
-# Object Properties (Batch 5)
-
-gtfs:area a rdf:Property ;
-    rdfs:domain gtfs:StopArea ;
-    rdfs:range gtfs:Area .
-
-gtfs:network a rdf:Property ;
-    rdfs:domain gtfs:RouteNetwork ;
-    rdfs:range gtfs:Network .
-
-# gtfs:route already defined, reuse for RouteNetwork
-# gtfs:stop already defined, reuse for StopArea
-
-# Object Properties (Batch 3)
-gtfs:rider_category a rdf:Property ;
-    rdfs:domain gtfs:FareProduct ;
-    rdfs:range gtfs:RiderCategory .
-
-gtfs:fare_media a rdf:Property ;
-    rdfs:domain gtfs:FareProduct ;
-    rdfs:range gtfs:FareMedia .
-
-gtfs:fare_product a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ; # And others
-    rdfs:range gtfs:FareProduct .
-
-gtfs:from_area a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range gtfs:Area . # Validated against Area class now
-
-gtfs:to_area a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range rdfs:Resource .
-
-gtfs:from_timeframe a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range gtfs:Timeframe .
-
-gtfs:to_timeframe a rdf:Property ;
-    rdfs:domain gtfs:FareLegRule ;
-    rdfs:range gtfs:Timeframe .
-
-# Object Properties (Batch 3) none explicitly linking *FROM* these tables to others yet, mostly they are lookup tables referred to by future tables (Fare Products).
-
-# Object Properties (Batch 2)
-
-gtfs:fare a rdf:Property ;
-    rdfs:domain gtfs:FareRule ;
-    rdfs:range gtfs:FareAttribute .
-
-# Note: FareRule also links to Route (gtfs:route) which we already defined generally.
-# We just need to make sure gtfs:route isn't strictly bound to Trip domain-only if we want to reuse it, 
-# or we define domains as Union. 
-# Previously: gtfs:route rdfs:domain gtfs:Trip . 
-# Checking logic: A FareRule "has a route". A Trip "has a route". The property "route" is valid for both.
-# I will relax domain of gtfs:route below or add FareRule to it.
-
-#################################################################
-#    SHACL Shapes
-#################################################################
-
-gtfs:AgencyShape a sh:NodeShape ;
-    sh:targetClass gtfs:Agency ;
-    
-    # agency_id (Conditionally Required)
-    sh:property [
-        sh:path gtfs:agency_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # agency_name (Required)
-    sh:property [
-        sh:path gtfs:agency_name ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # agency_url (Required)
-    sh:property [
-        sh:path gtfs:agency_url ;
-        sh:minCount 1 ;
-        sh:nodeKind sh:IRI ; 
-    ] ;
-
-    # agency_timezone (Required)
-    sh:property [
-        sh:path gtfs:agency_timezone ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # agency_lang (Optional)
-    sh:property [
-        sh:path gtfs:agency_lang ;
-        sh:datatype xsd:string ;
-        sh:pattern "^[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*$" ;
-    ] ;
-
-    # agency_phone (Optional)
-    sh:property [
-        sh:path gtfs:agency_phone ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # agency_fare_url (Optional)
-    sh:property [
-        sh:path gtfs:agency_fare_url ;
-        sh:nodeKind sh:IRI ;
-    ] ;
-
-    # agency_email (Optional)
-    sh:property [
-        sh:path gtfs:agency_email ;
-        sh:datatype xsd:string ;
-        sh:pattern "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" ; 
-    ] ;
-
-    # cemv_support (Optional, Enum)
-    sh:property [
-        sh:path gtfs:cemv_support ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2) ;
-    ] .
-
-gtfs:StopShape a sh:NodeShape ;
-    sh:targetClass gtfs:Stop ;
-
-    # stop_id (Required)
-    sh:property [
-        sh:path gtfs:stop_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # stop_code (Optional)
-    sh:property [
-        sh:path gtfs:stop_code ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # stop_name (Conditionally Required)
-    # Note: Complex conditions (required if location_type=0,1,2) are hard in pure SHACL core without sh:or/sh:xone combinations that get verbose.
-    # We will enforce datatype.
-    sh:property [
-        sh:path gtfs:stop_name ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # tts_stop_name (Optional)
-    sh:property [
-        sh:path gtfs:tts_stop_name ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # stop_desc (Optional)
-    sh:property [
-        sh:path gtfs:stop_desc ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # stop_lat (Conditionally Required)
-    sh:property [
-        sh:path gtfs:stop_lat ;
-        sh:datatype xsd:decimal ;
-        sh:minInclusive -90.0 ;
-        sh:maxInclusive 90.0 ;
-    ] ;
-
-    # stop_lon (Conditionally Required)
-    sh:property [
-        sh:path gtfs:stop_lon ;
-        sh:datatype xsd:decimal ;
-        sh:minInclusive -180.0 ;
-        sh:maxInclusive 180.0 ;
-    ] ;
-
-    # zone_id (Optional)
-    sh:property [
-        sh:path gtfs:zone_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # stop_url (Optional)
-    sh:property [
-        sh:path gtfs:stop_url ;
-        sh:nodeKind sh:IRI ;
-    ] ;
-
-    # location_type (Optional, Enum)
-    sh:property [
-        sh:path gtfs:location_type ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2 3 4) ;
-    ] ;
-
-    # parent_station (Conditionally Required)
-    sh:property [
-        sh:path gtfs:parent_station ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # stop_timezone (Optional)
-    sh:property [
-        sh:path gtfs:stop_timezone ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # wheelchair_boarding (Optional, Enum)
-    sh:property [
-        sh:path gtfs:wheelchair_boarding ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2) ;
-    ] ;
-
-    # level_id (Optional)
-    sh:property [
-        sh:path gtfs:level_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # platform_code (Optional)
-    sh:property [
-        sh:path gtfs:platform_code ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # stop_access (Optional, Enum)
-    sh:property [
-        sh:path gtfs:stop_access ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] .
-
-gtfs:RouteShape a sh:NodeShape ;
-    sh:targetClass gtfs:Route ;
-    
-    # route_id (Required)
-    sh:property [
-        sh:path gtfs:route_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # agency_id (Conditionally Required)
-    sh:property [
-        sh:path gtfs:agency_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # route_short_name (Conditionally Required)
-    sh:property [
-        sh:path gtfs:route_short_name ;
-        sh:datatype xsd:string ;
-    ] ;
-    
-    # route_long_name (Conditionally Required)
-    sh:property [
-        sh:path gtfs:route_long_name ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # route_desc (Optional)
-    sh:property [
-        sh:path gtfs:route_desc ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # route_type (Required, Enum)
-    sh:property [
-        sh:path gtfs:route_type ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2 3 4 5 6 7 11 12) ;
-    ] ;
-
-    # route_url (Optional)
-    sh:property [
-        sh:path gtfs:route_url ;
-        sh:nodeKind sh:IRI ;
-    ] ;
-
-    # route_color (Optional, Hex Color)
-    sh:property [
-        sh:path gtfs:route_color ;
-        sh:datatype xsd:string ;
-        sh:pattern "^[0-9A-Fa-f]{6}$" ;
-    ] ;
-
-    # route_text_color (Optional, Hex Color)
-    sh:property [
-        sh:path gtfs:route_text_color ;
-        sh:datatype xsd:string ;
-        sh:pattern "^[0-9A-Fa-f]{6}$" ;
-    ] ;
-    
-    # route_sort_order (Optional, Non-negative integer)
-    sh:property [
-        sh:path gtfs:route_sort_order ;
-        sh:datatype xsd:integer ;
-        sh:minInclusive 0 ;
-    ] ;
-
-    # continuous_pickup (Optional, Enum)
-    sh:property [
-        sh:path gtfs:continuous_pickup ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2 3) ;
-    ] ;
-
-    # continuous_drop_off (Optional, Enum)
-    sh:property [
-        sh:path gtfs:continuous_drop_off ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2 3) ;
-    ] ;
-
-    # network_id (Optional)
-    sh:property [
-        sh:path gtfs:network_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # cemv_support (Optional, Enum - reused from Agency if property is same, which it is in name)
-    sh:property [
-        sh:path gtfs:cemv_support ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2) ;
-    ] .
-
-gtfs:TripShape a sh:NodeShape ;
-    sh:targetClass gtfs:Trip ;
-
-    # route_id (Required)
-    sh:property [
-        sh:path gtfs:route_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # service_id (Required)
-    sh:property [
-        sh:path gtfs:service_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # trip_id (Required)
-    sh:property [
-        sh:path gtfs:trip_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # trip_headsign (Optional)
-    sh:property [
-        sh:path gtfs:trip_headsign ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # trip_short_name (Optional)
-    sh:property [
-        sh:path gtfs:trip_short_name ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # direction_id (Optional, Enum)
-    sh:property [
-        sh:path gtfs:direction_id ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-
-    # block_id (Optional)
-    sh:property [
-        sh:path gtfs:block_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # shape_id (Conditionally Required)
-    sh:property [
-        sh:path gtfs:shape_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # wheelchair_accessible (Optional, Enum)
-    sh:property [
-        sh:path gtfs:wheelchair_accessible ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2) ;
-    ] ;
-
-    # bikes_allowed (Optional, Enum)
-    sh:property [
-        sh:path gtfs:bikes_allowed ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2) ;
-    ] ;
-
-    # cars_allowed (Optional, Enum)
-    sh:property [
-        sh:path gtfs:cars_allowed ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2) ;
-    ] .
-
-gtfs:StopTimeShape a sh:NodeShape ;
-    sh:targetClass gtfs:StopTime ;
-
-    # trip_id (Required)
-    sh:property [
-        sh:path gtfs:trip_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # arrival_time (Conditionally Required)
-    sh:property [
-        sh:path gtfs:arrival_time ;
-        sh:datatype xsd:string ;
-        # Regex for H:MM:SS or HH:MM:SS, including hours > 24
-        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
-    ] ;
-
-    # departure_time (Conditionally Required)
-    sh:property [
-        sh:path gtfs:departure_time ;
-        sh:datatype xsd:string ;
-        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
-    ] ;
-
-    # stop_id (Required)
-    sh:property [
-        sh:path gtfs:stop_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # stop_sequence (Required, Non-negative integer)
-    sh:property [
-        sh:path gtfs:stop_sequence ;
-        sh:minCount 1 ;
-        sh:datatype xsd:nonNegativeInteger ;
-    ] ;
-
-    # stop_headsign (Optional)
-    sh:property [
-        sh:path gtfs:stop_headsign ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # pickup_type (Optional, Enum)
-    sh:property [
-        sh:path gtfs:pickup_type ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2 3) ;
-    ] ;
-
-    # drop_off_type (Optional, Enum)
-    sh:property [
-        sh:path gtfs:drop_off_type ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2 3) ;
-    ] ;
-
-    # continuous_pickup (Optional, Enum - reused)
-    sh:property [
-        sh:path gtfs:continuous_pickup ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2 3) ;
-    ] ;
-
-    # continuous_drop_off (Optional, Enum - reused)
-    sh:property [
-        sh:path gtfs:continuous_drop_off ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2 3) ;
-    ] ;
-
-    # shape_dist_traveled (Optional, Non-negative float)
-    sh:property [
-        sh:path gtfs:shape_dist_traveled ;
-        sh:datatype xsd:decimal ;
-        sh:minInclusive 0.0 ;
-    ] ;
-
-    # timepoint (Optional, Enum)
-    sh:property [
-        sh:path gtfs:timepoint ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-
-    # pickup_booking_rule_id (Optional)
-    sh:property [
-        sh:path gtfs:pickup_booking_rule_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # drop_off_booking_rule_id (Optional)
-    sh:property [
-        sh:path gtfs:drop_off_booking_rule_id ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:CalendarShape a sh:NodeShape ;
-    sh:targetClass gtfs:Calendar ;
-
-    # service_id (Required)
-    sh:property [
-        sh:path gtfs:service_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # days (Required, Enum)
-    sh:property [
-        sh:path gtfs:monday ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-    sh:property [
-        sh:path gtfs:tuesday ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-    sh:property [
-        sh:path gtfs:wednesday ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-    sh:property [
-        sh:path gtfs:thursday ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-    sh:property [
-        sh:path gtfs:friday ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-    sh:property [
-        sh:path gtfs:saturday ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-    sh:property [
-        sh:path gtfs:sunday ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-
-    # start_date (Required, YYYYMMDD)
-    sh:property [
-        sh:path gtfs:start_date ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-        sh:pattern "^[0-9]{8}$" ;
-    ] ;
-
-    # end_date (Required, YYYYMMDD)
-    sh:property [
-        sh:path gtfs:end_date ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-        sh:pattern "^[0-9]{8}$" ;
-    ] .
-
-gtfs:CalendarDateShape a sh:NodeShape ;
-    sh:targetClass gtfs:CalendarDate ;
-
-    # service_id (Required)
-    sh:property [
-        sh:path gtfs:service_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # date (Required, YYYYMMDD)
-    sh:property [
-        sh:path gtfs:date ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-        sh:pattern "^[0-9]{8}$" ;
-    ] ;
-
-    # exception_type (Required, Enum)
-    sh:property [
-        sh:path gtfs:exception_type ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (1 2) ;
-    ] .
-
-gtfs:FareAttributeShape a sh:NodeShape ;
-    sh:targetClass gtfs:FareAttribute ;
-
-    # fare_id (Required)
-    sh:property [
-        sh:path gtfs:fare_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # price (Required)
-    sh:property [
-        sh:path gtfs:price ;
-        sh:minCount 1 ;
-        sh:datatype xsd:decimal ;
-        sh:minInclusive 0.0 ;
-    ] ;
-
-    # currency_type (Required, ISO 4217)
-    sh:property [
-        sh:path gtfs:currency_type ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-        sh:pattern "^[A-Z]{3}$" ;
-    ] ;
-
-    # payment_method (Required, Enum)
-    sh:property [
-        sh:path gtfs:payment_method ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-
-    # transfers (Required, Enum + empty/null handling if mapped? Spec says Required. values 0,1,2 or empty for unlimited)
-    # The spec say "Required". 0 - No transfers, 1 - 1 transfer, 2 - 2 transfers, (empty) - unlimited.
-    # In RDF if empty, we might skip the triple. But if we must validate existence:
-    # We'll assume integer or missing. If the field is present, must be 0, 1, 2. If missing, unlimited.
-    # Spec: "Required". If unlimited, leave empty.
-    # So sh:minCount 0.
-    sh:property [
-        sh:path gtfs:transfers ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2) ;
-    ] ;
-
-    # agency_id (Conditionally Required)
-    sh:property [
-        sh:path gtfs:agency_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # transfer_duration (Optional)
-    sh:property [
-        sh:path gtfs:transfer_duration ;
-        sh:datatype xsd:integer ;
-        sh:minInclusive 0 ;
-    ] .
-
-gtfs:FareRuleShape a sh:NodeShape ;
-    sh:targetClass gtfs:FareRule ;
-
-    # fare_id (Required)
-    sh:property [
-        sh:path gtfs:fare_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # route_id (Optional)
-    sh:property [
-        sh:path gtfs:route_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # origin_id (Optional)
-    sh:property [
-        sh:path gtfs:origin_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # destination_id (Optional)
-    sh:property [
-        sh:path gtfs:destination_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # contains_id (Optional)
-    sh:property [
-        sh:path gtfs:contains_id ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:TimeframeShape a sh:NodeShape ;
-    sh:targetClass gtfs:Timeframe ;
-
-    # timeframe_group_id (Required)
-    sh:property [
-        sh:path gtfs:timeframe_group_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # start_time (Conditionally Required)
-    sh:property [
-        sh:path gtfs:start_time ;
-        sh:datatype xsd:string ;
-        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
-    ] ;
-
-    # end_time (Conditionally Required)
-    sh:property [
-        sh:path gtfs:end_time ;
-        sh:datatype xsd:string ;
-        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
-    ] ;
-
-    # service_id (Required) - Reused property
-    sh:property [
-        sh:path gtfs:service_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:RiderCategoryShape a sh:NodeShape ;
-    sh:targetClass gtfs:RiderCategory ;
-
-    # rider_category_id (Required)
-    sh:property [
-        sh:path gtfs:rider_category_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # rider_category_name (Required)
-    sh:property [
-        sh:path gtfs:rider_category_name ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # is_child (Optional, boolean)
-    sh:property [
-        sh:path gtfs:is_child ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-
-    # is_elderly (Optional, boolean)
-    sh:property [
-        sh:path gtfs:is_elderly ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-
-    # is_student (Optional, boolean)
-    sh:property [
-        sh:path gtfs:is_student ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-
-    # min_age (Optional)
-    sh:property [
-        sh:path gtfs:min_age ;
-        sh:datatype xsd:integer ;
-        sh:minInclusive 0 ;
-    ] ;
-
-    # max_age (Optional)
-    sh:property [
-        sh:path gtfs:max_age ;
-        sh:datatype xsd:integer ;
-        sh:minInclusive 0 ;
-    ] .
-
-gtfs:FareMediaShape a sh:NodeShape ;
-    sh:targetClass gtfs:FareMedia ;
-
-    # fare_media_id (Required)
-    sh:property [
-        sh:path gtfs:fare_media_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # fare_media_name (Required)
-    sh:property [
-        sh:path gtfs:fare_media_name ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # fare_media_type (Required, Enum)
-    sh:property [
-        sh:path gtfs:fare_media_type ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2) ;
-    ] .
-
-gtfs:FareProductShape a sh:NodeShape ;
-    sh:targetClass gtfs:FareProduct ;
-
-    # fare_product_id (Required)
-    sh:property [
-        sh:path gtfs:fare_product_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # fare_product_name (Optional)
-    sh:property [
-        sh:path gtfs:fare_product_name ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # amount (Required)
-    sh:property [
-        sh:path gtfs:amount ;
-        sh:minCount 1 ;
-        sh:datatype xsd:decimal ;
-        sh:minInclusive 0.0 ;
-    ] ;
-
-    # currency (Required, ISO 4217)
-    sh:property [
-        sh:path gtfs:currency ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-        sh:pattern "^[A-Z]{3}$" ;
-    ] ;
-
-    # rider_category_id (Optional)
-    sh:property [
-        sh:path gtfs:rider_category_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # fare_media_id (Optional)
-    sh:property [
-        sh:path gtfs:fare_media_id ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:FareLegRuleShape a sh:NodeShape ;
-    sh:targetClass gtfs:FareLegRule ;
-
-    # leg_group_id (Optional)
-    sh:property [
-        sh:path gtfs:leg_group_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # network_id (Optional)
-    sh:property [
-        sh:path gtfs:network_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # from_area_id (Optional)
-    sh:property [
-        sh:path gtfs:from_area_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # to_area_id (Optional)
-    sh:property [
-        sh:path gtfs:to_area_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # from_timeframe_group_id (Optional)
-    sh:property [
-        sh:path gtfs:from_timeframe_group_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # to_timeframe_group_id (Optional)
-    sh:property [
-        sh:path gtfs:to_timeframe_group_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-     # fare_product_id (Required)
-    sh:property [
-        sh:path gtfs:fare_product_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:FareLegJoinRuleShape a sh:NodeShape ;
-    sh:targetClass gtfs:FareLegJoinRule ;
-
-    # from_leg_group_id (Required)
-    sh:property [
-        sh:path gtfs:from_leg_group_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # to_leg_group_id (Required)
-    sh:property [
-        sh:path gtfs:to_leg_group_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:FareTransferRuleShape a sh:NodeShape ;
-    sh:targetClass gtfs:FareTransferRule ;
-
-    # from_leg_group_id (Optional)
-    sh:property [
-        sh:path gtfs:from_leg_group_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # to_leg_group_id (Optional)
-    sh:property [
-        sh:path gtfs:to_leg_group_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # transfer_count (Optional)
-    sh:property [
-        sh:path gtfs:transfer_count ;
-        sh:datatype xsd:integer ;
-        # -1 represents unlimited in some parsers, but spec usually implies default unlimited if missing. 
-        # If integer, usually non-negative.
-        sh:minInclusive -1 ; 
-    ] ;
-
-    # duration_limit (Optional)
-    sh:property [
-        sh:path gtfs:duration_limit ;
-        sh:datatype xsd:integer ;
-        sh:minInclusive 0 ;
-    ] ;
-
-    # duration_limit_type (Optional, Enum)
-    sh:property [
-        sh:path gtfs:duration_limit_type ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2 3) ;
-    ] ;
-
-    # fare_transfer_type (Required, Enum)
-    sh:property [
-        sh:path gtfs:fare_transfer_type ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2) ;
-    ] ;
-
-     # fare_product_id (Optional)
-    sh:property [
-        sh:path gtfs:fare_product_id ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:AreaShape a sh:NodeShape ;
-    sh:targetClass gtfs:Area ;
-
-    # area_id (Required)
-    sh:property [
-        sh:path gtfs:area_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # area_name (Optional)
-    sh:property [
-        sh:path gtfs:area_name ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:StopAreaShape a sh:NodeShape ;
-    sh:targetClass gtfs:StopArea ;
-
-    # area_id (Required)
-    sh:property [
-        sh:path gtfs:area_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # stop_id (Required)
-    sh:property [
-        sh:path gtfs:stop_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:NetworkShape a sh:NodeShape ;
-    sh:targetClass gtfs:Network ;
-
-    # network_id (Required)
-    sh:property [
-        sh:path gtfs:network_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # network_name (Optional)
-    sh:property [
-        sh:path gtfs:network_name ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:RouteNetworkShape a sh:NodeShape ;
-    sh:targetClass gtfs:RouteNetwork ;
-
-    # route_id (Required)
-    sh:property [
-        sh:path gtfs:route_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # network_id (Required)
-    sh:property [
-        sh:path gtfs:network_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:ShapeShape a sh:NodeShape ;
-    sh:targetClass gtfs:Shape ;
-
-    # shape_id (Required)
-    sh:property [
-        sh:path gtfs:shape_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # shape_pt_lat (Required, -90 to 90)
-    sh:property [
-        sh:path gtfs:shape_pt_lat ;
-        sh:minCount 1 ;
-        sh:datatype xsd:decimal ;
-        sh:minInclusive -90.0 ;
-        sh:maxInclusive 90.0 ;
-    ] ;
-
-    # shape_pt_lon (Required, -180 to 180)
-    sh:property [
-        sh:path gtfs:shape_pt_lon ;
-        sh:minCount 1 ;
-        sh:datatype xsd:decimal ;
-        sh:minInclusive -180.0 ;
-        sh:maxInclusive 180.0 ;
-    ] ;
-
-    # shape_pt_sequence (Required, non-negative)
-    sh:property [
-        sh:path gtfs:shape_pt_sequence ;
-        sh:minCount 1 ;
-        sh:datatype xsd:nonNegativeInteger ;
-    ] ;
-
-    # shape_dist_traveled (Optional, non-negative)
-    sh:property [
-        sh:path gtfs:shape_dist_traveled ;
-        sh:datatype xsd:decimal ;
-        sh:minInclusive 0.0 ;
-    ] .
-
-gtfs:FrequencyShape a sh:NodeShape ;
-    sh:targetClass gtfs:Frequency ;
-
-    # trip_id (Required)
-    sh:property [
-        sh:path gtfs:trip_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # start_time (Required)
-    sh:property [
-        sh:path gtfs:start_time ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
-    ] ;
-
-    # end_time (Required)
-    sh:property [
-        sh:path gtfs:end_time ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-        sh:pattern "^([0-9]?[0-9]|[0-9][0-9][0-9]):[0-5][0-9]:[0-5][0-9]$" ;
-    ] ;
-
-    # headway_secs (Required, non-negative)
-    sh:property [
-        sh:path gtfs:headway_secs ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:minInclusive 0 ;
-    ] ;
-
-    # exact_times (Optional, Enum)
-    sh:property [
-        sh:path gtfs:exact_times ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] .
-
-gtfs:TransferShape a sh:NodeShape ;
-    sh:targetClass gtfs:Transfer ;
-
-    # from_stop_id (Conditionally Required)
-    sh:property [
-        sh:path gtfs:from_stop_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # to_stop_id (Conditionally Required)
-    sh:property [
-        sh:path gtfs:to_stop_id ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # transfer_type (Required, Enum)
-    sh:property [
-        sh:path gtfs:transfer_type ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2 3 4 5) ;
-    ] ;
-
-    # min_transfer_time (Optional, non-negative)
-    sh:property [
-        sh:path gtfs:min_transfer_time ;
-        sh:datatype xsd:integer ;
-        sh:minInclusive 0 ;
-    ] .
-
-gtfs:PathwayShape a sh:NodeShape ;
-    sh:targetClass gtfs:Pathway ;
-
-    # pathway_id (Required)
-    sh:property [
-        sh:path gtfs:pathway_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # from_stop_id (Required)
-    sh:property [
-        sh:path gtfs:from_stop_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # to_stop_id (Required)
-    sh:property [
-        sh:path gtfs:to_stop_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # pathway_mode (Required, Enum)
-    sh:property [
-        sh:path gtfs:pathway_mode ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (1 2 3 4 5 6 7) ;
-    ] ;
-
-    # is_bidirectional (Required, Enum)
-    sh:property [
-        sh:path gtfs:is_bidirectional ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1) ;
-    ] ;
-
-    # length (Optional, non-negative)
-    sh:property [
-        sh:path gtfs:length ;
-        sh:datatype xsd:decimal ;
-        sh:minInclusive 0.0 ;
-    ] ;
-
-    # traversal_time (Optional, non-negative)
-    sh:property [
-        sh:path gtfs:traversal_time ;
-        sh:datatype xsd:integer ;
-        sh:minInclusive 0 ;
-    ] ;
-
-    # stair_count (Optional)
-    sh:property [
-        sh:path gtfs:stair_count ;
-        sh:datatype xsd:integer ;
-    ] ;
-
-    # max_slope (Optional)
-    sh:property [
-        sh:path gtfs:max_slope ;
-        sh:datatype xsd:decimal ;
-    ] ;
-
-    # min_width (Optional, non-negative)
-    sh:property [
-        sh:path gtfs:min_width ;
-        sh:datatype xsd:decimal ;
-        sh:minInclusive 0.0 ;
-    ] .
-
-gtfs:LevelShape a sh:NodeShape ;
-    sh:targetClass gtfs:Level ;
-
-    # level_id (Required)
-    sh:property [
-        sh:path gtfs:level_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # level_index (Required)
-    sh:property [
-        sh:path gtfs:level_index ;
-        sh:minCount 1 ;
-        sh:datatype xsd:decimal ;
-    ] ;
-
-    # level_name (Optional)
-    sh:property [
-        sh:path gtfs:level_name ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:LocationGroupShape a sh:NodeShape ;
-    sh:targetClass gtfs:LocationGroup ;
-
-    # location_group_id (Required)
-    sh:property [
-        sh:path gtfs:location_group_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # location_group_name (Optional)
-    sh:property [
-        sh:path gtfs:location_group_name ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:BookingRuleShape a sh:NodeShape ;
-    sh:targetClass gtfs:BookingRule ;
-
-    # booking_rule_id (Required)
-    sh:property [
-        sh:path gtfs:booking_rule_id ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # booking_type (Required, Enum)
-    sh:property [
-        sh:path gtfs:booking_type ;
-        sh:minCount 1 ;
-        sh:datatype xsd:integer ;
-        sh:in (0 1 2) ;
-    ] .
-
-gtfs:FeedInfoShape a sh:NodeShape ;
-    sh:targetClass gtfs:FeedInfo ;
-
-    # feed_publisher_name (Required)
-    sh:property [
-        sh:path gtfs:feed_publisher_name ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # feed_publisher_url (Required)
-    sh:property [
-        sh:path gtfs:feed_publisher_url ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # feed_lang (Required)
-    sh:property [
-        sh:path gtfs:feed_lang ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:AttributionShape a sh:NodeShape ;
-    sh:targetClass gtfs:Attribution ;
-
-    # organization_name (Required)
-    sh:property [
-        sh:path gtfs:organization_name ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] .
-
-gtfs:TranslationShape a sh:NodeShape ;
-    sh:targetClass gtfs:Translation ;
-
-    # table_name (Required)
-    sh:property [
-        sh:path gtfs:table_name ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # field_name (Required)
-    sh:property [
-        sh:path gtfs:field_name ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # language (Required)
-    sh:property [
-        sh:path gtfs:language ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] ;
-
-    # translation (Required)
-    sh:property [
-        sh:path gtfs:translation ;
-        sh:minCount 1 ;
-        sh:datatype xsd:string ;
-    ] .

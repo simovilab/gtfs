@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.14"
 
 [[package]]
@@ -79,6 +79,7 @@ dependencies = [
     { name = "ontospy" },
     { name = "pyarrow" },
     { name = "pyyaml" },
+    { name = "rdflib" },
 ]
 
 [package.dev-dependencies]
@@ -92,6 +93,7 @@ requires-dist = [
     { name = "ontospy", specifier = ">=2.1.1" },
     { name = "pyarrow", specifier = ">=23.0.1" },
     { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "rdflib", specifier = ">=7.5.0" },
 ]
 
 [package.metadata.requires-dev]

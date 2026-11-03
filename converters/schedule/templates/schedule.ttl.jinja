@@ -1,0 +1,132 @@
+@prefix gtfs: <http://gtfs.simovi.org/schedule#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+
+gtfs: a owl:Ontology ;
+    dct:title "GTFS Schedule Ontology" ;
+    dct:description """{{ metadata.description | ttl }}""" ;
+    dct:date "{{ metadata.revision_date }}"^^xsd:date .
+
+# -------------------
+# Ontology Properties
+# -------------------
+
+gtfs:presence a owl:ObjectProperty ;
+    skos:definition "Links a file or field to its presence condition." .
+
+gtfs:fieldType a owl:ObjectProperty ;
+    skos:definition "Links a field to its field type." .
+
+gtfs:fileName a owl:DatatypeProperty ;
+    skos:definition "The name of a file within the GTFS dataset." .
+
+gtfs:definedBy a owl:ObjectProperty ;
+    skos:definition "Links a class to the dataset file where its records are defined." .
+
+# ----------------
+# Term Definitions
+# ----------------
+
+gtfs:Term a skos:ConceptScheme .
+
+{% for term in terms %}
+gtfs:{{ term.name | pascal }} a skos:Concept ;
+    skos:inScheme gtfs:Term ;
+    skos:prefLabel "{{ term.name | ttl }}" ;
+    skos:definition """{{ term.definition | ttl }}""" .
+
+{% endfor %}
+# --------
+# Presence
+# --------
+
+gtfs:Presence a skos:ConceptScheme .
+
+{% for condition in conditions %}
+gtfs:{{ condition.name | pascal }} a skos:Concept ;
+    skos:inScheme gtfs:Presence ;
+    skos:prefLabel "{{ condition.name | ttl }}" ;
+    skos:definition """{{ condition.definition | ttl }}""" .
+
+{% endfor %}
+# -----------
+# Field Types
+# -----------
+
+gtfs:FieldType a skos:ConceptScheme .
+
+{% for type in types %}
+gtfs:{{ type.name | pascal }} a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "{{ type.name | ttl }}" ;
+    skos:definition """{{ type.definition | ttl }}"""{% if type.example %} ;
+    skos:example """{{ type.example | ttl }}"""{% endif %} .
+
+{% endfor %}
+{% if extra_types %}
+# Field types referenced in field definitions but not defined
+# as base types (e.g. signed numbers, ID variants).
+{% for extra in extra_types %}
+
+gtfs:{{ extra.id }} a skos:Concept ;
+    skos:inScheme gtfs:FieldType ;
+    skos:prefLabel "{{ extra.label | ttl }}" .
+{% endfor %}
+
+{% endif %}
+# -----------
+# Field Signs
+# -----------
+
+gtfs:FieldSign a skos:ConceptScheme .
+
+{% for sign in signs %}
+gtfs:{{ sign.name | pascal }} a skos:Concept ;
+    skos:inScheme gtfs:FieldSign ;
+    skos:prefLabel "{{ sign.name | ttl }}" ;
+    skos:definition """{{ sign.definition | ttl }}""" .
+
+{% endfor %}
+# -------------
+# Dataset Files
+# -------------
+
+gtfs:DatasetFile a owl:Class .
+
+{% for file in files %}
+gtfs:{{ file.name | file_id }} a gtfs:DatasetFile ;
+    gtfs:fileName "{{ file.name | ttl }}" ;
+    gtfs:presence gtfs:{{ file.presence | pascal }} ;
+    skos:definition """{{ file.description | ttl }}"""{% if file.conditions %} ;
+    skos:note """{{ file.conditions | ttl }}"""{% endif %} .
+
+{% endfor %}
+# -------
+# Classes
+# -------
+
+{% for file in field_files %}
+gtfs:{{ file.file | class_name }} a owl:Class ;
+    skos:prefLabel "{{ file.file | class_name }}" ;
+    gtfs:definedBy gtfs:{{ file.file | file_id }} .
+
+{% endfor %}
+# -----------------
+# Field Definitions
+# -----------------
+
+gtfs:Field a owl:Class .
+
+{% for file in field_files %}
+# Fields of {{ file.file }}
+
+{% for field in file.fields %}
+gtfs:{{ field.name }} a gtfs:Field ;
+    gtfs:fieldType gtfs:{{ field.type | pascal }} ;
+    gtfs:presence gtfs:{{ field.presence | pascal }} ;
+    skos:definition """{{ field.description | ttl }}""" .
+
+{% endfor %}
+{% endfor %}

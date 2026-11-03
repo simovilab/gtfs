@@ -11,7 +11,12 @@
       "type": "object",
       "additionalProperties": false,
       "description": "Metadata about the GTFS specification document",
-      "required": ["name", "revision_date", "revision_history_url", "description"],
+      "required": [
+        "name",
+        "revision_date",
+        "revision_history_url",
+        "description"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -49,16 +54,17 @@
           "description": "Term definitions section",
           "properties": {
             "description": {
-              "type": "string"
+              "type": "string",
+              "description": "Description of the term definitions section"
             },
             "terms": {
               "type": "array",
               "items": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["term", "definition"],
+                "required": ["name", "definition"],
                 "properties": {
-                  "term": {
+                  "name": {
                     "type": "string",
                     "description": "Term being defined"
                   },
@@ -77,7 +83,8 @@
           "description": "Presence conditions section",
           "properties": {
             "description": {
-              "type": "string"
+              "type": "string",
+              "description": "Description of the presence conditions section"
             },
             "conditions": {
               "type": "array",
@@ -88,7 +95,13 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "enum": ["Required", "Optional", "Conditionally Required", "Conditionally Forbidden", "Recommended"]
+                    "enum": [
+                      "Required",
+                      "Optional",
+                      "Conditionally Required",
+                      "Conditionally Forbidden",
+                      "Recommended"
+                    ]
                   },
                   "definition": {
                     "type": "string"
@@ -104,7 +117,8 @@
           "description": "Field types section",
           "properties": {
             "description": {
-              "type": "string"
+              "type": "string",
+              "description": "Description of the field types section"
             },
             "types": {
               "type": "array",
@@ -115,7 +129,26 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "enum": ["Color", "Currency code", "Currency amount", "Date", "Email", "Enum", "ID", "Language code", "Latitude", "Longitude", "Float", "Integer", "Phone number", "Time", "Local time", "Text", "Timezone", "URL"]
+                    "enum": [
+                      "Color",
+                      "Currency code",
+                      "Currency amount",
+                      "Date",
+                      "Email",
+                      "Enum",
+                      "ID",
+                      "Language code",
+                      "Latitude",
+                      "Longitude",
+                      "Float",
+                      "Integer",
+                      "Phone number",
+                      "Time",
+                      "Local time",
+                      "Text",
+                      "Timezone",
+                      "URL"
+                    ]
                   },
                   "definition": {
                     "type": "string"
@@ -134,7 +167,8 @@
           "description": "Field signs section",
           "properties": {
             "description": {
-              "type": "string"
+              "type": "string",
+              "description": "Description of the field signs section"
             },
             "signs": {
               "type": "array",
@@ -164,7 +198,8 @@
           "description": "Dataset attributes section",
           "properties": {
             "description": {
-              "type": "string"
+              "type": "string",
+              "description": "Description of the dataset attributes section"
             },
             "attributes": {
               "type": "array",
@@ -211,7 +246,13 @@
               },
               "presence": {
                 "type": "string",
-                "enum": ["Required", "Optional", "Conditionally Required", "Conditionally Forbidden", "Recommended"]
+                "enum": [
+                  "Required",
+                  "Optional",
+                  "Conditionally Required",
+                  "Conditionally Forbidden",
+                  "Recommended"
+                ]
               },
               "description": {
                 "type": "string"
@@ -353,7 +394,13 @@
               },
               "presence": {
                 "type": "string",
-                "enum": ["Required", "Optional", "Conditionally Required", "Conditionally Forbidden", "Recommended"]
+                "enum": [
+                  "Required",
+                  "Optional",
+                  "Conditionally Required",
+                  "Conditionally Forbidden",
+                  "Recommended"
+                ]
               },
               "primary_key": {
                 "oneOf": [
@@ -405,7 +452,13 @@
         },
         "presence": {
           "type": "string",
-          "enum": ["Required", "Optional", "Conditionally Required", "Conditionally Forbidden", "Recommended"]
+          "enum": [
+            "Required",
+            "Optional",
+            "Conditionally Required",
+            "Conditionally Forbidden",
+            "Recommended"
+          ]
         },
         "description": {
           "type": "string",
